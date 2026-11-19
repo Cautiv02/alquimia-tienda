@@ -88,6 +88,7 @@ track_event('view');
     <div class="section-head">
       <h2 class="section-title"><?= htmlspecialchars($sec['title']) ?></h2>
     </div>
+    <div class="car-wrap"><button type="button" class="rv-arrow prev" aria-label="Anterior">‹</button><button type="button" class="rv-arrow next" aria-label="Siguiente">›</button>
     <div class="offer-grid">
       <?php foreach ($sec['items'] as $o):
         $hasDiscount = $o['compare_at_price'] && $o['compare_at_price'] > $o['price'];
@@ -114,6 +115,7 @@ track_event('view');
         </div>
       </a>
       <?php endforeach; ?>
+    </div>
     </div>
   </div>
 </section>
@@ -158,6 +160,14 @@ track_event('view');
   </div>
 </section>
 
+<script>
+document.querySelectorAll('.car-wrap').forEach(function (w) {
+  var g = w.querySelector('.offer-grid'), pv = w.querySelector('.prev'), nx = w.querySelector('.next');
+  function upd() { var more = g.scrollWidth > g.clientWidth + 4; pv.style.display = nx.style.display = more ? '' : 'none'; pv.style.opacity = g.scrollLeft < 4 ? .35 : 1; nx.style.opacity = g.scrollLeft + g.clientWidth >= g.scrollWidth - 4 ? .35 : 1; }
+  [pv, nx].forEach(function (b) { b.addEventListener('click', function () { g.scrollBy({ left: (b === nx ? 1 : -1) * g.clientWidth * 0.85, behavior: 'smooth' }); }); });
+  g.addEventListener('scroll', upd, { passive: true }); window.addEventListener('resize', upd); upd();
+});
+</script>
 <?php
 $homeRevs = [];
 try {
