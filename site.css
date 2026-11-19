@@ -536,3 +536,14 @@
 .reviews-grid .review-card { min-height: 0; }
 .review-card p.clamp { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
 .rv-more { background: none; border: 0; padding: 0; color: var(--gold); font: inherit; font-size: .82rem; cursor: pointer; text-align: left; }
+
+/* ---- Buscador del menú ---- */
+  .nav-search { position: relative; flex: 1; max-width: 300px; min-width: 150px; }
+  .nav-search input { width: 100%; padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; font-family: var(--sans); font-size: .9rem; background: #faf8f3; }
+  .nav-search input:focus { outline: none; border-color: var(--gold); background: #fff; }
+  .ns-list { position: absolute; top: calc(100% + 8px); left: 0; width: max(100%, 380px); max-width: 92vw; margin: 0; padding: 6px; list-style: none; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.14); z-index: 80; }
+  .ns-list a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: var(--text); font-size: .88rem; }
+  .ns-list li.on a, .ns-list a:hover { background: var(--surface-tint); }
+  .ns-t { flex: 1; min-width: 0; } .ns-list b { font-size: .88rem; white-space: nowrap; }
+  .ns-list a.ns-all { justify-content: center; color: var(--gold); font-weight: 600; }
+@media (max-width: 900px) { .nav-search { max-width: none; } .nav-actions .btn-gold { display: none; } }

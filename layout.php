@@ -45,7 +45,6 @@ function site_search_box(): void { ?>
     data.forEach(function (d) {
       var li = document.createElement('li'), a = document.createElement('a');
       a.href = 'producto.php?id=' + d.id;
-      if (d.i) { var im = document.createElement('img'); im.src = d.i; im.alt = ''; a.appendChild(im); }
       var s = document.createElement('span'); s.className = 'ns-t'; s.textContent = d.t; a.appendChild(s);
       var p = document.createElement('b'); p.textContent = d.p; a.appendChild(p);
       li.appendChild(a); ul.appendChild(li);
@@ -121,15 +120,6 @@ function site_header(string $title, string $description = ''): void {
   .chip.on, .chip:hover { background: var(--gold); border-color: var(--gold); color: #FFFBF3; }
   .cart-link { color: var(--text); text-decoration: none; font-weight: 600; font-size: .92rem; margin-right: 14px; white-space: nowrap; }
   .cart-badge { background: var(--gold); color: #FFFBF3; border-radius: 20px; padding: 1px 8px; font-size: .75rem; }
-  .nav-search { position: relative; flex: 1; max-width: 300px; min-width: 150px; }
-  .nav-search input { width: 100%; padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; font-family: var(--sans); font-size: .9rem; background: #faf8f3; }
-  .nav-search input:focus { outline: none; border-color: var(--gold); background: #fff; }
-  .ns-list { position: absolute; top: calc(100% + 8px); left: 0; width: max(100%, 380px); max-width: 92vw; margin: 0; padding: 6px; list-style: none; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.14); z-index: 80; }
-  .ns-list a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: var(--text); font-size: .88rem; }
-  .ns-list li.on a, .ns-list a:hover { background: var(--surface-tint); }
-  .ns-list img { width: 38px; height: 38px; object-fit: cover; border-radius: 6px; flex: none; background: var(--surface-tint); }
-  .ns-t { flex: 1; min-width: 0; } .ns-list b { font-size: .88rem; white-space: nowrap; }
-  .ns-list a.ns-all { justify-content: center; color: var(--gold); font-weight: 600; }
   .hp { position: absolute; left: -9999px; height: 0; overflow: hidden; }
     .quick-facts { list-style: none; margin: 14px 0 0; padding: 0; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
   .quick-facts li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 14px; font-size: .85rem; border-bottom: 1px solid var(--line); }
