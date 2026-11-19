@@ -5,6 +5,7 @@
  */
 require_once __DIR__ . '/delivery-engine.php';
 require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/catalog-lib.php';
 
 $pdo = get_pdo();
 $id = (int) ($_GET['id'] ?? 0);
@@ -40,20 +41,16 @@ try {
 } catch (Throwable $e) { }
 $rCount = (reviews_stats()[$id]['n'] ?? count($revs));
 $err = (string) ($_GET['error'] ?? '');
+$fac = product_facets((string) $p['title']);
+$cleanTitle = cat_clean((string) $p['title']);
 
 site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercado Pago, entrega por correo.');
 ?>
 <div class="wrap page">
   <p style="font-size:.85rem;color:var(--ash);margin:0 0 18px;"><a href="catalogo.php" style="text-decoration:none;">← Catálogo</a></p>
   <div class="product-grid">
-    <div>
-      <div class="product-img">
-        <?php if ($img): ?><img src="<?= h($img) ?>" alt="<?= h($p['title']) ?>"><?php else: ?><span style="color:var(--ash)">Sin imagen</span><?php endif; ?>
-      </div>
-      <?php if (trim($descHtml) !== ''): ?><div class="desc"><?= $descHtml ?></div><?php endif; ?>
-    </div>
-
-    <div class="panel">
+    <div class="pg-main">
+    <div class="panel buybox">
       <h1 style="font-size:1.5rem;"><?= h($p['title']) ?></h1>
       <?php if ($rCount): ?><p class="rating-line"><?= stars_html($rAvg) ?> <b><?= h(number_format($rAvg, 1, ',', '')) ?></b> · <a href="#opiniones"><?= (int) $rCount ?> opinión<?= $rCount === 1 ? '' : 'es' ?></a></p><?php endif; ?>
       <?php if (!$variants): ?>
@@ -61,17 +58,20 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
       <?php else: ?>
       <form method="post" action="checkout-create-preference.php">
         <div class="field">
-          <label for="variant">Opción</label>
-          <select id="variant" name="variant_id" required>
-            <?php foreach ($variants as $v):
-              $label = ($v['title'] === 'Default Title' || trim((string) $v['title']) === '') ? 'Licencia' : $v['title']; ?>
-              <option value="<?= (int) $v['id'] ?>"
-                data-price="<?= (int) round((float) $v['price']) ?>"
-                data-old="<?= $v['compare_at_price'] ? (int) round((float) $v['compare_at_price']) : 0 ?>">
-                <?= h($label) ?> — <?= money($v['price']) ?>
-              </option>
+          <label>Elige tu opción</label>
+          <div class="opt-grid" role="radiogroup">
+            <?php foreach ($variants as $i => $v):
+              $label = ($v['title'] === 'Default Title' || trim((string) $v['title']) === '') ? 'Licencia' : $v['title'];
+              $off = ($v['compare_at_price'] && $v['compare_at_price'] > $v['price']) ? (int) round((1 - $v['price'] / $v['compare_at_price']) * 100) : 0; ?>
+              <label class="opt">
+                <input type="radio" name="variant_id" value="<?= (int) $v['id'] ?>" <?= $i === 0 ? 'checked' : '' ?> required
+                  data-price="<?= (int) round((float) $v['price']) ?>"
+                  data-old="<?= $v['compare_at_price'] ? (int) round((float) $v['compare_at_price']) : 0 ?>">
+                <span class="opt-name"><?= h($label) ?><?php if ($off > 0): ?> <em>-<?= $off ?>%</em><?php endif; ?></span>
+                <span class="opt-price"><?= money($v['price']) ?></span>
+              </label>
             <?php endforeach; ?>
-          </select>
+          </div>
         </div>
 
         <p style="margin:0 0 18px;">
@@ -108,21 +108,36 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
       </form>
       <script>
         (function () {
-          var sel = document.getElementById('variant'), qty = document.getElementById('qty');
+          var qty = document.getElementById('qty');
           var price = document.getElementById('price'), old = document.getElementById('old'), total = document.getElementById('total');
           function fmt(n) { return '$' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
           function upd() {
-            var o = sel.options[sel.selectedIndex], p = +o.dataset.price, od = +o.dataset.old;
+            var o = document.querySelector('input[name=variant_id]:checked'), p = +o.dataset.price, od = +o.dataset.old;
             var q = Math.max(1, Math.min(10, +qty.value || 1));
             price.textContent = fmt(p);
             old.textContent = od > p ? fmt(od) : '';
             total.textContent = fmt(p * q);
           }
-          sel.addEventListener('change', upd); qty.addEventListener('input', upd); upd();
+          document.querySelectorAll('input[name=variant_id]').forEach(function (r) { r.addEventListener('change', upd); }); qty.addEventListener('input', upd); upd();
         })();
       </script>
       <?php endif; ?>
     </div>
+      <?php if (trim($descHtml) !== ''): ?><div class="desc"><?= $descHtml ?></div><?php endif; ?>
+    </div>
+
+    <aside class="pg-side">
+      <div class="product-img">
+        <?php if ($img): ?><img src="<?= h($img) ?>" alt="<?= h($p['title']) ?>"><?php else: ?><span style="color:var(--ash)">Sin imagen</span><?php endif; ?>
+      </div>
+      <ul class="quick-facts">
+        <li><span>Marca</span><b><?= h($fac['brand']) ?></b></li>
+        <?php if ($fac['platforms']): ?><li><span>Compatible</span><b><?= h(implode(', ', $fac['platforms'])) ?></b></li><?php endif; ?>
+        <?php if ($fac['duration'] !== ''): ?><li><span>Vigencia</span><b><?= h($fac['duration']) ?></b></li><?php endif; ?>
+        <li><span>Entrega</span><b>Por correo</b></li>
+        <li><span>Pago</span><b>Mercado Pago</b></li>
+      </ul>
+    </aside>
   </div>
 
   <?php if ($revs): ?>
