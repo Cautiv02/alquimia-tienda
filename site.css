@@ -529,3 +529,7 @@
 .rev-form .star-pick input { display: none; }
 .rev-form .star-pick label { font-size: 2rem; color: #cfc9bb; cursor: pointer; }
 .rev-form .star-pick input:checked ~ label, .rev-form .star-pick label:hover, .rev-form .star-pick label:hover ~ label { color: #d9a21b; }
+
+.rv-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.rv-verified { display: inline-flex; align-items: center; gap: 4px; font-size: .7rem; color: var(--ash); white-space: nowrap; }
+.reviews-grid .review-card { min-height: 150px; }

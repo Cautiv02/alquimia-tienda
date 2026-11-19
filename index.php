@@ -168,7 +168,7 @@ if ($homeRevs): $rsum = reviews_store_summary(); ?>
     <p class="rating-line" style="justify-content:center;"><?= stars_html($rsum['avg']) ?> <b><?= h(number_format($rsum['avg'], 1, ',', '')) ?></b> de 5 · <?= (int) $rsum['n'] ?> reseñas verificadas</p>
     <div class="reviews-wrap"><button type="button" class="rv-arrow prev" aria-label="Anterior">‹</button><button type="button" class="rv-arrow next" aria-label="Siguiente">›</button><div class="reviews-grid">
       <?php foreach ($homeRevs as $r): ?>
-      <div class="review-card"><?= stars_html((float) $r['rating']) ?><p><?= h($r['content']) ?></p><span class="rv-by"><?= h($r['author']) ?> · <?= h(date('d/m/Y', strtotime($r['review_date']))) ?></span></div>
+      <div class="review-card"><div class="rv-top"><?= stars_html((float) $r['rating']) ?><?= verified_badge() ?></div><p><?= h($r['content']) ?></p><span class="rv-by"><?= h($r['author']) ?> · <?= h(date('d/m/Y', strtotime($r['review_date']))) ?></span></div>
       <?php endforeach; ?>
     </div></div>
   </div>

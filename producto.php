@@ -132,7 +132,7 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
     <div class="reviews-wrap"><button type="button" class="rv-arrow prev" aria-label="Anterior">‹</button><button type="button" class="rv-arrow next" aria-label="Siguiente">›</button><div class="reviews-grid">
       <?php foreach ($revs as $r): if (trim($r['content']) === '') continue; ?>
       <div class="review-card">
-        <?= stars_html((float) $r['rating']) ?>
+        <div class="rv-top"><?= stars_html((float) $r['rating']) ?><?= verified_badge() ?></div>
         <?php if (trim($r['content']) !== ''): ?><p><?= h($r['content']) ?></p><?php endif; ?>
         <span class="rv-by"><?= h($r['author']) ?> · <?= h(date('d/m/Y', strtotime($r['review_date']))) ?></span>
       </div>
