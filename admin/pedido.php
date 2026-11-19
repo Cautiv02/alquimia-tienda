@@ -40,6 +40,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 flash_set('Número de pedido actualizado a ' . $new . '.');
             }
         }
+    } elseif ($a === 'cancelar') {
+        $u = $pdo->prepare("UPDATE orders SET financial_status = 'anulado', updated_at = NOW() WHERE id = :id AND fulfillment_status <> 'entregado' AND financial_status <> 'anulado'");
+        $u->execute([':id' => $id]);
+        flash_set($u->rowCount() ? 'Pedido cancelado.' : 'Este pedido no se puede cancelar (ya está enviado o cancelado).', !$u->rowCount());
+    } elseif ($a === 'deshacer_envio') {
+        $pdo->prepare("UPDATE orders SET fulfillment_status = 'pendiente', updated_at = NOW() WHERE id = :id AND fulfillment_status = 'entregado'")->execute([':id' => $id]);
+        flash_set('El pedido volvió a "por enviar".');
+    } elseif ($a === 'reactivar') {
+        $pdo->prepare("UPDATE orders SET financial_status = 'pendiente', updated_at = NOW() WHERE id = :id AND financial_status = 'anulado'")->execute([':id' => $id]);
+        flash_set('El pedido se reactivó como "pago pendiente".');
     } elseif ($a === 'consultar_mp') {
         $r = mp_get('/v1/payments/search?external_reference=' . rawurlencode($o['order_number']) . '&sort=date_created&criteria=desc');
         $pid = $r['data']['results'][0]['id'] ?? null;
@@ -108,6 +118,15 @@ flash_show();
     <?php if ($o['financial_status'] === 'pagado' && $o['fulfillment_status'] !== 'entregado'): ?>
       <button class="btn-a" name="action" value="entregado" onclick="return confirm('¿Ya enviaste las claves al cliente?')">✔ Marcar como entregado (ya envié las claves)</button>
       <button class="btn-a ghost" name="action" value="entregar_stock" onclick="return confirm('Se asignarán claves del stock cargado y se enviará el correo con el enlace al cliente. ¿Continuar?')">Entregar con claves del stock</button>
+    <?php endif; ?>
+    <?php if ($o['fulfillment_status'] !== 'entregado' && $o['financial_status'] !== 'anulado'): ?>
+      <button class="btn-a ghost" name="action" value="cancelar" onclick="return confirm('¿Cancelar este pedido? Si ya estaba cobrado, reembólsalo en Mercado Pago.')">✕ Cancelar pedido</button>
+    <?php endif; ?>
+    <?php if ($o['fulfillment_status'] === 'entregado'): ?>
+      <button class="btn-a ghost" name="action" value="deshacer_envio" onclick="return confirm('¿Volver a marcar este pedido como por enviar?')">↩ Deshacer envío</button>
+    <?php endif; ?>
+    <?php if ($o['financial_status'] === 'anulado'): ?>
+      <button class="btn-a ghost" name="action" value="reactivar">↩ Reactivar pedido</button>
     <?php endif; ?>
     <?php if ($o['financial_status'] !== 'pagado'): ?>
       <button class="btn-a ghost" name="action" value="consultar_mp">Consultar pago en Mercado Pago</button>
