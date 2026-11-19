@@ -9,20 +9,45 @@ require_once __DIR__ . '/delivery-engine.php';
 require_once __DIR__ . '/config.php';
 $pdo = get_pdo();
 
-// Trae hasta 6 productos con mayor descuento (compare_at_price vs price) como "ofertas flash".
-// Si no hay suficientes con descuento, completa con los más recientes.
-$stmtOffers = $pdo->query("
-    SELECT p.id AS product_id, p.title AS product_title, p.image_url,
-           pv.id AS variant_id, pv.title AS variant_title, pv.price, pv.compare_at_price
+// Productos destacados de la portada, en este orden. Cada uno se busca por nombre en la base (ignorando
+// caracteres invisibles); si hay varias publicaciones parecidas se elige la que tiene el precio indicado.
+$featuredSlots = [
+    ['/Office 365.*Cuenta Original.*5 Dispositivos/iu', 4990],
+    ['/Office 2024 Profesional Plus LTSC/iu', 7990],
+    ['/Acrobat Pro 2026/iu', 12990],
+    ['/^Windows 11 Professional/iu', 4990],
+    ['/^Autodesk (Suscripci|todas)/iu', 42990],
+    ['/Office 2021 Profesional Plus LTSC/iu', 6990],
+    ['/Duolingo/iu', 29990],
+    ['/Spotify Premium.*12/iu', 27950],
+    ['/Creative Cloud.*1 A(Ñ|N)O/iu', 24990],
+    ['/^Windows 10 Professional/iu', 4990],
+    ['/^Project - Visio 2021/iu', 9990],
+    ['/Perplexity/iu', 89990],
+];
+$allActive = $pdo->query("
+    SELECT p.id AS product_id, p.title AS product_title, p.image_url, MIN(pv.price) AS price, COUNT(pv.id) AS nvar,
+           (SELECT v2.compare_at_price FROM product_variants v2 WHERE v2.product_id = p.id ORDER BY v2.price ASC, v2.id ASC LIMIT 1) AS compare_at_price
     FROM products p
     JOIN product_variants pv ON pv.product_id = p.id
     WHERE p.status = 'activo'
-    ORDER BY
-        (COALESCE(pv.compare_at_price, 0) - pv.price) DESC,
-        p.created_at DESC
-    LIMIT 6
-");
-$offers = $stmtOffers->fetchAll();
+    GROUP BY p.id, p.title, p.image_url
+    ORDER BY p.id ASC
+")->fetchAll();
+$offers = []; $usedIds = [];
+foreach ($featuredSlots as [$rx, $expected]) {
+    $first = null; $exact = null;
+    foreach ($allActive as $row) {
+        if (isset($usedIds[$row['product_id']])) continue;
+        $clean = preg_replace('/[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}\x{FEFF}]/u', '', (string) $row['product_title']);
+        if (!preg_match($rx, $clean)) continue;
+        $row['clean_title'] = $clean;
+        if ($first === null) $first = $row;
+        if ($exact === null && (int) round((float) $row['price']) === $expected) $exact = $row;
+    }
+    $pick = $exact ?: $first;
+    if ($pick) { $offers[] = $pick; $usedIds[$pick['product_id']] = true; }
+}
 
 function money($n) { return '$' . number_format((float)$n, 0, ',', '.'); }
 ?>
@@ -92,8 +117,8 @@ function money($n) { return '$' . number_format((float)$n, 0, ',', '.'); }
 <section class="section" id="ofertas">
   <div class="wrap">
     <div class="section-head">
-      <h2 class="section-title">Ofertas flash de esta semana</h2>
-      <p class="section-note">Unidades limitadas — el stock de claves se repone a diario según disponibilidad.</p>
+      <h2 class="section-title">Los más vendidos</h2>
+      <p class="section-note"><a href="catalogo.php" style="color:inherit;">Ver todo el catálogo</a></p>
     </div>
     <div class="offer-grid">
       <?php foreach ($offers as $o):
@@ -102,22 +127,19 @@ function money($n) { return '$' . number_format((float)$n, 0, ',', '.'); }
       ?>
       <a class="offer-card" href="producto.php?id=<?= (int) $o['product_id'] ?>" style="text-decoration:none;">
         <div class="offer-image">
-          <span class="offer-badge disponible">Oferta</span>
+          <?php if ($hasDiscount): ?><span class="offer-badge disponible">Oferta</span><?php endif; ?>
           <?php if ($imgSrc): ?>
-            <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($o['product_title']) ?>">
+            <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($o['clean_title']) ?>">
           <?php else: ?>
             <span class="placeholder-mark">foto del producto</span>
           <?php endif; ?>
         </div>
         <div class="offer-body">
-          <p class="offer-title"><?= htmlspecialchars($o['product_title'] . ' — ' . $o['variant_title']) ?></p>
+          <p class="offer-title"><?= htmlspecialchars($o['clean_title']) ?></p>
           <div class="offer-price-row">
-            <span class="offer-price"><?= money($o['price']) ?></span>
-            <?php if ($hasDiscount): ?>
-              <span class="offer-price-old"><?= money($o['compare_at_price']) ?></span>
-            <?php endif; ?>
+            <?php if ($hasDiscount): ?><span class="offer-price-old"><?= money($o['compare_at_price']) ?></span><?php endif; ?>
+            <span class="offer-price"><?= ((int) $o['nvar'] > 1 ? 'Desde ' : '') . money($o['price']) ?> CLP</span>
           </div>
-          <span class="offer-buy">Comprar</span>
         </div>
       </a>
       <?php endforeach; ?>

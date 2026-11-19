@@ -316,15 +316,15 @@
   .offer-badge.disponible { background: var(--gold); }
   .offer-badge.agotado { background: #6B6656; }
   .offer-body {
-    padding: 16px 18px 18px;
+    padding: 12px 14px 14px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     flex: 1;
   }
-  .offer-title { font-family: var(--serif); font-size: 1.02rem; margin: 0; line-height: 1.32; min-height: 2.6em; color: var(--text); }
+  .offer-title { font-family: var(--serif); font-size: 0.9rem; margin: 0; line-height: 1.32; min-height: 2.6em; color: var(--text); }
   .offer-price-row { display: flex; align-items: baseline; gap: 10px; margin-top: auto; flex-wrap: wrap; }
-  .offer-price { font-size: 1.2rem; font-weight: 600; color: var(--text); }
+  .offer-price { font-size: 1rem; font-weight: 600; color: var(--text); }
   .offer-price-old { font-size: 0.85rem; color: var(--ash); text-decoration: line-through; }
   .offer-buy {
     text-align: center;
