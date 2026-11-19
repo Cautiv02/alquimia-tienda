@@ -1,0 +1,10 @@
+# Credenciales: se crea una sola vez en el servidor, nunca en Git
+config.php
+# Generados por el servidor
+error_log
+*.log
+webhook.log
+# Datos y herramientas de migración (no van en el repositorio)
+*.json
+*.csv
+*.zip

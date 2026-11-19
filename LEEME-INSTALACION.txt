@@ -1,0 +1,52 @@
+ALQUIMIA DIGITAL - ACTUALIZACION PARA SALIR EN LINEA (funciona en cualquier carpeta)
+=============================================================
+
+QUE INCLUYE
+- Paginas nuevas: catalogo.php, producto.php, pedido-resultado.php, layout.php, site.css
+- Checkout con Mercado Pago (checkout-create-preference.php) y webhook (mercadopago-webhook.php, mp-lib.php)
+- Panel admin en /CID/admin/ (login, pedidos por enviar, marcar entregado)
+- Archivos que REEMPLAZAN a los actuales: index.php, portal.php, delivery-engine.php
+  (mismo diseno; ahora con enlaces reales, buscador funcional y claves fuera del codigo)
+- config.sample.php: el unico lugar con claves y URLs
+
+MODO DE ENTREGA: MANUAL
+Cuando Mercado Pago confirma un pago:
+  1) el pedido pasa a "pagado",
+  2) te llega un correo a NOTIFY_EMAIL (contacto@alquimia-digital.cl) y un aviso en el panel,
+  3) el cliente recibe "Recibimos tu pago" (sin claves),
+  4) tu le envias las claves y pulsas "Marcar como entregado" en /CID/admin/.
+Para volver a la entrega automatica: AUTO_DELIVERY = true en config.php (requiere claves cargadas en license_keys).
+
+UBICACION INDEPENDIENTE
+El sitio detecta solo en que carpeta esta (SITE_URL se calcula, los enlaces son relativos).
+Sirve igual en /CID, en otra carpeta o en la raiz del dominio: solo sube TODOS los archivos juntos
+(incluidas las carpetas admin/, PHPMailer/ e images/) y abre config.php/index.php desde esa carpeta.
+Las paginas se envian con cabeceras anti-cache y el CSS lleva version, para que no se quede una copia vieja.
+Si despues de subir ves algo antiguo: Ctrl+F5 en el navegador y, si usas LiteSpeed Cache o Cloudflare, purga su cache.
+
+PASOS
+1. Haz un respaldo de la carpeta del sitio y de la base de datos (phpMyAdmin > Exportar).
+2. Sube TODO el contenido de esta carpeta a la carpeta del sitio, sobrescribiendo. No borres PHPMailer/, images/ ni LOGo21.png.
+3. En esa misma carpeta copia config.sample.php como config.php y completa:
+     - DB_USER / DB_PASS (por ahora puedes usar los que ya tenias)
+     - MP_ACCESS_TOKEN (Access Token de PRODUCCION, empieza con APP_USR-)
+     - SMTP_PASS (clave del correo delivery@digital-alquimia.com)
+     - ADMIN_PASS_HASH: en Terminal de cPanel ejecuta
+         php -r "echo password_hash('TU_CLAVE_LARGA', PASSWORD_DEFAULT);"
+       y pega el resultado entre comillas simples.
+4. Abre tu-dominio/index.php (en la carpeta donde lo subiste)  -> navega Catalogo, abre un producto.
+5. Entra a tu-dominio/.../admin/ con ADMIN_USER y tu clave.
+6. COMPRA DE PRUEBA con un producto barato y tu propia tarjeta/cuenta de Mercado Pago:
+     - debe llevarte a Mercado Pago, pagar y volver a pedido-resultado.php con "Pago recibido",
+     - debe llegarte el correo de aviso y aparecer el pedido en admin > "Por enviar",
+     - despues puedes reembolsar la prueba desde Mercado Pago.
+7. Si algo falla: revisa error_log y webhook.log (en la carpeta del sitio) y el aviso rojo en el panel.
+   Error 500 casi siempre = falta config.php o hay un dato incorrecto en el (base de datos).
+
+WEBHOOK (opcional)
+La tienda envia la URL de notificacion en cada pago. Si quieres configurarla tambien en Mercado Pago >
+Tus integraciones > Webhooks: <URL del sitio>/mercadopago-webhook.php (evento "Pagos").
+Si mueves el sitio de carpeta, esa URL cambia: actualizala en Mercado Pago o deja que la tienda la envie sola en cada pago.
+Si ademas copias la "Clave secreta" a MP_WEBHOOK_SECRET, se valida la firma de cada aviso.
+
+REQUISITOS: PHP 7.4+ (el codigo es compatible con tu servidor), extensiones curl y pdo_mysql, base MySQL actual.

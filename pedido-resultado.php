@@ -1,0 +1,63 @@
+<?php
+/**
+ * pedido-resultado.php — a donde vuelve el cliente desde Mercado Pago.
+ * ?codigo=AD-XXXX-XXXX&estado=ok|pendiente|fallido  (+ payment_id / collection_id que agrega MP)
+ * Si el cliente vuelve con un payment_id, se consulta el pago a la API como respaldo del webhook.
+ */
+require_once __DIR__ . '/mp-lib.php';
+require_once __DIR__ . '/layout.php';
+
+$pdo = get_pdo();
+$code   = strtoupper(trim((string) ($_GET['codigo'] ?? '')));
+$estado = (string) ($_GET['estado'] ?? '');
+$paymentId = (string) ($_GET['payment_id'] ?? $_GET['collection_id'] ?? '');
+
+$order = null;
+if ($code !== '') {
+    $st = $pdo->prepare("SELECT * FROM orders WHERE unique_code = :c LIMIT 1");
+    $st->execute([':c' => $code]);
+    $order = $st->fetch();
+}
+
+// Respaldo: si el webhook aún no llegó, confirmamos el pago nosotros
+if ($order && $order['financial_status'] === 'pendiente' && preg_match('/^\d{3,20}$/', $paymentId)) {
+    try { process_mp_payment($pdo, $paymentId); } catch (Throwable $e) { error_log('[resultado] ' . $e->getMessage()); }
+    $st->execute([':c' => $code]);
+    $order = $st->fetch();
+}
+
+$paid = $order && in_array($order['financial_status'], ['pagado'], true);
+$portal = $order ? 'portal.php?modo=codigo&codigo=' . urlencode($order['unique_code']) : 'portal.php';
+
+site_header('Resultado de tu pedido');
+?>
+<div class="wrap page" style="max-width: 760px;">
+  <div class="panel">
+  <?php if (!$order): ?>
+    <h1>No encontramos tu pedido</h1>
+    <p class="lead">Si ya pagaste, escríbenos por WhatsApp con tu comprobante y lo revisamos de inmediato.</p>
+  <?php elseif ($paid): ?>
+    <h1>¡Pago recibido! 🎉</h1>
+    <p class="lead">Gracias por tu compra. Pedido <b><?= h($order['order_number']) ?></b>.</p>
+    <div class="alert ok">
+      <?php if ($order['fulfillment_status'] === 'entregado'): ?>
+        Tu pedido ya fue entregado. Puedes ver tu clave en el portal.
+      <?php else: ?>
+        Estamos preparando tu(s) clave(s) y te las enviaremos a <b><?= h($order['email']) ?></b> en breve. Revisa también tu carpeta de spam.
+      <?php endif; ?>
+    </div>
+    <p>Guarda tu código único: <code style="font-family:var(--mono);background:var(--surface-tint);padding:4px 8px;border-radius:6px;"><?= h($order['unique_code']) ?></code></p>
+    <p><a class="btn-gold" href="<?= h($portal) ?>">Ver mi pedido</a></p>
+  <?php elseif ($estado === 'fallido' || $order['financial_status'] === 'anulado'): ?>
+    <h1>El pago no se completó</h1>
+    <p class="lead">No se realizó ningún cobro. Puedes intentarlo de nuevo con otro medio de pago.</p>
+    <p><a class="btn-gold" href="catalogo.php">Volver al catálogo</a></p>
+  <?php else: ?>
+    <h1>Estamos confirmando tu pago</h1>
+    <p class="lead">Pedido <b><?= h($order['order_number']) ?></b>. Algunos medios de pago demoran unos minutos en confirmarse.</p>
+    <div class="alert">Apenas se acredite te avisaremos por correo a <b><?= h($order['email']) ?></b>. Puedes revisar el estado cuando quieras con tu código <code><?= h($order['unique_code']) ?></code>.</div>
+    <p><a class="btn-gold" href="<?= h($portal) ?>">Ver estado de mi pedido</a></p>
+  <?php endif; ?>
+  </div>
+</div>
+<?php site_footer();

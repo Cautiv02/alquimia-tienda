@@ -1,0 +1,108 @@
+<?php
+/**
+ * admin/pedido.php?id=N — detalle del pedido y acciones:
+ *  - Marcar como entregado (ya enviaste las claves por tu cuenta)
+ *  - Consultar el pago en Mercado Pago (y procesarlo si está aprobado y aún no estaba registrado)
+ *  - Marcar como pagado a mano (p. ej. transferencia confirmada)
+ *  - Entregar con claves del stock (solo si cargaste claves en el sistema)
+ */
+require_once __DIR__ . '/_auth.php';
+$pdo = get_pdo();
+$id = (int) ($_GET['id'] ?? 0);
+
+$st = $pdo->prepare("SELECT o.*, c.first_name, c.last_name FROM orders o LEFT JOIN customers c ON c.id = o.customer_id WHERE o.id = :id");
+$st->execute([':id' => $id]);
+$o = $st->fetch();
+if (!$o) { http_response_code(404); admin_header('Pedido no encontrado'); echo '<p>Pedido no encontrado.</p>'; admin_footer(); exit; }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_check();
+    $a = (string) ($_POST['action'] ?? '');
+
+    if ($a === 'entregado') {
+        $pdo->prepare("UPDATE orders SET fulfillment_status = 'entregado', updated_at = NOW() WHERE id = :id AND financial_status = 'pagado'")->execute([':id' => $id]);
+        flash_set('Pedido marcado como entregado.');
+    } elseif ($a === 'consultar_mp') {
+        $r = mp_get('/v1/payments/search?external_reference=' . rawurlencode($o['order_number']) . '&sort=date_created&criteria=desc');
+        $pid = $r['data']['results'][0]['id'] ?? null;
+        if ($r['code'] !== 200) flash_set('No pude consultar Mercado Pago (HTTP ' . $r['code'] . '). Revisa el Access Token en config.php.', true);
+        elseif (!$pid) flash_set('Mercado Pago no tiene pagos registrados para este pedido.', true);
+        else {
+            try { flash_set('Resultado: ' . process_mp_payment($pdo, (string) $pid) . ' (pago MP #' . $pid . ')'); }
+            catch (Throwable $e) { flash_set('Error: ' . $e->getMessage(), true); }
+        }
+    } elseif ($a === 'pagado_manual') {
+        $u = $pdo->prepare("UPDATE orders SET financial_status = 'pagado', updated_at = NOW() WHERE id = :id AND financial_status IN ('pendiente','anulado')");
+        $u->execute([':id' => $id]);
+        if ($u->rowCount()) {
+            if (AUTO_DELIVERY) { try { deliver_order($pdo, $id); } catch (Throwable $e) { error_log($e->getMessage()); } }
+            else { try { notify_paid_order($pdo, $id); } catch (Throwable $e) { error_log($e->getMessage()); } }
+            flash_set('Pedido marcado como pagado y avisos enviados.');
+        }
+    } elseif ($a === 'entregar_stock') {
+        try { deliver_order($pdo, $id); flash_set('Se asignaron las claves del stock y se envió el correo al cliente.'); }
+        catch (Throwable $e) { flash_set('No se pudo entregar: ' . $e->getMessage(), true); }
+    }
+    header('Location: pedido.php?id=' . $id);
+    exit;
+}
+
+$items = $pdo->prepare("SELECT id, title, quantity, unit_price FROM order_items WHERE order_id = :id ORDER BY id");
+$items->execute([':id' => $id]);
+$items = $items->fetchAll();
+
+$pays = $pdo->prepare("SELECT gateway_ref, status, amount, created_at FROM payments WHERE order_id = :id ORDER BY id");
+$pays->execute([':id' => $id]);
+$pays = $pays->fetchAll();
+
+$name = trim(($o['first_name'] ?? '') . ' ' . ($o['last_name'] ?? ''));
+$wa = preg_replace('/\D+/', '', (string) $o['phone']);
+
+admin_header('Pedido ' . $o['order_number']);
+flash_show();
+?>
+<p><a href="index.php">← Pedidos</a></p>
+<div class="box">
+  <h2 style="margin:0 0 6px;font-family:var(--serif);"><?= h($o['order_number']) ?>
+    <span class="pill <?= h($o['financial_status']) ?>"><?= h($o['financial_status']) ?></span>
+    <span class="pill <?= h($o['fulfillment_status']) ?>"><?= h($o['fulfillment_status']) ?></span></h2>
+  <p class="tag" style="margin:0 0 14px;"><?= h(date('d/m/Y H:i', strtotime($o['created_at']))) ?> · código único <code><?= h($o['unique_code']) ?></code> · <?= h($o['payment_method']) ?></p>
+  <p style="margin:0;"><b>Cliente:</b> <?= h($name ?: '(sin nombre)') ?><br>
+     <b>Correo:</b> <a href="mailto:<?= h($o['email']) ?>"><?= h($o['email']) ?></a><br>
+     <b>Teléfono:</b> <?= h($o['phone'] ?: '-') ?>
+     <?php if (strlen($wa) >= 8): ?> · <a href="https://wa.me/<?= h($wa) ?>" target="_blank" rel="noopener">abrir WhatsApp</a><?php endif; ?></p>
+</div>
+
+<div class="box">
+  <strong>Productos</strong>
+  <table class="t" style="margin-top:10px;">
+    <tr><th>Producto</th><th>Cant.</th><th>Precio</th></tr>
+    <?php foreach ($items as $i): ?>
+      <tr><td><?= h($i['title']) ?></td><td><?= (int) $i['quantity'] ?></td><td><?= money($i['unit_price']) ?></td></tr>
+    <?php endforeach; ?>
+    <tr><td colspan="2" style="text-align:right;"><b>Total</b></td><td><b><?= money($o['total_amount']) ?></b></td></tr>
+  </table>
+</div>
+
+<div class="box">
+  <strong>Acciones</strong>
+  <form method="post" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;"><?= csrf_field() ?>
+    <?php if ($o['financial_status'] === 'pagado' && $o['fulfillment_status'] !== 'entregado'): ?>
+      <button class="btn-a" name="action" value="entregado" onclick="return confirm('¿Ya enviaste las claves al cliente?')">✔ Marcar como entregado (ya envié las claves)</button>
+      <button class="btn-a ghost" name="action" value="entregar_stock" onclick="return confirm('Se asignarán claves del stock cargado y se enviará el correo con el enlace al cliente. ¿Continuar?')">Entregar con claves del stock</button>
+    <?php endif; ?>
+    <?php if ($o['financial_status'] !== 'pagado'): ?>
+      <button class="btn-a ghost" name="action" value="consultar_mp">Consultar pago en Mercado Pago</button>
+      <button class="btn-a ghost" name="action" value="pagado_manual" onclick="return confirm('¿Confirmas que recibiste el pago de este pedido?')">Marcar como pagado (manual)</button>
+    <?php endif; ?>
+  </form>
+</div>
+
+<div class="box">
+  <strong>Pagos registrados</strong>
+  <?php foreach ($pays as $p): ?>
+    <p class="tag" style="margin:8px 0 0;">MP #<?= h($p['gateway_ref']) ?> · <?= h($p['status']) ?> · <?= money($p['amount']) ?> · <?= h($p['created_at']) ?></p>
+  <?php endforeach; ?>
+  <?php if (!$pays): ?><p class="tag" style="margin:8px 0 0;">Sin pagos registrados.</p><?php endif; ?>
+</div>
+<?php admin_footer();
