@@ -89,28 +89,6 @@ function money($n) { return '$' . number_format((float)$n, 0, ',', '.'); }
   </div>
 </div>
 
-<div class="hero-search-bar">
-  <div class="wrap">
-    <form class="search-box" role="search" method="get" action="catalogo.php">
-      <input type="text" name="q" placeholder="Buscar software, licencia, marca...">
-      <button type="submit">Buscar</button>
-    </form>
-    <div class="quick-cats">
-      <a href="catalogo.php?q=Windows+11">Windows 11 Pro</a>
-      <a href="catalogo.php?q=365">Office 365</a>
-      <a href="catalogo.php?q=Creative+Cloud">Adobe Creative Cloud</a>
-      <a href="catalogo.php?cat=autodesk">Autodesk</a>
-      <a href="catalogo.php?cat=antivirus">Antivirus</a>
-    </div>
-    <div class="hero-trust">
-      <div><strong>+8.000</strong>clientes en Chile</div>
-      <div><strong>3 min</strong>tiempo promedio de entrega</div>
-      <div><strong>Mercado Pago</strong>pago seguro</div>
-    </div>
-  </div>
-</div>
-
-
 <section class="section" id="ofertas">
   <div class="wrap">
     <div class="section-head">
