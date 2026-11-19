@@ -12,7 +12,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'add') {
         $vid = (int) ($_POST['variant_id'] ?? 0);
         $qty = max(1, min(CART_MAX_QTY, (int) ($_POST['quantity'] ?? 1)));
-        if ($vid > 0) $cart[$vid] = min(CART_MAX_QTY, ($cart[$vid] ?? 0) + $qty);
+        if ($vid > 0) {
+            $cart[$vid] = min(CART_MAX_QTY, ($cart[$vid] ?? 0) + $qty);
+            try { $pq = get_pdo()->prepare("SELECT product_id FROM product_variants WHERE id = :v"); $pq->execute([':v' => $vid]); track_event('cart_add', (int) $pq->fetchColumn() ?: null); } catch (Throwable $e) {}
+        }
     } elseif ($action === 'set') {
         foreach ((array) ($_POST['qty'] ?? []) as $vid => $qty) {
             $vid = (int) $vid; $qty = (int) $qty;

@@ -15,6 +15,7 @@ $homeSections = home_load($pdo);
 if ($homeSections === null) $homeSections = home_resolve_defaults($allActive);
 
 require_once __DIR__ . '/layout.php';
+track_event('view');
 ?>
 <!DOCTYPE html>
 <html lang="es">
