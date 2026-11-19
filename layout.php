@@ -102,22 +102,12 @@ function site_footer(): void { ?>
       </div>
       <div class="footer-col2">
         <h4>Nuestras redes sociales</h4>
+        <a class="em" href="https://www.facebook.com/DigitalAlquimiaLatam" rel="noopener" target="_blank">Facebook</a>
         <a class="em" href="https://www.instagram.com/digital.alquimia/" rel="noopener" target="_blank">Instagram</a>
         <a class="em" href="https://api.whatsapp.com/send?phone=<?= h(SUPPORT_WHATSAPP) ?>" rel="noopener" target="_blank">Whatsapp</a>
         <a class="em" href="https://api.whatsapp.com/send?phone=<?= h(SUPPORT_WHATSAPP) ?>" rel="noopener" target="_blank">+<?= h(preg_replace('/^(\d{2})(\d)(\d{3})(\d{4})$/', '$1 $2 $3 $4', (string) SUPPORT_WHATSAPP)) ?></a>
         <a class="plain" href="mailto:<?= h(NOTIFY_EMAIL) ?>"><?= h(NOTIFY_EMAIL) ?></a>
       </div>
-    </div>
-
-    <div class="footer-news" id="suscripcion">
-      <p class="news-title">Suscríbete para recibir ofertas</p>
-      <form method="post" action="suscribir.php" class="news-form">
-        <input type="email" name="email" placeholder="Correo electrónico" required autocomplete="email" aria-label="Correo electrónico">
-        <div class="hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
-        <button type="submit" aria-label="Suscribirme">→</button>
-      </form>
-      <?php if (($_GET['sub'] ?? '') === 'ok'): ?><p class="news-msg">¡Gracias! Quedaste suscrito.</p>
-      <?php elseif (($_GET['sub'] ?? '') === 'error'): ?><p class="news-msg err">Revisa tu correo e inténtalo de nuevo.</p><?php endif; ?>
     </div>
 
     <div class="footer-bottom2">

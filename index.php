@@ -123,7 +123,7 @@ require_once __DIR__ . '/layout.php';
       <h2 class="section-title">De la compra a la activación, sin vueltas</h2>
       <p class="section-note">El mismo proceso de siempre, ahora con seguimiento visible desde que pagas.</p>
     </div>
-    <div class="steps-with-card">
+    <div class="steps-with-card no-card">
       <div class="steps">
         <div class="step-card">
           <div class="step-mark">01 — pago</div>
@@ -139,22 +139,6 @@ require_once __DIR__ . '/layout.php';
           <div class="step-mark">03 — activación</div>
           <h3 class="step-title">Instala y activa</h3>
           <p class="step-body">Sigue el tutorial de tu producto y activa sin límites ni fallas. Soporte disponible si algo no calza.</p>
-        </div>
-      </div>
-
-      <div class="key-card-wrap">
-        <div class="key-card">
-          <div class="key-card-top">
-            <span class="key-card-label">Ejemplo de pedido</span>
-            <span class="key-card-status"><span class="dot"></span> Entregada</span>
-          </div>
-          <p class="key-card-product">Office 2024 Profesional Plus</p>
-          <p class="key-card-variant">Licencia permanente · 1 PC</p>
-          <div class="key-value">XJ4K-9PQR-2WM7-VT3H</div>
-          <div class="key-card-meta">
-            <span>Entregada <b>hace 40 segundos</b></span>
-            <span>Código <b>AD-7QXM-91KP</b></span>
-          </div>
         </div>
       </div>
     </div>

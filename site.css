@@ -466,6 +466,10 @@
   .footer-bottom2 { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-top: 1px solid var(--line); padding-top: 20px; font-size: .8rem; color: var(--ash); }
   @media (max-width: 800px) { .footer-grid2 { grid-template-columns: 1fr; gap: 26px; } }
 
+  .steps-with-card.no-card { grid-template-columns: 1fr; }
+  .steps-with-card.no-card .steps { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 900px) { .steps-with-card.no-card .steps { grid-template-columns: 1fr; } }
+
   /* ---------- RESPONSIVE ---------- */
   @media (max-width: 900px) {
     nav.links { display: none; }
