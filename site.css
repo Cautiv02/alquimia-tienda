@@ -560,3 +560,16 @@
 .how-block .section-head { flex-direction: column; align-items: center; text-align: center; margin-bottom: 14px; }
 .how-block .section-title { font-family: var(--sans); font-size: clamp(1.05rem, 1.6vw, 1.3rem); font-weight: 600; letter-spacing: -0.01em; max-width: none; white-space: nowrap; margin: 0; }
 @media (max-width: 520px) { .how-block .section-title { white-space: normal; } }
+
+/* ---- Pasos y confianza con íconos 3D ---- */
+.ic3d { display: block; filter: drop-shadow(0 6px 8px rgba(40,40,60,.22)); }
+.step-card { position: relative; overflow: hidden; }
+.step-ic { margin: -4px 0 10px; }
+.step-card.s-pago { background: linear-gradient(160deg, #f3f6ff 0%, #e6edff 100%); border-color: #d3defc; }
+.step-card.s-entrega { background: linear-gradient(160deg, #f0fbf8 0%, #ddf4ee 100%); border-color: #c5eae1; }
+.step-card.s-activa { background: linear-gradient(160deg, #fff8ec 0%, #ffeccf 100%); border-color: #f7dcb0; }
+.step-card.s-pago .step-mark { color: #2b57d6; } .step-card.s-entrega .step-mark { color: #178a7c; } .step-card.s-activa .step-mark { color: #c2610f; }
+.step-card { transition: transform .18s ease, box-shadow .18s ease; }
+.step-card:hover { transform: translateY(-3px); box-shadow: 0 12px 26px rgba(60,50,30,.12); }
+.trust-item span { display: block; }
+.trust-strip .trust-item { gap: 14px; }

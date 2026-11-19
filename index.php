@@ -15,6 +15,7 @@ $homeSections = home_load($pdo);
 if ($homeSections === null) $homeSections = home_resolve_defaults($allActive);
 
 require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/icons3d.php';
 track_event('view');
 ?>
 <!DOCTYPE html>
@@ -149,17 +150,20 @@ if ($homeRevs): $rsum = reviews_store_summary(); ?>
     </div>
     <div class="steps-with-card no-card">
       <div class="steps">
-        <div class="step-card">
+        <div class="step-card s-pago">
+          <div class="step-ic"><?= icon3d('pago', 60) ?></div>
           <div class="step-mark">01 — pago</div>
           <h3 class="step-title">Realiza tu compra</h3>
           <p class="step-body">Paga de forma segura con Mercado Pago. Confirmamos tu pago apenas se acredita.</p>
         </div>
-        <div class="step-card">
+        <div class="step-card s-entrega">
+          <div class="step-ic"><?= icon3d('entrega', 60) ?></div>
           <div class="step-mark">02 — entrega</div>
           <h3 class="step-title">Recibe tu clave</h3>
           <p class="step-body">Te enviamos tu clave por correo, con las instrucciones para instalarla.</p>
         </div>
-        <div class="step-card">
+        <div class="step-card s-activa">
+          <div class="step-ic"><?= icon3d('activa', 60) ?></div>
           <div class="step-mark">03 — activación</div>
           <h3 class="step-title">Instala y activa</h3>
           <p class="step-body">Sigue el tutorial de tu producto y activa sin límites ni fallas. Soporte disponible si algo no calza.</p>
@@ -168,11 +172,11 @@ if ($homeRevs): $rsum = reviews_store_summary(); ?>
     </div>
 
     <div class="trust-strip">
-      <div class="trust-item"><b>Entrega rápida</b> — tu clave llega por correo</div>
-      <div class="trust-item"><b>Pago seguro</b> — con Mercado Pago</div>
-      <div class="trust-item"><b>Soporte real</b> — por WhatsApp y correo</div>
+      <div class="trust-item"><?= icon3d('rayo', 40) ?><span><b>Entrega rápida</b> — tu clave llega por correo</span></div>
+      <div class="trust-item"><?= icon3d('escudo', 40) ?><span><b>Pago seguro</b> — con Mercado Pago</span></div>
+      <div class="trust-item"><?= icon3d('chat', 40) ?><span><b>Soporte real</b> — por WhatsApp y correo</span></div>
       <div class="pay-badges">
-        <span class="pay-badge">MercadoPago</span>
+        <img src="images/mercadopago.png" alt="Mercado Pago" height="26" style="height:26px;width:auto;display:block;">
       </div>
     </div>
   </div>
