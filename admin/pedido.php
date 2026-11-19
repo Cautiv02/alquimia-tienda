@@ -23,6 +23,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->prepare("UPDATE orders SET fulfillment_status = 'entregado', updated_at = NOW() WHERE id = :id AND financial_status = 'pagado'")->execute([':id' => $id]);
         $m = !empty($_POST['silent']) ? false : notify_shipped($pdo, $id);
         flash_set('Pedido marcado como entregado' . (!empty($_POST['silent']) ? ' (sin email al cliente).' : ($m ? ' y se envió el email de confirmación al cliente.' : '. No se pudo enviar el email de confirmación.')), false);
+    } elseif ($a === 'editar_correo') {
+        $new = strtolower(trim((string) ($_POST['nuevo_correo'] ?? '')));
+        if (!filter_var($new, FILTER_VALIDATE_EMAIL) || mb_strlen($new) > 190) {
+            flash_set('Ese correo no es válido. Revísalo e inténtalo de nuevo.', true);
+        } elseif ($new === strtolower((string) $o['email'])) {
+            flash_set('El correo es el mismo que ya tenía el pedido.', true);
+        } else {
+            // El pedido pasa a un cliente con el correo nuevo (se busca o se crea); el cliente anterior no se modifica porque puede tener otros pedidos.
+            $cs = $pdo->prepare("SELECT id FROM customers WHERE email = :e LIMIT 1"); $cs->execute([':e' => $new]);
+            $cid = $cs->fetchColumn();
+            if (!$cid) {
+                $fn = trim((string) $o['first_name']);
+                $pdo->prepare("INSERT INTO customers (email, first_name, phone, created_at) VALUES (:e, :n, :p, NOW())")
+                    ->execute([':e' => $new, ':n' => $fn !== '' ? $fn : null, ':p' => $o['phone'] ?: null]);
+                $cid = $pdo->lastInsertId();
+            }
+            $pdo->prepare("UPDATE orders SET email = :e, customer_id = :c, updated_at = NOW() WHERE id = :id")->execute([':e' => $new, ':c' => $cid, ':id' => $id]);
+            $msg = 'Correo actualizado de ' . $o['email'] . ' a ' . $new . '.';
+            if (!empty($_POST['reenviar']) && $o['fulfillment_status'] === 'entregado') {
+                $msg .= notify_shipped($pdo, $id) ? ' Se reenvió el aviso de envío al correo nuevo.' : ' No se pudo reenviar el aviso de envío.';
+            }
+            flash_set($msg);
+        }
     } elseif ($a === 'renumerar') {
         $new = trim((string) ($_POST['nuevo_numero'] ?? ''));
         if (!preg_match('#^[A-Za-z0-9/\\-]{3,40}$#', $new)) {
@@ -97,9 +120,20 @@ flash_show();
     <span class="pill <?= h($o['fulfillment_status']) ?>"><?= h($o['fulfillment_status']) ?></span></h2>
   <p class="tag" style="margin:0 0 14px;"><?= h(date('d/m/Y H:i', strtotime($o['created_at']))) ?> · código único <code><?= h($o['unique_code']) ?></code> · <?= h($o['payment_method']) ?></p>
   <p style="margin:0;"><b>Cliente:</b> <?= h($name ?: '(sin nombre)') ?><br>
-     <b>Correo:</b> <a href="mailto:<?= h($o['email']) ?>"><?= h($o['email']) ?></a><br>
+     <b>Correo:</b> <a href="mailto:<?= h($o['email']) ?>"><?= h($o['email']) ?></a>
+     <button type="button" class="btn-a ghost" style="padding:2px 10px;font-size:.78rem;margin-left:6px;" onclick="document.getElementById('edit-mail').style.display='block';this.style.display='none';document.getElementById('nuevo_correo').focus();">✎ Editar correo</button><br>
      <b>Teléfono:</b> <?= h($o['phone'] ?: '-') ?>
      <?php if (strlen($wa) >= 8): ?> · <a href="https://wa.me/<?= h($wa) ?>" target="_blank" rel="noopener">abrir WhatsApp</a><?php endif; ?></p>
+  <form method="post" id="edit-mail" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">
+    <?= csrf_field() ?><input type="hidden" name="action" value="editar_correo">
+    <label class="tag">Correo correcto del cliente<br>
+      <input type="email" id="nuevo_correo" name="nuevo_correo" required maxlength="190" value="<?= h($o['email']) ?>" style="padding:9px 12px;border:1px solid var(--line);border-radius:8px;min-width:300px;"></label>
+    <?php if ($o['fulfillment_status'] === 'entregado'): ?>
+      <label class="tag" style="display:block;margin:10px 0;"><input type="checkbox" name="reenviar" value="1" checked> Reenviar el aviso de envío al correo nuevo</label>
+    <?php endif; ?>
+    <button class="btn-a" type="submit" style="margin-top:8px;">Guardar correo</button>
+    <p class="tag" style="margin:8px 0 0;">Solo cambia el correo de este pedido. Si el cliente tiene otros pedidos, esos no se modifican.</p>
+  </form>
 </div>
 
 <div class="box">
