@@ -532,4 +532,7 @@
 
 .rv-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .rv-verified { display: inline-flex; align-items: center; gap: 4px; font-size: .7rem; color: var(--ash); white-space: nowrap; }
-.reviews-grid .review-card { min-height: 150px; }
+.reviews-grid { align-items: flex-start; }
+.reviews-grid .review-card { min-height: 0; }
+.review-card p.clamp { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+.rv-more { background: none; border: 0; padding: 0; color: var(--gold); font: inherit; font-size: .82rem; cursor: pointer; text-align: left; }

@@ -92,6 +92,14 @@ function review_link(int $orderId): string {
 /** Flechas para los carruseles de reseñas (.reviews-wrap > .reviews-grid). */
 function reviews_scroll_js(): void { ?>
 <script>
+document.querySelectorAll('.review-card > p').forEach(function (p) {
+  p.classList.add('clamp');
+  if (p.scrollHeight > p.clientHeight + 2) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'rv-more'; b.textContent = 'Leer más';
+    b.addEventListener('click', function () { var open = p.classList.toggle('clamp'); b.textContent = open ? 'Leer más' : 'Leer menos'; });
+    p.after(b);
+  }
+});
 document.querySelectorAll('.reviews-wrap').forEach(function (w) {
   var g = w.querySelector('.reviews-grid');
   w.querySelectorAll('.rv-arrow').forEach(function (b) {
