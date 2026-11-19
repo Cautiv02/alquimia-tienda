@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'banner_text'       => trim(mb_substr((string) ($_POST['banner_text'] ?? ''), 0, 300)),
         'banner_link_label' => trim(mb_substr((string) ($_POST['banner_link_label'] ?? ''), 0, 80)),
         'banner_link_url'   => $url,
+        'notify_extra'      => trim(mb_substr((string) ($_POST['notify_extra'] ?? ''), 0, 300)),
         'transfer_enabled'  => !empty($_POST['transfer_enabled']) ? '1' : '0',
         'transfer_details'  => trim(mb_substr((string) ($_POST['transfer_details'] ?? ''), 0, 1500)),
         'transfer_note'     => trim(mb_substr((string) ($_POST['transfer_note'] ?? ''), 0, 800)),
@@ -41,6 +42,12 @@ flash_show();
       <label class="tag" style="flex:1;min-width:200px;">Texto del enlace (opcional)<br><input name="banner_link_label" value="<?= h($s['banner_link_label']) ?>" style="<?= $in ?>"></label>
       <label class="tag" style="flex:2;min-width:240px;">Dirección del enlace<br><input name="banner_link_url" value="<?= h($s['banner_link_url']) ?>" style="<?= $in ?>"></label>
     </div>
+  </div>
+
+  <div class="box">
+    <strong>Avisos de pedidos nuevos</strong>
+    <p class="tag" style="margin:6px 0 12px;">Cada pedido nuevo (pagado, o por transferencia pendiente) te llega por correo a <b><?= h(NOTIFY_EMAIL) ?></b>. Aquí puedes agregar otros correos que también lo reciban, por ejemplo uno que tengas en el móvil. Sepáralos con coma.</p>
+    <label class="tag">Correos extra<br><input name="notify_extra" value="<?= h($s['notify_extra']) ?>" style="<?= $in ?>" maxlength="300" placeholder="correo@ejemplo.com, otro@ejemplo.com"></label>
   </div>
 
   <div class="box">

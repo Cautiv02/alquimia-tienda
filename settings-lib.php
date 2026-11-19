@@ -10,6 +10,7 @@ function settings_defaults(): array {
         'banner_text'       => 'Renovamos nuestra tienda. Si ya eres cliente, tu pedido y tu soporte siguen igual.',
         'banner_link_label' => 'Escríbenos por WhatsApp',
         'banner_link_url'   => 'https://api.whatsapp.com/send?phone=' . $wa,
+        'notify_extra'      => 'christiandj@live.com',
         'transfer_enabled'  => '0',
         'transfer_details'  => '',
         'transfer_note'     => 'Una vez hecha la transferencia, envíanos el comprobante por WhatsApp o por correo indicando tu número de pedido. Despachamos tu clave apenas confirmemos el pago.',

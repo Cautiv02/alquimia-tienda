@@ -327,6 +327,18 @@ function smtp_send(string $to, string $subject, string $html, string $text = '',
 }
 
 /** notify_admin() que nunca rompe el flujo de pago si la tabla rechaza el tipo o falla. */
+/** Aviso interno de pedido nuevo: al correo principal (NOTIFY_EMAIL) y a los correos extra de Ajustes (para recibirlo en el móvil). */
+function notify_admins(string $subject, string $html, ?string $replyTo = null): void {
+    $to = [strtolower(NOTIFY_EMAIL) => NOTIFY_EMAIL];
+    foreach (preg_split('/[\s,;]+/', setting('notify_extra')) as $x) {
+        $x = trim($x);
+        if ($x !== '' && filter_var($x, FILTER_VALIDATE_EMAIL)) $to[strtolower($x)] = $x;
+    }
+    foreach ($to as $addr) {
+        try { smtp_send($addr, $subject, $html, '', $replyTo); } catch (Throwable $e) { error_log('notify_admins: ' . $e->getMessage()); }
+    }
+}
+
 function safe_notify(PDO $pdo, string $type, string $message, ?string $refType = null, ?int $refId = null): void {
     try {
         notify_admin($pdo, $type, $message, $refType, $refId);
@@ -373,7 +385,7 @@ function notify_paid_order(PDO $pdo, int $orderId): void {
     $html .= "Cliente: " . $e($name ?: '(sin nombre)') . "<br>Correo: " . $e($order['email']) . "<br>Teléfono: " . $e($phone ?: '-') . "</p>";
     $html .= "<p>Productos:</p><ul>$li</ul>";
     $html .= "<p><a href=\"" . $e($adminUrl) . "\">Abrir el pedido en el panel</a></p>";
-    smtp_send(NOTIFY_EMAIL, "Nuevo pedido pagado {$order['order_number']} ({$total})", $html, '', $order['email']);
+    notify_admins("Nuevo pedido pagado {$order['order_number']} ({$total})", $html, $order['email']);
 
     // 2) Confirmación para el cliente (sin claves)
     $portalUrl = SITE_URL . '/portal.php?modo=codigo&codigo=' . urlencode($order['unique_code']);
@@ -430,7 +442,7 @@ function notify_transfer_order(PDO $pdo, int $orderId): void {
     $a  = "<p><strong>Nuevo pedido por transferencia, pendiente de pago.</strong></p>";
     $a .= "<p>Pedido: <b>" . $e($o['order_number']) . "</b><br>Total: <b>$total</b><br>Cliente: " . $e($name ?: '(sin nombre)') . "<br>Correo: " . $e($o['email']) . "<br>Teléfono: " . $e($o['phone'] ?: '-') . "</p><ul>$li</ul>";
     $a .= "<p>Cuando veas el dinero en tu cuenta, abre el pedido y pulsa «Marcar como pagado»: <a href=\"" . $e(SITE_URL . '/admin/pedido.php?id=' . $orderId) . "\">abrir pedido</a></p>";
-    smtp_send(NOTIFY_EMAIL, "Pedido por transferencia {$o['order_number']} ({$total})", $a, '', $o['email']);
+    notify_admins("Pedido por transferencia {$o['order_number']} ({$total})", $a, $o['email']);
 
     $c  = "<p>Hola" . ($name ? ' ' . $e($name) : '') . ",</p>";
     $c .= "<p>Recibimos tu pedido <b>" . $e($o['order_number']) . "</b> por <b>$total</b>. Para completarlo, realiza una transferencia con estos datos:</p>";
