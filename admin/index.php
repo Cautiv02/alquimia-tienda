@@ -13,10 +13,17 @@ $q = trim((string) ($_GET['q'] ?? ''));
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $action = ''; $ids = [];
+    $silent = !empty($_POST['silent']);
+    if (($_POST['bulk'] ?? '') === 'antiguos') { // todos los pagados sin enviar creados antes de hoy, sin email
+        $n = $pdo->exec("UPDATE orders SET fulfillment_status='entregado', updated_at=NOW() WHERE financial_status='pagado' AND fulfillment_status<>'entregado' AND created_at < CURDATE()");
+        flash_set((int) $n . ' pedido(s) antiguos marcados como enviados (sin email al cliente).');
+        header('Location: index.php?f=' . urlencode($f) . '&q=' . urlencode($q)); exit;
+    }
     if (!empty($_POST['single']) && preg_match('/^(entregado|cancelar):(\d+)$/', (string) $_POST['single'], $m)) {
         $action = $m[1]; $ids = [(int) $m[2]];
-    } elseif (in_array($_POST['bulk'] ?? '', ['entregado', 'cancelar'], true)) {
+    } elseif (in_array($_POST['bulk'] ?? '', ['entregado', 'entregado_sin', 'cancelar'], true)) {
         $action = (string) $_POST['bulk'];
+        if ($action === 'entregado_sin') { $action = 'entregado'; $silent = true; }
         $ids = array_values(array_unique(array_filter(array_map('intval', (array) ($_POST['ids'] ?? [])))));
     }
 
@@ -29,10 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $st = $pdo->prepare("UPDATE orders SET financial_status = 'anulado', updated_at = NOW() WHERE id = :id AND fulfillment_status <> 'entregado' AND financial_status <> 'anulado'");
         }
-        foreach ($ids as $id) { $st->execute([':id' => $id]); $done += $st->rowCount(); }
+        $mails = 0;
+        foreach ($ids as $id) {
+            $st->execute([':id' => $id]);
+            if ($st->rowCount()) { $done++; if ($action === 'entregado' && !$silent && notify_shipped($pdo, $id)) $mails++; }
+        }
         $skipped = count($ids) - $done;
         $verb = $action === 'entregado' ? 'marcado(s) como enviado(s)' : 'cancelado(s)';
-        flash_set($done . ' pedido(s) ' . $verb . ($skipped ? " ($skipped omitido(s): no correspondía cambiar su estado)" : '') . '.', $done === 0);
+        flash_set($done . ' pedido(s) ' . $verb . ($action === 'entregado' ? ($silent ? ' (sin email al cliente)' : " ($mails email(s) de confirmación enviados)") : '') . ($skipped ? " ($skipped omitido(s): no correspondía cambiar su estado)" : '') . '.', $done === 0);
     }
     header('Location: index.php?f=' . urlencode($f) . '&q=' . urlencode($q));
     exit;
@@ -88,7 +99,8 @@ flash_show();
   <?= csrf_field() ?>
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px;align-items:center;">
     <span class="tag">Con los seleccionados:</span>
-    <button class="btn-a" type="submit" name="bulk" value="entregado" onclick="return alguno() && confirm('¿Marcar los pedidos seleccionados como ENVIADOS? (solo se cambian los que ya están pagados)')">✔ Marcar como enviados</button>
+    <button class="btn-a" type="submit" name="bulk" value="entregado" onclick="return alguno() && confirm('¿Marcar como ENVIADOS y avisar por email a cada cliente?')">✔ Enviados + avisar al cliente</button>
+    <button class="btn-a ghost" type="submit" name="bulk" value="entregado_sin" onclick="return alguno() && confirm('¿Marcar como ENVIADOS SIN enviar email?')">✔ Enviados sin email</button>
     <button class="btn-a ghost" type="submit" name="bulk" value="cancelar" onclick="return alguno() && confirm('¿Cancelar los pedidos seleccionados? Si ya estaban cobrados, acuérdate de reembolsarlos en Mercado Pago.')">✕ Cancelar</button>
   </div>
 
@@ -113,7 +125,7 @@ flash_show();
         <td class="tag"><?= h(date('d/m/Y H:i', strtotime($o['created_at']))) ?></td>
         <td style="white-space:nowrap;">
           <?php if ($canSend): ?>
-            <button class="btn-a" style="padding:6px 12px;font-size:.8rem;" name="single" value="entregado:<?= (int) $o['id'] ?>" onclick="return confirm('¿Ya enviaste la clave del pedido <?= h($o['order_number']) ?>?')">✔ Enviado</button>
+            <button class="btn-a" style="padding:6px 12px;font-size:.8rem;" name="single" value="entregado:<?= (int) $o['id'] ?>" onclick="return confirm('¿Ya enviaste la clave del pedido <?= h($o['order_number']) ?>? Se avisará por email al cliente.')">✔ Enviado</button>
           <?php endif; ?>
           <?php if ($canCancel): ?>
             <button class="btn-a ghost" style="padding:6px 12px;font-size:.8rem;" name="single" value="cancelar:<?= (int) $o['id'] ?>" onclick="return confirm('¿Cancelar el pedido <?= h($o['order_number']) ?>? Si ya estaba cobrado, reembólsalo en Mercado Pago.')">✕ Cancelar</button>
@@ -136,6 +148,12 @@ flash_show();
     };
   })();
 </script>
+
+<?php if ($cnt > 0): ?>
+<form method="post" style="margin-top:18px;"><?= csrf_field() ?>
+  <button class="btn-a ghost" name="bulk" value="antiguos" onclick="return confirm('Se marcarán como ENVIADOS todos los pedidos pagados creados ANTES DE HOY, sin enviar ningún email. ¿Continuar?')">Marcar todos los pedidos antiguos (anteriores a hoy) como enviados, sin email</button>
+</form>
+<?php endif; ?>
 
 <?php if ($notes): ?>
 <div class="box" style="margin-top:24px;">

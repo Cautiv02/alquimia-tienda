@@ -383,3 +383,23 @@ function notify_paid_order(PDO $pdo, int $orderId): void {
     $c .= "<p>Si necesitas ayuda escríbenos a " . $e(NOTIFY_EMAIL) . " o por WhatsApp.</p><p>— " . $e(MAIL_FROM_NAME) . "</p>";
     smtp_send($order['email'], "Recibimos tu pago - Pedido {$order['order_number']}", $c, '', NOTIFY_EMAIL);
 }
+
+
+/** Avisa al cliente que su pedido fue enviado/entregado (modo manual). Devuelve true si el correo salió. */
+function notify_shipped(PDO $pdo, int $orderId): bool {
+    try {
+        $st = $pdo->prepare("SELECT o.order_number, o.email, c.first_name FROM orders o LEFT JOIN customers c ON c.id = o.customer_id WHERE o.id = :id");
+        $st->execute([':id' => $orderId]);
+        $o = $st->fetch();
+        if (!$o || !filter_var($o['email'], FILTER_VALIDATE_EMAIL)) return false;
+        $n = htmlspecialchars((string) ($o['first_name'] ?: 'cliente'), ENT_QUOTES, 'UTF-8');
+        $num = htmlspecialchars((string) $o['order_number'], ENT_QUOTES, 'UTF-8');
+        $wa = defined('SUPPORT_WHATSAPP') ? htmlspecialchars((string) SUPPORT_WHATSAPP, ENT_QUOTES, 'UTF-8') : '';
+        $html = "<div style=\"font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#222\">"
+              . "<h2>¡Tu pedido {$num} fue enviado!</h2><p>Hola {$n},</p>"
+              . "<p>Ya te enviamos las claves/datos de tu licencia. Revisa tu correo (y la carpeta de spam) y tu WhatsApp.</p>"
+              . "<p>Si necesitas ayuda con la activación, escríbenos" . ($wa ? " al WhatsApp +{$wa}" : '') . " o responde a este correo.</p>"
+              . "<p>Gracias por confiar en " . htmlspecialchars((string) SITE_NAME, ENT_QUOTES, 'UTF-8') . ".</p></div>";
+        return smtp_send((string) $o['email'], 'Tu pedido ' . $o['order_number'] . ' fue enviado - ' . SITE_NAME, $html, '', defined('NOTIFY_EMAIL') ? NOTIFY_EMAIL : null);
+    } catch (Throwable $e) { error_log('notify_shipped: ' . $e->getMessage()); return false; }
+}

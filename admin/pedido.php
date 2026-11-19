@@ -21,7 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($a === 'entregado') {
         $pdo->prepare("UPDATE orders SET fulfillment_status = 'entregado', updated_at = NOW() WHERE id = :id AND financial_status = 'pagado'")->execute([':id' => $id]);
-        flash_set('Pedido marcado como entregado.');
+        $m = !empty($_POST['silent']) ? false : notify_shipped($pdo, $id);
+        flash_set('Pedido marcado como entregado' . (!empty($_POST['silent']) ? ' (sin email al cliente).' : ($m ? ' y se envió el email de confirmación al cliente.' : '. No se pudo enviar el email de confirmación.')), false);
     } elseif ($a === 'renumerar') {
         $new = trim((string) ($_POST['nuevo_numero'] ?? ''));
         if (!preg_match('#^[A-Za-z0-9/\\-]{3,40}$#', $new)) {
@@ -116,6 +117,7 @@ flash_show();
   <strong>Acciones</strong>
   <form method="post" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;"><?= csrf_field() ?>
     <?php if ($o['financial_status'] === 'pagado' && $o['fulfillment_status'] !== 'entregado'): ?>
+      <label class="tag" style="display:block;margin-bottom:8px;"><input type="checkbox" name="silent" value="1"> No avisar al cliente por email</label>
       <button class="btn-a" name="action" value="entregado" onclick="return confirm('¿Ya enviaste las claves al cliente?')">✔ Marcar como entregado (ya envié las claves)</button>
       <button class="btn-a ghost" name="action" value="entregar_stock" onclick="return confirm('Se asignarán claves del stock cargado y se enviará el correo con el enlace al cliente. ¿Continuar?')">Entregar con claves del stock</button>
     <?php endif; ?>
