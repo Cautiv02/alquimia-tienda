@@ -161,7 +161,7 @@ site_header($pageTitle, 'Licencias originales de software para Chile.');
             <a class="pc-link" href="producto.php?id=<?= (int) $o['id'] ?>">
               <div class="offer-image">
                 <?php if ($hasOld): ?><span class="offer-badge disponible">Oferta</span><?php endif; ?>
-                <?php if ($o['image_url']): ?><img src="<?= h($o['image_url']) ?>" alt="<?= h($o['clean']) ?>" loading="lazy"><?php else: ?><span class="placeholder-mark">sin imagen</span><?php endif; ?>
+                <?php if ($o['image_url']): ?><img src="<?= h($o['image_url']) ?>" width="600" height="600" alt="<?= h($o['clean']) ?>" loading="lazy"><?php else: ?><span class="placeholder-mark">sin imagen</span><?php endif; ?>
               </div>
             </a>
             <div class="pc-body">

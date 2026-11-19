@@ -109,7 +109,7 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
 
     <aside class="pg-side">
       <div class="product-img">
-        <?php if ($img): ?><img src="<?= h($img) ?>" alt="<?= h($p['title']) ?>"><?php else: ?><span style="color:var(--ash)">Sin imagen</span><?php endif; ?>
+        <?php if ($img): ?><img src="<?= h($img) ?>" width="840" height="840" fetchpriority="high" alt="<?= h($p['title']) ?>"><?php else: ?><span style="color:var(--ash)">Sin imagen</span><?php endif; ?>
       </div>
       <ul class="quick-facts">
         <li><span>Marca</span><b><?= h($fac['brand']) ?></b></li>

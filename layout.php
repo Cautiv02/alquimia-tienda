@@ -109,7 +109,8 @@ function site_header(string $title, string $description = ''): void {
 <?php if ($description): ?><meta name="description" content="<?= h($description) ?>"><?php endif; ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="site.css?v=<?= (int) @filemtime(__DIR__ . '/site.css') ?>">
 <style>
   .page { padding-top: 40px; padding-bottom: 20px; }
@@ -164,7 +165,7 @@ function site_header(string $title, string $description = ''): void {
 
 <header>
   <div class="wrap nav-row">
-    <div class="logo"><a href="index.php"><img src="LOGo21.png" alt="<?= h(SITE_NAME) ?>"></a></div>
+    <div class="logo"><a href="index.php"><img src="images/logo.jpg" width="147" height="80" alt="<?= h(SITE_NAME) ?>"></a></div>
     <nav class="links">
       <a href="catalogo.php?cat=windows">Windows</a>
       <a href="catalogo.php?cat=office">Office</a>
@@ -182,9 +183,11 @@ function site_header(string $title, string $description = ''): void {
   </div>
   <?php site_mobile_panel(); ?>
 </header>
+<main id="contenido">
 <?php }
 
 function site_footer(): void { ?>
+</main>
 <footer class="site-footer">
   <div class="wrap">
     <div class="footer-grid2">
