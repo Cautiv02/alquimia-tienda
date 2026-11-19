@@ -1,6 +1,9 @@
 <?php
 /** admin/resenas.php — importar y moderar reseñas. */
 require_once __DIR__ . '/_auth.php';
+set_exception_handler(function ($e) { // muestra el error real en vez de un 500 en blanco
+    echo '<pre style="padding:20px;white-space:pre-wrap;">Error en Reseñas: ' . htmlspecialchars($e->getMessage()) . "\n" . htmlspecialchars(basename($e->getFile()) . ':' . $e->getLine()) . '</pre>';
+});
 require_once __DIR__ . '/../reviews-lib.php';
 $pdo = get_pdo();
 reviews_ensure_table($pdo);
