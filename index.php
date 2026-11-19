@@ -42,6 +42,7 @@ track_event('view');
       <a href="catalogo.php?cat=autodesk">Autodesk</a>
       <a href="catalogo.php">Catálogo</a>
     </nav>
+    <?php site_search_box(); ?>
     <div class="nav-actions">
       
       <a href="carrito.php" style="color:var(--text);text-decoration:none;font-weight:600;font-size:.92rem;margin-right:14px;white-space:nowrap;">🛒 Carrito<?php $cc = cart_count(); if ($cc): ?> <span style="background:var(--gold);color:#FFFBF3;border-radius:20px;padding:1px 8px;font-size:.75rem;"><?= (int) $cc ?></span><?php endif; ?></a>
