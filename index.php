@@ -96,7 +96,9 @@ track_event('view');
       ?>
       <a class="offer-card" href="producto.php?id=<?= (int) $o['product_id'] ?>" style="text-decoration:none;">
         <div class="offer-image">
-          <?php if (!empty($o['sold_out'])): ?><span class="offer-badge agotado">Agotado</span>
+          <?php $bd = (string) ($o['badge'] ?? ''); $bdl = home_badges();
+          if (!empty($o['sold_out'])): ?><span class="offer-badge agotado">Agotado</span>
+          <?php elseif ($bd !== '' && isset($bdl[$bd])): ?><span class="offer-badge b-<?= htmlspecialchars($bd) ?>"><?= htmlspecialchars($bdl[$bd]) ?></span>
           <?php elseif ($hasDiscount): ?><span class="offer-badge disponible">Oferta</span><?php endif; ?>
           <?php if ($imgSrc): ?>
             <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($o['clean_title']) ?>">

@@ -70,6 +70,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $u = $pdo->prepare("UPDATE home_section_items SET sort_order = :o WHERE id = :id AND section_id = :s");
         foreach ($ids as $k => $x) $u->execute([':o' => $k, ':id' => $x, ':s' => $sid]);
         echo 'ok'; exit;
+    } elseif ($a === 'set_badge') {
+        $b = (string) ($_POST['badge'] ?? '');
+        $soldOut = $b === 'agotado' ? 1 : 0;
+        if (!$soldOut && !isset(home_badges()[$b])) $b = '';
+        if ($soldOut) $b = '';
+        $pdo->prepare("UPDATE home_section_items SET sold_out = :x, badge = :b WHERE id = :id")->execute([':x' => $soldOut, ':b' => $b, ':id' => $iid]);
+        $msg = 'Etiqueta actualizada.';
     } elseif ($a === 'toggle_soldout') {
         $pdo->prepare("UPDATE home_section_items SET sold_out = 1 - sold_out WHERE id = :id")->execute([':id' => $iid]);
     } elseif ($a === 'reset') {
@@ -123,12 +130,18 @@ flash_show();
     <tr draggable="true" data-id="<?= (int) $it['id'] ?>">
       <td class="grip" title="Arrastra para ordenar">⋮⋮</td>
       <td><?= $p ? h(mb_substr($p['clean_title'], 0, 80)) : '<i class="tag">Producto no disponible (no se muestra)</i>' ?>
-        <?php if ($it['sold_out']): ?><span class="pill anulado">agotado</span><?php endif; ?></td>
+        <?php if ($it['sold_out']): ?><span class="pill anulado">agotado</span><?php elseif (!empty($it['badge'])): ?><span class="pill"><?= h(home_badges()[$it['badge']] ?? $it['badge']) ?></span><?php endif; ?></td>
       <td style="white-space:nowrap;"><?= $p ? (($p['nvar'] > 1 ? 'Desde ' : '') . money($p['price'])) : '' ?></td>
       <td style="white-space:nowrap;text-align:right;">
         <?php mini('move_item', ['section_id' => $s['id'], 'item_id' => $it['id'], 'dir' => 'up'], '↑'); ?>
         <?php mini('move_item', ['section_id' => $s['id'], 'item_id' => $it['id'], 'dir' => 'down'], '↓'); ?>
-        <?php mini('toggle_soldout', ['section_id' => $s['id'], 'item_id' => $it['id']], $it['sold_out'] ? 'Quitar agotado' : 'Marcar agotado'); ?>
+        <form method="post" style="display:inline;margin:0 3px 0 0;"><?= csrf_field() ?><input type="hidden" name="action" value="set_badge"><input type="hidden" name="section_id" value="<?= (int) $s['id'] ?>"><input type="hidden" name="item_id" value="<?= (int) $it['id'] ?>">
+          <select name="badge" onchange="this.form.submit()" style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;font-size:.8rem;">
+            <?php $cur = $it['sold_out'] ? 'agotado' : (string) ($it['badge'] ?? ''); ?>
+            <option value="">Etiqueta: automática</option>
+            <?php foreach (home_badges() as $k => $l): ?><option value="<?= h($k) ?>" <?= $cur === $k ? 'selected' : '' ?>><?= h($l) ?></option><?php endforeach; ?>
+            <option value="agotado" <?= $cur === 'agotado' ? 'selected' : '' ?>>Agotado</option>
+          </select></form>
         <?php mini('remove_item', ['section_id' => $s['id'], 'item_id' => $it['id']], 'Quitar', '¿Quitar este producto del bloque?'); ?>
       </td>
     </tr>

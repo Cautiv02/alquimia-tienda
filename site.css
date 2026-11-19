@@ -329,6 +329,10 @@
   }
   .offer-badge.disponible { background: var(--gold); }
   .offer-badge.agotado { background: #6B6656; }
+  .offer-badge.b-oferta { background: var(--gold); }
+  .offer-badge.b-popular { background: #2a7d74; }
+  .offer-badge.b-hot { background: #d9441f; }
+  .offer-badge.b-ultimas { background: #8a4b12; }
   .offer-body {
     padding: 12px 14px 14px;
     display: flex;

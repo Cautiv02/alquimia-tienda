@@ -117,7 +117,14 @@ function home_ensure_tables(PDO $pdo): void {
         sold_out TINYINT(1) NOT NULL DEFAULT 0,
         KEY (section_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    try { $pdo->query("SELECT badge FROM home_section_items LIMIT 1"); }
+    catch (Throwable $e) { $pdo->exec("ALTER TABLE home_section_items ADD COLUMN badge VARCHAR(20) NOT NULL DEFAULT ''"); }
     if ((int) $pdo->query("SELECT COUNT(*) FROM home_sections")->fetchColumn() === 0) home_seed_defaults($pdo);
+}
+
+/** Etiquetas disponibles para las tarjetas de la portada (clave => texto). */
+function home_badges(): array {
+    return ['oferta' => 'Oferta', 'popular' => 'Popular', 'hot' => '🔥 Hot', 'ultimas' => 'Últimas unidades'];
 }
 
 function home_seed_defaults(PDO $pdo): void {
@@ -138,13 +145,15 @@ function home_load(PDO $pdo): ?array {
     if (!$secs) return ((int) $pdo->query("SELECT COUNT(*) FROM home_sections")->fetchColumn() === 0) ? null : [];
     $products = home_products($pdo);
     $out = [];
-    $q = $pdo->prepare("SELECT product_id, sold_out FROM home_section_items WHERE section_id = :s ORDER BY sort_order, id");
+    try { $pdo->query("SELECT badge FROM home_section_items LIMIT 1"); $cols = 'product_id, sold_out, badge'; }
+    catch (Throwable $e) { $cols = "product_id, sold_out, '' AS badge"; }
+    $q = $pdo->prepare("SELECT $cols FROM home_section_items WHERE section_id = :s ORDER BY sort_order, id");
     foreach ($secs as $s) {
         $q->execute([':s' => $s['id']]);
         $items = [];
         foreach ($q->fetchAll() as $it) {
             $p = $products[(int) $it['product_id']] ?? null;
-            if ($p) { $p['sold_out'] = (bool) $it['sold_out']; $items[] = $p; }
+            if ($p) { $p['sold_out'] = (bool) $it['sold_out']; $p['badge'] = isset(home_badges()[$it['badge']]) ? $it['badge'] : ''; $items[] = $p; }
         }
         $out[] = ['id' => $s['slug'] ?: 's' . $s['id'], 'title' => $s['title'], 'link' => [$s['link_url'], $s['link_label']], 'items' => $items];
     }
