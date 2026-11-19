@@ -22,6 +22,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($a === 'entregado') {
         $pdo->prepare("UPDATE orders SET fulfillment_status = 'entregado', updated_at = NOW() WHERE id = :id AND financial_status = 'pagado'")->execute([':id' => $id]);
         flash_set('Pedido marcado como entregado.');
+    } elseif ($a === 'renumerar') {
+        $new = trim((string) ($_POST['nuevo_numero'] ?? ''));
+        if (!preg_match('#^[A-Za-z0-9/\\-]{3,40}$#', $new)) {
+            flash_set('Número no válido. Usa letras, números, guion y barra (ej. AD-19/11-8041).', true);
+        } else {
+            $ex = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE order_number = :n AND id <> :id");
+            $ex->execute([':n' => $new, ':id' => $id]);
+            if ((int) $ex->fetchColumn() > 0) {
+                flash_set('Ya existe otro pedido con ese número.', true);
+            } else {
+                $pdo->prepare("UPDATE orders SET order_number = :n, updated_at = NOW() WHERE id = :id")->execute([':n' => $new, ':id' => $id]);
+                // si el nuevo correlativo es mayor que el contador, lo subimos para no repetir números
+                if (preg_match('#-(\\d+)$#', $new, $m)) {
+                    try { $pdo->prepare("UPDATE order_seq SET n = GREATEST(n, :v) WHERE id = 1")->execute([':v' => (int) $m[1]]); } catch (Throwable $e) { /* tabla aún no creada: no pasa nada */ }
+                }
+                flash_set('Número de pedido actualizado a ' . $new . '.');
+            }
+        }
     } elseif ($a === 'consultar_mp') {
         $r = mp_get('/v1/payments/search?external_reference=' . rawurlencode($o['order_number']) . '&sort=date_created&criteria=desc');
         $pid = $r['data']['results'][0]['id'] ?? null;
@@ -95,6 +113,15 @@ flash_show();
       <button class="btn-a ghost" name="action" value="consultar_mp">Consultar pago en Mercado Pago</button>
       <button class="btn-a ghost" name="action" value="pagado_manual" onclick="return confirm('¿Confirmas que recibiste el pago de este pedido?')">Marcar como pagado (manual)</button>
     <?php endif; ?>
+  </form>
+</div>
+
+<div class="box">
+  <strong>Número de pedido</strong>
+  <form method="post" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center;"><?= csrf_field() ?>
+    <input type="hidden" name="action" value="renumerar">
+    <input name="nuevo_numero" value="<?= h($o['order_number']) ?>" style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;min-width:240px;font-family:var(--mono);">
+    <button class="btn-a ghost" type="submit" onclick="return confirm('¿Cambiar el número de este pedido? Úsalo solo en pedidos de prueba: el número original sigue siendo la referencia del pago en Mercado Pago.')">Cambiar número</button>
   </form>
 </div>
 

@@ -26,6 +26,27 @@ function generate_unique_code(): string {
     return 'AD-' . $part(4) . '-' . $part(4);
 }
 
+/**
+ * Correlativo de pedidos: contador propio y atómico (tabla order_seq), independiente del id interno.
+ * Arranca en ORDER_SEQ_START (por defecto 8041 = último número ya usado; el siguiente pedido será 8042).
+ * Si la tabla no se puede crear, se usa el id interno como antes (nunca bloquea una venta).
+ */
+function ensure_order_seq(PDO $pdo): bool {
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS order_seq (id TINYINT UNSIGNED NOT NULL PRIMARY KEY, n INT UNSIGNED NOT NULL) ENGINE=InnoDB");
+        $start = defined('ORDER_SEQ_START') ? (int) ORDER_SEQ_START : 8041;
+        $pdo->exec("INSERT IGNORE INTO order_seq (id, n) VALUES (1, " . $start . ")");
+        return true;
+    } catch (Throwable $e) {
+        error_log('[checkout] order_seq no disponible, se usa el id interno: ' . $e->getMessage());
+        return false;
+    }
+}
+function next_order_seq(PDO $pdo): int {
+    $pdo->exec("UPDATE order_seq SET n = LAST_INSERT_ID(n + 1) WHERE id = 1");
+    return (int) $pdo->query("SELECT LAST_INSERT_ID()")->fetchColumn();
+}
+
 function checkout_error(string $msg, int $code = 400): void {
     http_response_code($code);
     site_header('No pudimos procesar tu compra');
@@ -94,6 +115,7 @@ if (!$customerId) {
 
 // Pedido en estado pendiente (el número lleva el id correlativo: PREFIJO-DD/MM-id)
 $orderId = 0; $orderNumber = ''; $uniqueCode = '';
+$useSeq = ensure_order_seq($pdo);
 $pdo->beginTransaction();
 try {
     for ($try = 0; $try < 5 && !$orderId; $try++) {
@@ -111,7 +133,8 @@ try {
     }
     if (!$orderId) throw new RuntimeException('No se pudo generar un código de pedido único');
 
-    $orderNumber = get_product_prefix($variant['product_type']) . '-' . date('d/m') . '-' . $orderId;
+    $correlative = $useSeq ? next_order_seq($pdo) : $orderId;
+    $orderNumber = get_product_prefix($variant['product_type']) . '-' . date('d/m') . '-' . $correlative;
     $pdo->prepare("UPDATE orders SET order_number = :n WHERE id = :id")->execute([':n' => $orderNumber, ':id' => $orderId]);
 
     $pdo->prepare("
