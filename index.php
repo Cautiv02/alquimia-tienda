@@ -175,9 +175,6 @@ if ($homeRevs): $rsum = reviews_store_summary(); ?>
       <div class="trust-item"><?= icon3d('rayo', 40) ?><span><b>Entrega rápida</b> — tu clave llega por correo</span></div>
       <div class="trust-item"><?= icon3d('escudo', 40) ?><span><b>Pago seguro</b> — con Mercado Pago</span></div>
       <div class="trust-item"><?= icon3d('chat', 40) ?><span><b>Soporte real</b> — por WhatsApp y correo</span></div>
-      <div class="pay-badges">
-        <img src="images/mercadopago.png" alt="Mercado Pago" height="26" style="height:26px;width:auto;display:block;">
-      </div>
     </div>
   </div>
 </section>
