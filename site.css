@@ -230,9 +230,11 @@
 
   /* ---------- MARCAS (carrusel infinito) ---------- */
   .brands {
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-    padding: 26px 0;
+    width: min(1360px, calc(100% - 40px));
+    margin: 14px auto 0;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 0;
     overflow: hidden;
   }
   .brands-track {
