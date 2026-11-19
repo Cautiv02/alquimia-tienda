@@ -607,3 +607,12 @@
   .reviews-block h2 { font-size: 1.2rem; }
   .quick-facts li { font-size: .8rem; padding: 8px 12px; }
 }
+
+/* ---- Móvil: menos espacio entre bloques de la portada ---- */
+@media (max-width: 900px) {
+  .section.home-block { padding: 8px 0 0; }
+  .section.how-block { padding: 16px 0 8px; }
+  .home-block .section-head { margin-bottom: 6px; }
+  .home-block .offer-grid { padding-bottom: 6px; }
+  .brands { padding: 16px 0; }
+}
