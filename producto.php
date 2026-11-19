@@ -90,7 +90,8 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
           <span>Confirmo que revisé el producto y que, una vez entregada la clave, la compra no tiene reembolso.</span>
         </label>
 
-        <button class="btn-block" type="submit">Pagar con Mercado Pago · <span id="total"></span></button>
+        <button class="btn-block" type="submit">Comprar ahora · <span id="total"></span></button>
+        <button class="btn-block" type="submit" formaction="carrito.php" formnovalidate name="action" value="add" style="background:transparent;color:var(--text);border:1px solid var(--line);margin-top:10px;">🛒 Agregar al carrito</button>
         <p style="font-size:.78rem;color:var(--ash);margin:12px 0 0;text-align:center;">Pago seguro con Mercado Pago. Recibirás tu clave por correo.</p>
       </form>
       <script>

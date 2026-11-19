@@ -10,6 +10,7 @@
  */
 require_once __DIR__ . '/delivery-engine.php';
 require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/cart-lib.php';
 
 function get_product_prefix(?string $productType): string {
     $map = ['windows' => 'WIN', 'office' => 'OFC', 'adobe' => 'ADB', 'autodesk' => 'ADSK', 'antivirus' => 'AV'];
@@ -60,14 +61,19 @@ function checkout_error(string $msg, int $code = 400): void {
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { header('Location: catalogo.php'); exit; }
 if (!empty($_POST['website'])) { http_response_code(204); exit; } // campo trampa para bots
 
-$variantId = (int) ($_POST['variant_id'] ?? 0);
-$quantity  = max(1, min(10, (int) ($_POST['quantity'] ?? 1)));
+$fromCart  = !empty($_POST['cart']);
 $email     = strtolower(trim((string) ($_POST['email'] ?? '')));
 $name      = trim(mb_substr((string) ($_POST['name'] ?? ''), 0, 120));
 $phone     = trim(mb_substr((string) ($_POST['phone'] ?? ''), 0, 40));
 
-if (!$variantId || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    checkout_error('Revisa que hayas elegido una opción y escrito un correo válido: ahí te enviaremos tus claves.');
+if ($fromCart) {
+    $wanted = cart_get();
+} else {
+    $variantId = (int) ($_POST['variant_id'] ?? 0);
+    $wanted = $variantId ? [$variantId => max(1, min(10, (int) ($_POST['quantity'] ?? 1)))] : [];
+}
+if (!$wanted || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    checkout_error('Revisa que tengas productos en el carrito y escribas un correo válido: ahí te enviaremos tus claves.');
 }
 if (empty($_POST['accept'])) {
     checkout_error('Debes aceptar las condiciones de compra para continuar.');
@@ -75,32 +81,33 @@ if (empty($_POST['accept'])) {
 
 $pdo = get_pdo();
 
-// Datos del producto SIEMPRE desde la base (nunca del navegador)
-$stmt = $pdo->prepare("
-    SELECT pv.id, pv.title AS variant_title, pv.price, p.id AS product_id, p.title AS product_title, p.product_type
-    FROM product_variants pv
-    JOIN products p ON p.id = pv.product_id
-    WHERE pv.id = :id AND p.status = 'activo'
-");
-$stmt->execute([':id' => $variantId]);
-$variant = $stmt->fetch();
-if (!$variant) checkout_error('Ese producto ya no está disponible.', 404);
-
-$unitPrice = (int) round((float) $variant['price']);
-if ($unitPrice <= 0) checkout_error('Este producto no tiene un precio válido. Escríbenos por WhatsApp.', 422);
-$totalAmount = $unitPrice * $quantity;
-
-$itemTitle = $variant['product_title'];
-if (trim((string) $variant['variant_title']) !== '' && $variant['variant_title'] !== 'Default Title') {
-    $itemTitle .= ' — ' . $variant['variant_title'];
-}
-
-// Con entrega automática sí exigimos stock cargado; en modo manual no (envías tú)
-if (AUTO_DELIVERY) {
-    $st = $pdo->prepare("SELECT COALESCE(SUM(lk.max_activations - (SELECT COUNT(*) FROM key_redemptions kr WHERE kr.license_key_id = lk.id)), 0)
-        FROM license_keys lk WHERE lk.variant_id = :v AND lk.status = 'disponible'");
-    $st->execute([':v' => $variantId]);
-    if ((int) $st->fetchColumn() < $quantity) checkout_error('Por ahora no tenemos stock suficiente de este producto. Escríbenos por WhatsApp y lo resolvemos.', 409);
+// Datos de los productos SIEMPRE desde la base (nunca del navegador)
+$lines = []; $totalAmount = 0;
+foreach ($wanted as $vid => $qty) {
+    $stmt = $pdo->prepare("
+        SELECT pv.id, pv.title AS variant_title, pv.price, p.id AS product_id, p.title AS product_title, p.product_type
+        FROM product_variants pv
+        JOIN products p ON p.id = pv.product_id
+        WHERE pv.id = :id AND p.status = 'activo'
+    ");
+    $stmt->execute([':id' => $vid]);
+    $variant = $stmt->fetch();
+    if (!$variant) checkout_error('Uno de los productos ya no está disponible. Revisa tu carrito.', 404);
+    $unitPrice = (int) round((float) $variant['price']);
+    if ($unitPrice <= 0) checkout_error('Un producto no tiene un precio válido. Escríbenos por WhatsApp.', 422);
+    $itemTitle = $variant['product_title'];
+    if (trim((string) $variant['variant_title']) !== '' && $variant['variant_title'] !== 'Default Title') {
+        $itemTitle .= ' — ' . $variant['variant_title'];
+    }
+    // Con entrega automática sí exigimos stock cargado; en modo manual no (envías tú)
+    if (AUTO_DELIVERY) {
+        $st = $pdo->prepare("SELECT COALESCE(SUM(lk.max_activations - (SELECT COUNT(*) FROM key_redemptions kr WHERE kr.license_key_id = lk.id)), 0)
+            FROM license_keys lk WHERE lk.variant_id = :v AND lk.status = 'disponible'");
+        $st->execute([':v' => $vid]);
+        if ((int) $st->fetchColumn() < $qty) checkout_error('Por ahora no tenemos stock suficiente de ' . $itemTitle . '. Escríbenos por WhatsApp y lo resolvemos.', 409);
+    }
+    $lines[] = ['v' => $variant, 'qty' => (int) $qty, 'unit' => $unitPrice, 'title' => $itemTitle];
+    $totalAmount += $unitPrice * (int) $qty;
 }
 
 // Cliente: buscar o crear por correo
@@ -134,13 +141,16 @@ try {
     if (!$orderId) throw new RuntimeException('No se pudo generar un código de pedido único');
 
     $correlative = $useSeq ? next_order_seq($pdo) : $orderId;
-    $orderNumber = get_product_prefix($variant['product_type']) . '-' . date('d/m') . '-' . $correlative;
+    $orderNumber = (count($lines) === 1 ? get_product_prefix($lines[0]['v']['product_type']) : 'AD') . '-' . date('d/m') . '-' . $correlative;
     $pdo->prepare("UPDATE orders SET order_number = :n WHERE id = :id")->execute([':n' => $orderNumber, ':id' => $orderId]);
 
-    $pdo->prepare("
+    $insItem = $pdo->prepare("
         INSERT INTO order_items (order_id, product_id, variant_id, title, quantity, unit_price)
         VALUES (:oid, :pid, :vid, :title, :qty, :price)
-    ")->execute([':oid' => $orderId, ':pid' => $variant['product_id'], ':vid' => $variant['id'], ':title' => $itemTitle, ':qty' => $quantity, ':price' => $unitPrice]);
+    ");
+    foreach ($lines as $l) {
+        $insItem->execute([':oid' => $orderId, ':pid' => $l['v']['product_id'], ':vid' => $l['v']['id'], ':title' => $l['title'], ':qty' => $l['qty'], ':price' => $l['unit']]);
+    }
 
     $pdo->commit();
 } catch (Throwable $e) {
@@ -152,13 +162,9 @@ try {
 // Preferencia de pago en Mercado Pago
 $resultBase = SITE_URL . '/pedido-resultado.php?codigo=' . urlencode($uniqueCode) . '&estado=';
 $preference = [
-    'items' => [[
-        'id'          => (string) $variant['id'],
-        'title'       => mb_substr($itemTitle, 0, 250),
-        'quantity'    => $quantity,
-        'unit_price'  => $unitPrice,
-        'currency_id' => 'CLP',
-    ]],
+    'items' => array_map(function ($l) {
+        return ['id' => (string) $l['v']['id'], 'title' => mb_substr($l['title'], 0, 250), 'quantity' => $l['qty'], 'unit_price' => $l['unit'], 'currency_id' => 'CLP'];
+    }, $lines),
     'payer'              => array_filter(['email' => $email, 'name' => $name ?: null]),
     'external_reference' => $orderNumber,
     'notification_url'   => SITE_URL . '/mercadopago-webhook.php',
@@ -189,5 +195,6 @@ if (!in_array($httpCode, [200, 201], true) || empty($pref['init_point'])) {
 }
 
 // init_point sirve tanto para pruebas como para producción: lo que cambia es el Access Token usado.
+if ($fromCart) cart_save([]);
 header('Location: ' . $pref['init_point']);
 exit;

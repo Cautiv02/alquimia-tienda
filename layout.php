@@ -4,6 +4,7 @@
  * (producto, catálogo, resultado del pago). Usa site.css, que es el mismo CSS de index.php.
  */
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/cart-lib.php';
 
 if (!function_exists('h')) {
     function h($s): string { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); }
@@ -52,6 +53,8 @@ function site_header(string $title, string $description = ''): void { ?>
   .filters input[type=text] { flex: 1; min-width: 220px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; font-family: var(--sans); font-size: 0.95rem; }
   .chip { display: inline-block; padding: 8px 16px; border-radius: 20px; border: 1px solid var(--line); background: #fff; font-size: 0.85rem; text-decoration: none; color: var(--text-dim); }
   .chip.on, .chip:hover { background: var(--gold); border-color: var(--gold); color: #FFFBF3; }
+  .cart-link { color: var(--text); text-decoration: none; font-weight: 600; font-size: .92rem; margin-right: 14px; white-space: nowrap; }
+  .cart-badge { background: var(--gold); color: #FFFBF3; border-radius: 20px; padding: 1px 8px; font-size: .75rem; }
   .hp { position: absolute; left: -9999px; height: 0; overflow: hidden; }
   @media (max-width: 800px) { .product-grid { grid-template-columns: 1fr; } }
 </style>
@@ -70,6 +73,7 @@ function site_header(string $title, string $description = ''): void { ?>
       <a href="catalogo.php">Catálogo</a>
     </nav>
     <div class="nav-actions">
+      <a href="carrito.php" class="cart-link" aria-label="Carrito">🛒 Carrito<?php $cc = cart_count(); if ($cc): ?> <span class="cart-badge"><?= (int) $cc ?></span><?php endif; ?></a>
       <a class="btn-gold" href="portal.php">Consultar pedido</a>
     </div>
   </div>

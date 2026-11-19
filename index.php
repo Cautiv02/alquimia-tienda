@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/cart-lib.php';
 /**
  * index.php — Portada dinámica de Alquimia Digital
  * Usa la misma base visual de homepage.html, pero trae productos reales
@@ -51,6 +52,7 @@ function money($n) { return '$' . number_format((float)$n, 0, ',', '.'); }
     </nav>
     <div class="nav-actions">
       
+      <a href="carrito.php" style="color:var(--text);text-decoration:none;font-weight:600;font-size:.92rem;margin-right:14px;white-space:nowrap;">🛒 Carrito<?php $cc = cart_count(); if ($cc): ?> <span style="background:var(--gold);color:#FFFBF3;border-radius:20px;padding:1px 8px;font-size:.75rem;"><?= (int) $cc ?></span><?php endif; ?></a>
       <a class="btn-gold" href="portal.php">Consultar pedido</a>
     </div>
     <button class="menu-toggle" aria-label="Abrir menú">☰</button>
