@@ -120,6 +120,7 @@ flash_show();
           <b><?= h($cn !== '' ? $cn : '(sin nombre)') ?></b><br>
           <span class="tag"><?= h($o['email']) ?></span>
           <button type="button" class="copy-mail" data-mail="<?= h($o['email']) ?>" title="Copiar correo" style="border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 7px;font-size:.75rem;cursor:pointer;margin-left:4px;">📋 Copiar</button>
+          <a href="pedido.php?id=<?= (int) $o['id'] ?>&editar=1#edit-mail" title="Corregir el correo" style="border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 7px;font-size:.75rem;text-decoration:none;margin-left:2px;">✎ Editar</a>
         </td>
         <td class="tag"><?= h(mb_substr((string) $o['items'], 0, 110)) ?></td>
         <td><?= money($o['total_amount']) ?></td>

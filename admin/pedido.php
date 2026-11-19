@@ -124,7 +124,7 @@ flash_show();
      <button type="button" class="btn-a ghost" style="padding:2px 10px;font-size:.78rem;margin-left:6px;" onclick="document.getElementById('edit-mail').style.display='block';this.style.display='none';document.getElementById('nuevo_correo').focus();">✎ Editar correo</button><br>
      <b>Teléfono:</b> <?= h($o['phone'] ?: '-') ?>
      <?php if (strlen($wa) >= 8): ?> · <a href="https://wa.me/<?= h($wa) ?>" target="_blank" rel="noopener">abrir WhatsApp</a><?php endif; ?></p>
-  <form method="post" id="edit-mail" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">
+  <form method="post" id="edit-mail" style="display:<?= !empty($_GET['editar']) ? 'block' : 'none' ?>;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">
     <?= csrf_field() ?><input type="hidden" name="action" value="editar_correo">
     <label class="tag">Correo correcto del cliente<br>
       <input type="email" id="nuevo_correo" name="nuevo_correo" required maxlength="190" value="<?= h($o['email']) ?>" style="padding:9px 12px;border:1px solid var(--line);border-radius:8px;min-width:300px;"></label>
