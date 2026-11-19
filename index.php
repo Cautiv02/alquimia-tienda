@@ -80,7 +80,7 @@ function money($n) { return '$' . number_format((float)$n, 0, ',', '.'); }
 </div>
 
 <?php foreach ($homeSections as $sec): if (empty($sec['items'])) continue; ?>
-<section class="section" id="<?= htmlspecialchars($sec["id"]) ?>">
+<section class="section home-block" id="<?= htmlspecialchars($sec["id"]) ?>">
   <div class="wrap">
     <div class="section-head">
       <h2 class="section-title"><?= htmlspecialchars($sec['title']) ?></h2>

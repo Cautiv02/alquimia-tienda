@@ -273,6 +273,20 @@
   }
   .section-note { color: var(--ash); font-size: 0.95rem; max-width: 34ch; }
 
+
+  /* ---------- BLOQUES DE PRODUCTOS DE LA PORTADA (compactos y centrados) ---------- */
+  .home-block { padding: 30px 0 14px; }
+  .home-block .section-head { flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px; margin-bottom: 20px; }
+  .home-block .section-title { font-family: var(--sans); font-size: clamp(1.05rem, 1.6vw, 1.3rem); font-weight: 600; letter-spacing: -0.01em; max-width: none; }
+  .home-block .section-note { margin: 0; max-width: none; font-size: 0.82rem; }
+  .home-block .section-note a { color: var(--gold); text-decoration: none; font-weight: 500; }
+  .home-block .section-note a:hover { text-decoration: underline; }
+  .home-block .offer-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; }
+  .home-block .offer-card { flex: 0 0 calc((100% - 5 * 18px) / 6); min-width: 0; }
+  .home-block .offer-title { font-family: var(--sans); font-size: 0.84rem; font-weight: 500; }
+  @media (max-width: 900px) { .home-block .offer-card { flex-basis: calc((100% - 2 * 18px) / 3); } }
+  @media (max-width: 520px) { .home-block .offer-card { flex-basis: calc((100% - 18px) / 2); } }
+
   /* ---------- OFERTAS ---------- */
   .offer-grid {
     display: grid;
