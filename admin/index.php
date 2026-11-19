@@ -57,12 +57,12 @@ elseif ($f === 'pendientes') $where[] = "o.financial_status = 'pendiente'";
 elseif ($f === 'pagados')    $where[] = "o.financial_status = 'pagado'";
 elseif ($f === 'cancelados') $where[] = "o.financial_status = 'anulado'";
 if ($q !== '') {
-    $where[] = '(o.order_number LIKE :q OR o.email LIKE :q OR o.unique_code LIKE :q)';
+    $where[] = "(o.order_number LIKE :q OR o.email LIKE :q OR o.unique_code LIKE :q OR CONCAT_WS(' ', c.first_name, c.last_name) LIKE :q)";
     $args[':q'] = '%' . $q . '%';
 }
-$sql = "SELECT o.id, o.order_number, o.email, o.total_amount, o.financial_status, o.fulfillment_status, o.created_at,
+$sql = "SELECT o.id, o.order_number, o.email, c.first_name, c.last_name, o.total_amount, o.financial_status, o.fulfillment_status, o.created_at,
                (SELECT GROUP_CONCAT(CONCAT(oi.quantity, ' x ', oi.title) SEPARATOR '; ') FROM order_items oi WHERE oi.order_id = o.id) AS items
-        FROM orders o" . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . " ORDER BY o.id DESC LIMIT 150";
+        FROM orders o LEFT JOIN customers c ON c.id = o.customer_id" . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . " ORDER BY o.created_at DESC, o.id DESC LIMIT 150";
 $st = $pdo->prepare($sql);
 $st->execute($args);
 $rows = $st->fetchAll();
@@ -84,7 +84,7 @@ flash_show();
   <div><span style="font-size:1.8rem;font-weight:600;"><?= $cnt ?></span> <span class="tag">pedidos pagados por enviar</span></div>
   <form method="get" style="display:flex;gap:8px;flex-wrap:wrap;">
     <input type="hidden" name="f" value="<?= h($f) ?>">
-    <input name="q" value="<?= h($q) ?>" placeholder="N° pedido, correo o código" style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;min-width:240px;">
+    <input name="q" value="<?= h($q) ?>" placeholder="N° pedido, nombre, correo o código" style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;min-width:240px;">
     <button class="btn-a" type="submit">Buscar</button>
   </form>
 </div>
@@ -115,7 +115,12 @@ flash_show();
       <tr>
         <td><input type="checkbox" class="sel" name="ids[]" value="<?= (int) $o['id'] ?>"></td>
         <td><a href="pedido.php?id=<?= (int) $o['id'] ?>"><b><?= h($o['order_number']) ?></b></a></td>
-        <td><?= h($o['email']) ?></td>
+        <td>
+          <?php $cn = trim(($o['first_name'] ?? '') . ' ' . ($o['last_name'] ?? '')); ?>
+          <b><?= h($cn !== '' ? $cn : '(sin nombre)') ?></b><br>
+          <span class="tag"><?= h($o['email']) ?></span>
+          <button type="button" class="copy-mail" data-mail="<?= h($o['email']) ?>" title="Copiar correo" style="border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 7px;font-size:.75rem;cursor:pointer;margin-left:4px;">📋 Copiar</button>
+        </td>
         <td class="tag"><?= h(mb_substr((string) $o['items'], 0, 110)) ?></td>
         <td><?= money($o['total_amount']) ?></td>
         <td>
@@ -136,6 +141,15 @@ flash_show();
     <?php if (!$rows): ?><tr><td colspan="8" class="tag">No hay pedidos en esta vista.</td></tr><?php endif; ?>
   </table>
 </form>
+<script>
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('.copy-mail'); if (!b) return; e.preventDefault();
+    var t = b.dataset.mail, done = function () { var o = b.textContent; b.textContent = '✓ Copiado'; setTimeout(function () { b.textContent = o; }, 1400); };
+    if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(t).then(done); return; }
+    var a = document.createElement('textarea'); a.value = t; a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select();
+    try { document.execCommand('copy'); done(); } catch (x) {} a.remove();
+  });
+</script>
 <script>
   (function () {
     var all = document.getElementById('todos');
