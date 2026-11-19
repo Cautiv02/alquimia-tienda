@@ -36,6 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash_set("Importadas $new reseña(s) nuevas" . ($unm ? " ($unm sin producto asociado: asígnalas abajo)" : '') . ($skip ? ", $skip omitidas" : '') . '. Las ya existentes no se duplican.');
         header('Location: resenas.php'); exit;
     }
+    if ($a === 'del_low') {
+        $n = $pdo->exec("DELETE FROM reviews WHERE rating <= 2");
+        flash_set((int) $n . ' reseña(s) de 1 y 2 estrellas eliminadas.');
+        header('Location: resenas.php'); exit;
+    }
     $id = (int) ($_POST['id'] ?? 0);
     if ($a === 'toggle')   $pdo->prepare("UPDATE reviews SET published = 1 - published WHERE id = ?")->execute([$id]);
     if ($a === 'feature')  $pdo->prepare("UPDATE reviews SET featured = 1 - featured WHERE id = ?")->execute([$id]);
@@ -66,6 +71,8 @@ flash_show();
   </form>
 </div>
 
+<form method="post" style="margin:0 0 12px;"><?= csrf_field() ?><input type="hidden" name="a" value="del_low">
+  <button class="btn-a ghost" onclick="return confirm('Se borrarán definitivamente todas las reseñas de 1 y 2 estrellas. ¿Continuar?')">Eliminar todas las reseñas de 1 y 2 estrellas</button></form>
 <p>
   <?php foreach (['' => 'Todas', 'sinproducto' => 'Sin producto', 'ocultas' => 'Ocultas', 'nuevas' => 'De clientes (nuevas)'] as $k => $l): ?>
     <a class="btn-a <?= $f === $k ? '' : 'ghost' ?>" style="margin:0 6px 6px 0;" href="?f=<?= h($k) ?>"><?= h($l) ?></a>
