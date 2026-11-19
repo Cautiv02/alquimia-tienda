@@ -75,9 +75,7 @@ if ($fromCart) {
 if (!$wanted || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     checkout_error('Revisa que tengas productos en el carrito y escribas un correo válido: ahí te enviaremos tus claves.');
 }
-if (empty($_POST['accept'])) {
-    checkout_error('Debes aceptar las condiciones de compra para continuar.');
-}
+// (La casilla de aceptación de condiciones está desactivada por ahora; se reactivará con la política de reembolsos.)
 
 $pdo = get_pdo();
 
