@@ -60,7 +60,7 @@ function admin_header(string $title): void { ?>
 <div class="adm">
   <div class="adm-top">
     <div><strong style="font-family:var(--serif);font-size:1.2rem;">Panel · <?= h(SITE_NAME) ?></strong></div>
-    <div><a href="index.php">Pedidos</a><a href="portada.php">Portada</a><a href="diagnostico.php">Diagnóstico</a><a href="../index.php" target="_blank">Ver tienda</a><a href="logout.php">Salir</a></div>
+    <div><a href="index.php">Pedidos</a><a href="portada.php">Portada</a><a href="ajustes.php">Ajustes</a><a href="diagnostico.php">Diagnóstico</a><a href="../index.php" target="_blank">Ver tienda</a><a href="logout.php">Salir</a></div>
   </div>
 <?php }
 function admin_footer(): void { echo '</div></body></html>'; }

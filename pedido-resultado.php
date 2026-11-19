@@ -52,6 +52,15 @@ site_header('Resultado de tu pedido');
     <h1>El pago no se completó</h1>
     <p class="lead">No se realizó ningún cobro. Puedes intentarlo de nuevo con otro medio de pago.</p>
     <p><a class="btn-gold" href="catalogo.php">Volver al catálogo</a></p>
+  <?php elseif ($order['payment_method'] === 'transferencia'): ?>
+    <h1>Pedido recibido: falta tu transferencia</h1>
+    <p class="lead">Pedido <b><?= h($order['order_number']) ?></b> por <b><?= h(money($order['total_amount'])) ?></b>.</p>
+    <p>Transfiere a esta cuenta e indica tu número de pedido como referencia:</p>
+    <div class="bank-box"><?= nl2br(h(setting('transfer_details'))) ?><br><b>Monto: <?= h(money($order['total_amount'])) ?></b><br><b>Referencia: <?= h($order['order_number']) ?></b></div>
+    <div class="alert"><?= nl2br(h(setting('transfer_note'))) ?></div>
+    <p>También te enviamos estos datos a <b><?= h($order['email']) ?></b>. Tu código único: <code><?= h($order['unique_code']) ?></code></p>
+    <p><a class="btn-gold" href="https://api.whatsapp.com/send?phone=<?= h(SUPPORT_WHATSAPP) ?>&text=<?= rawurlencode('Hola, hice la transferencia del pedido ' . $order['order_number']) ?>">Enviar comprobante por WhatsApp</a>
+       &nbsp;<a href="<?= h($portal) ?>">Ver estado de mi pedido</a></p>
   <?php else: ?>
     <h1>Estamos confirmando tu pago</h1>
     <p class="lead">Pedido <b><?= h($order['order_number']) ?></b>. Algunos medios de pago demoran unos minutos en confirmarse.</p>

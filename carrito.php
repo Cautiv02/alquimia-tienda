@@ -95,7 +95,13 @@ site_header('Carrito', 'Tu carrito de compra');
         <div class="field"><label for="email">Correo (aquí te enviamos tus claves)</label><input id="email" type="email" name="email" autocomplete="email" required></div>
         <div class="field"><label for="phone">WhatsApp (opcional)</label><input id="phone" type="tel" name="phone" autocomplete="tel" placeholder="+56 9 ..."></div>
         <div class="hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
-        <button class="btn-block" type="submit">Pagar con Mercado Pago · <?= money($total) ?></button>
+        <?php if (transfer_enabled()): ?>
+        <div class="pay-choice" role="radiogroup" aria-label="Medio de pago">
+          <label><input type="radio" name="payment_method" value="mercadopago" checked> Mercado Pago (tarjeta, débito, saldo)</label>
+          <label><input type="radio" name="payment_method" value="transferencia"> Transferencia bancaria</label>
+        </div>
+        <?php endif; ?>
+        <button class="btn-block" type="submit"><?= transfer_enabled() ? 'Continuar' : 'Pagar con Mercado Pago' ?> · <?= money($total) ?></button>
         <p style="font-size:.78rem;color:var(--ash);margin:12px 0 0;text-align:center;">Pago seguro con Mercado Pago. Recibirás tus claves por correo.</p>
       </form>
     </div>

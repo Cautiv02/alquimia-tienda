@@ -26,6 +26,7 @@ use PHPMailer\PHPMailer\Exception as PHPMailerException;
 
 // Configuración (credenciales, URLs, SMTP) vive en config.php, fuera del código.
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/settings-lib.php';
 
 function get_pdo() {
     static $pdo = null;
@@ -402,4 +403,34 @@ function notify_shipped(PDO $pdo, int $orderId): bool {
               . "<p>Gracias por confiar en " . htmlspecialchars((string) SITE_NAME, ENT_QUOTES, 'UTF-8') . ".</p></div>";
         return smtp_send((string) $o['email'], 'Tu pedido ' . $o['order_number'] . ' fue enviado - ' . SITE_NAME, $html, '', defined('NOTIFY_EMAIL') ? NOTIFY_EMAIL : null);
     } catch (Throwable $e) { error_log('notify_shipped: ' . $e->getMessage()); return false; }
+}
+
+
+/** Pedido por transferencia: avisa al admin y envía al cliente los datos bancarios. */
+function notify_transfer_order(PDO $pdo, int $orderId): void {
+    $st = $pdo->prepare("SELECT o.*, c.first_name FROM orders o LEFT JOIN customers c ON c.id = o.customer_id WHERE o.id = :id");
+    $st->execute([':id' => $orderId]);
+    $o = $st->fetch();
+    if (!$o) return;
+    $it = $pdo->prepare("SELECT title, quantity FROM order_items WHERE order_id = :id ORDER BY id");
+    $it->execute([':id' => $orderId]);
+    $e = fn($x) => htmlspecialchars((string) $x, ENT_QUOTES, 'UTF-8');
+    $li = '';
+    foreach ($it->fetchAll() as $i) $li .= '<li>' . (int) $i['quantity'] . ' × ' . $e($i['title']) . '</li>';
+    $total = '$' . number_format((float) $o['total_amount'], 0, ',', '.');
+    $name = trim((string) $o['first_name']);
+
+    safe_notify($pdo, 'venta', "Pedido #{$o['order_number']} por TRANSFERENCIA ({$o['email']}) por {$total}: pendiente de pago.", 'order', $orderId);
+
+    $a  = "<p><strong>Nuevo pedido por transferencia, pendiente de pago.</strong></p>";
+    $a .= "<p>Pedido: <b>" . $e($o['order_number']) . "</b><br>Total: <b>$total</b><br>Cliente: " . $e($name ?: '(sin nombre)') . "<br>Correo: " . $e($o['email']) . "<br>Teléfono: " . $e($o['phone'] ?: '-') . "</p><ul>$li</ul>";
+    $a .= "<p>Cuando veas el dinero en tu cuenta, abre el pedido y pulsa «Marcar como pagado»: <a href=\"" . $e(SITE_URL . '/admin/pedido.php?id=' . $orderId) . "\">abrir pedido</a></p>";
+    smtp_send(NOTIFY_EMAIL, "Pedido por transferencia {$o['order_number']} ({$total})", $a, '', $o['email']);
+
+    $c  = "<p>Hola" . ($name ? ' ' . $e($name) : '') . ",</p>";
+    $c .= "<p>Recibimos tu pedido <b>" . $e($o['order_number']) . "</b> por <b>$total</b>. Para completarlo, realiza una transferencia con estos datos:</p>";
+    $c .= "<p style=\"background:#f6f2e6;padding:12px 14px;border-radius:8px;\">" . nl2br($e(setting('transfer_details'))) . "<br><br><b>Monto: $total</b><br><b>Referencia: " . $e($o['order_number']) . "</b></p>";
+    $c .= "<ul>$li</ul><p>" . nl2br($e(setting('transfer_note'))) . "</p>";
+    $c .= "<p>Estado de tu pedido: <a href=\"" . $e(SITE_URL . '/portal.php?modo=codigo&codigo=' . urlencode($o['unique_code'])) . "\">ver mi pedido</a><br>Si tienes dudas escríbenos a " . $e(NOTIFY_EMAIL) . ".</p><p>— " . $e(MAIL_FROM_NAME) . "</p>";
+    smtp_send($o['email'], "Datos para transferir - Pedido {$o['order_number']}", $c, '', NOTIFY_EMAIL);
 }

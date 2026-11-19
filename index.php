@@ -28,6 +28,7 @@ require_once __DIR__ . '/layout.php';
 <link rel="stylesheet" href="site.css?v=<?= (int) @filemtime(__DIR__ . '/site.css') ?>">
 </head>
 <body>
+<?php site_banner(); ?>
 
 <header>
   <div class="wrap nav-row">

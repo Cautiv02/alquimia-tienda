@@ -62,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') { header('Location: catalogo.php'); e
 if (!empty($_POST['website'])) { http_response_code(204); exit; } // campo trampa para bots
 
 $fromCart  = !empty($_POST['cart']);
+$payMethod = (($_POST['payment_method'] ?? '') === 'transferencia' && transfer_enabled()) ? 'transferencia' : 'mercadopago';
 $email     = strtolower(trim((string) ($_POST['email'] ?? '')));
 $name      = trim(mb_substr((string) ($_POST['name'] ?? ''), 0, 120));
 $phone     = trim(mb_substr((string) ($_POST['phone'] ?? ''), 0, 40));
@@ -129,8 +130,8 @@ try {
             $pdo->prepare("
                 INSERT INTO orders (order_number, unique_code, customer_id, email, phone, financial_status,
                     fulfillment_status, total_amount, currency, payment_method, created_at)
-                VALUES ('TEMP', :code, :cid, :email, :phone, 'pendiente', 'pendiente', :total, 'CLP', 'mercadopago', NOW())
-            ")->execute([':code' => $uniqueCode, ':cid' => $customerId, ':email' => $email, ':phone' => $phone ?: null, ':total' => $totalAmount]);
+                VALUES ('TEMP', :code, :cid, :email, :phone, 'pendiente', 'pendiente', :total, 'CLP', :pm, NOW())
+            ")->execute([':code' => $uniqueCode, ':cid' => $customerId, ':email' => $email, ':phone' => $phone ?: null, ':total' => $totalAmount, ':pm' => $payMethod]);
             $orderId = (int) $pdo->lastInsertId();
         } catch (PDOException $e) {
             if ($e->getCode() !== '23000') throw $e; // código repetido: reintenta
@@ -155,6 +156,14 @@ try {
     if ($pdo->inTransaction()) $pdo->rollBack();
     error_log('[checkout] crear pedido: ' . $e->getMessage());
     checkout_error('Tuvimos un problema creando tu pedido. Inténtalo de nuevo en unos minutos.', 500);
+}
+
+// Pago por transferencia: no se crea cobro en Mercado Pago; se envían los datos bancarios y se avisa al admin
+if ($payMethod === 'transferencia') {
+    try { notify_transfer_order($pdo, $orderId); } catch (Throwable $e) { error_log('[checkout] transferencia: ' . $e->getMessage()); }
+    if ($fromCart) cart_save([]);
+    header('Location: ' . SITE_URL . '/pedido-resultado.php?codigo=' . urlencode($uniqueCode) . '&estado=transferencia');
+    exit;
 }
 
 // Preferencia de pago en Mercado Pago

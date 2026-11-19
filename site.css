@@ -471,6 +471,15 @@
   .steps-with-card.no-card .steps { grid-template-columns: repeat(3, 1fr); }
   @media (max-width: 900px) { .steps-with-card.no-card .steps { grid-template-columns: 1fr; } }
 
+  .site-banner { background: var(--text); color: #F2EFE6; font-size: .85rem; padding: 9px 44px 9px 16px; text-align: center; position: relative; line-height: 1.4; }
+  .site-banner a { color: var(--gold-bright); font-weight: 600; margin-left: 6px; white-space: nowrap; }
+  .site-banner button { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: 0; color: #F2EFE6; font-size: 1.3rem; cursor: pointer; line-height: 1; padding: 2px 8px; }
+  .pay-choice { display: flex; flex-direction: column; gap: 8px; margin: 0 0 18px; }
+  .pay-choice label { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; cursor: pointer; font-size: .92rem; background: #fff; }
+  .pay-choice input { accent-color: var(--gold); }
+  .pay-choice label:has(input:checked) { border-color: var(--gold); background: var(--surface-tint); }
+  .bank-box { background: var(--surface-tint); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; font-family: var(--mono); font-size: .88rem; line-height: 1.7; margin: 14px 0; }
+
   /* ---------- RESPONSIVE ---------- */
   @media (max-width: 900px) {
     nav.links { display: none; }

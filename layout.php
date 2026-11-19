@@ -5,6 +5,7 @@
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/cart-lib.php';
+require_once __DIR__ . '/settings-lib.php';
 
 if (!function_exists('h')) {
     function h($s): string { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); }
@@ -12,6 +13,18 @@ if (!function_exists('h')) {
 if (!function_exists('money')) {
     function money($n): string { return '$' . number_format((float) $n, 0, ',', '.'); }
 }
+
+function site_banner(): void {
+    $s = settings_all();
+    if ($s['banner_enabled'] !== '1' || trim($s['banner_text']) === '') return;
+    $id = substr(md5($s['banner_text'] . $s['banner_link_url']), 0, 8);
+    $url = $s['banner_link_url']; ?>
+<div class="site-banner" id="site-banner" data-id="<?= h($id) ?>" role="status">
+  <span><?= h($s['banner_text']) ?><?php if ($url !== '' && trim($s['banner_link_label']) !== ''): ?> <a href="<?= h($url) ?>"><?= h($s['banner_link_label']) ?></a><?php endif; ?></span>
+  <button type="button" aria-label="Cerrar aviso" onclick="(function(b){b.style.display='none';try{localStorage.setItem('bn_'+b.dataset.id,'1');}catch(e){}})(document.getElementById('site-banner'))">×</button>
+</div>
+<script>(function(){var b=document.getElementById('site-banner');try{if(b&&localStorage.getItem('bn_'+b.dataset.id)==='1')b.style.display='none';}catch(e){}})();</script>
+<?php }
 
 function site_header(string $title, string $description = ''): void { ?>
 <!DOCTYPE html>
@@ -60,6 +73,7 @@ function site_header(string $title, string $description = ''): void { ?>
 </style>
 </head>
 <body>
+<?php site_banner(); ?>
 
 <header>
   <div class="wrap nav-row">
