@@ -167,6 +167,7 @@ site_header($pageTitle, 'Licencias originales de software para Chile.');
             <div class="pc-body">
               <span class="brand-tag"><?= h($o['f']['brand']) ?></span>
               <a class="pc-link" href="producto.php?id=<?= (int) $o['id'] ?>"><p class="pc-title"><?= h($o['clean']) ?></p></a>
+              <?php if ($rv = (reviews_stats()[(int) $o['id']] ?? null)): ?><div class="rating-line small"><?= stars_html($rv['avg']) ?> <span>(<?= (int) $rv['n'] ?>)</span></div><?php endif; ?>
               <div class="chips2">
                 <?php foreach ($o['f']['platforms'] as $pl): ?><span><?= h($pl) ?></span><?php endforeach; ?>
                 <?php if ($o['f']['duration'] !== ''): ?><span><?= h($o['f']['duration']) ?></span><?php endif; ?>

@@ -29,6 +29,16 @@ $variants = $vs->fetchAll();
 $descHtml = strip_tags((string) $p['description_html'], '<p><br><ul><ol><li><strong><b><em><i><h2><h3><h4>');
 
 $img = $p['image_url'] ?: null;
+$revs = []; $rAvg = 0.0;
+try {
+    $rs = $pdo->prepare("SELECT author, rating, content, review_date FROM reviews WHERE product_id = :id AND published = 1 ORDER BY featured DESC, review_date DESC LIMIT 30");
+    $rs->execute([':id' => $id]);
+    $revs = $rs->fetchAll();
+    if ($revs) $rAvg = array_sum(array_column($revs, 'rating')) / count($revs);
+    $rst = reviews_stats()[$id] ?? null;
+    if ($rst) $rAvg = $rst['avg'];
+} catch (Throwable $e) { }
+$rCount = (reviews_stats()[$id]['n'] ?? count($revs));
 $err = (string) ($_GET['error'] ?? '');
 
 site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercado Pago, entrega por correo.');
@@ -45,6 +55,7 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
 
     <div class="panel">
       <h1 style="font-size:1.5rem;"><?= h($p['title']) ?></h1>
+      <?php if ($rCount): ?><p class="rating-line"><?= stars_html($rAvg) ?> <b><?= h(number_format($rAvg, 1, ',', '')) ?></b> · <a href="#opiniones"><?= (int) $rCount ?> opinión<?= $rCount === 1 ? '' : 'es' ?></a></p><?php endif; ?>
       <?php if (!$variants): ?>
         <p class="lead">Este producto no está disponible por ahora. Escríbenos por WhatsApp.</p>
       <?php else: ?>
@@ -113,5 +124,23 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
       <?php endif; ?>
     </div>
   </div>
+
+  <?php if ($revs): ?>
+  <section id="opiniones" class="reviews-block">
+    <h2>Opiniones de clientes</h2>
+    <p class="rating-line"><?= stars_html($rAvg) ?> <b><?= h(number_format($rAvg, 1, ',', '')) ?></b> de 5 · <?= (int) $rCount ?> opinión<?= $rCount === 1 ? '' : 'es' ?></p>
+    <div class="reviews-grid">
+      <?php foreach ($revs as $r): ?>
+      <div class="review-card">
+        <?= stars_html((float) $r['rating']) ?>
+        <?php if (trim($r['content']) !== ''): ?><p><?= h($r['content']) ?></p><?php endif; ?>
+        <span class="rv-by"><?= h($r['author']) ?> · <?= h(date('d/m/Y', strtotime($r['review_date']))) ?></span>
+      </div>
+      <?php endforeach; ?>
+    </div>
+  </section>
+  <script type="application/ld+json"><?= json_encode(['@context' => 'https://schema.org', '@type' => 'Product', 'name' => $p['title'],
+      'aggregateRating' => ['@type' => 'AggregateRating', 'ratingValue' => round($rAvg, 1), 'reviewCount' => (int) $rCount]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
+  <?php endif; ?>
 </div>
 <?php site_footer();

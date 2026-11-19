@@ -395,12 +395,17 @@ function notify_shipped(PDO $pdo, int $orderId): bool {
         if (!$o || !filter_var($o['email'], FILTER_VALIDATE_EMAIL)) return false;
         $n = htmlspecialchars((string) ($o['first_name'] ?: 'cliente'), ENT_QUOTES, 'UTF-8');
         $num = htmlspecialchars((string) $o['order_number'], ENT_QUOTES, 'UTF-8');
+        $rv = '';
+        try {
+            require_once __DIR__ . '/reviews-lib.php';
+            $rv = "<p style=\"margin:20px 0;\"><a href=\"" . htmlspecialchars(review_link($orderId), ENT_QUOTES, 'UTF-8') . "\" style=\"background:#b8892e;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;\">Dejar mi opinión</a></p><p style=\"font-size:13px;color:#666\">¿Todo funcionó bien? Tu opinión ayuda a otros clientes.</p>";
+        } catch (Throwable $e) { }
         $wa = defined('SUPPORT_WHATSAPP') ? htmlspecialchars((string) SUPPORT_WHATSAPP, ENT_QUOTES, 'UTF-8') : '';
         $html = "<div style=\"font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#222\">"
               . "<h2>¡Tu pedido {$num} fue enviado!</h2><p>Hola {$n},</p>"
               . "<p>Ya te enviamos las claves/datos de tu licencia. Revisa tu correo (y la carpeta de spam) y tu WhatsApp.</p>"
               . "<p>Si necesitas ayuda con la activación, escríbenos" . ($wa ? " al WhatsApp +{$wa}" : '') . " o responde a este correo.</p>"
-              . "<p>Gracias por confiar en " . htmlspecialchars((string) SITE_NAME, ENT_QUOTES, 'UTF-8') . ".</p></div>";
+              . $rv . "<p>Gracias por confiar en " . htmlspecialchars((string) SITE_NAME, ENT_QUOTES, 'UTF-8') . ".</p></div>";
         return smtp_send((string) $o['email'], 'Tu pedido ' . $o['order_number'] . ' fue enviado - ' . SITE_NAME, $html, '', defined('NOTIFY_EMAIL') ? NOTIFY_EMAIL : null);
     } catch (Throwable $e) { error_log('notify_shipped: ' . $e->getMessage()); return false; }
 }

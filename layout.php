@@ -15,6 +15,8 @@ if (!function_exists('money')) {
     function money($n): string { return '$' . number_format((float) $n, 0, ',', '.'); }
 }
 
+require_once __DIR__ . '/reviews-lib.php';
+
 function site_banner(): void {
     $s = settings_all();
     if ($s['banner_enabled'] !== '1' || trim($s['banner_text']) === '') return;

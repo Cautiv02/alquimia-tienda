@@ -506,3 +506,21 @@
     outline: 2px solid var(--gold-bright);
     outline-offset: 2px;
   }
+
+/* ---- Reseñas ---- */
+.stars { --p: 0%; display: inline-block; font-size: 1.05rem; letter-spacing: 2px; line-height: 1;
+  background: linear-gradient(90deg, #d9a21b var(--p), #cfc9bb var(--p)); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+.rating-line { display: flex; align-items: center; gap: 8px; margin: 6px 0 12px; font-size: .92rem; flex-wrap: wrap; }
+.rating-line a { color: inherit; }
+.rating-line.small { margin: 2px 0 6px; font-size: .8rem; color: var(--ash); }
+.rating-line.small .stars { font-size: .9rem; }
+.reviews-block { margin-top: 48px; }
+.reviews-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
+.review-card { border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,.5); }
+.review-card p { margin: 0; font-size: .95rem; line-height: 1.5; }
+.review-card .rv-by { font-size: .78rem; color: var(--ash); margin-top: auto; }
+.rev-form textarea { width: 100%; min-height: 110px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.rev-form .star-pick { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 4px; }
+.rev-form .star-pick input { display: none; }
+.rev-form .star-pick label { font-size: 2rem; color: #cfc9bb; cursor: pointer; }
+.rev-form .star-pick input:checked ~ label, .rev-form .star-pick label:hover, .rev-form .star-pick label:hover ~ label { color: #d9a21b; }
