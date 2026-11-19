@@ -159,20 +159,20 @@ track_event('view');
 <?php
 $homeRevs = [];
 try {
-    $homeRevs = get_pdo()->query("SELECT author, rating, content, review_date FROM reviews WHERE published = 1 AND featured = 1 AND CHAR_LENGTH(content) >= 25 ORDER BY review_date DESC LIMIT 6")->fetchAll();
+    $homeRevs = get_pdo()->query("SELECT author, rating, content, review_date FROM reviews WHERE published = 1 AND featured = 1 AND CHAR_LENGTH(content) >= 25 ORDER BY review_date DESC LIMIT 20")->fetchAll();
 } catch (Throwable $e) { }
 if ($homeRevs): $rsum = reviews_store_summary(); ?>
 <section class="section home-block">
   <div class="wrap">
     <h2 style="text-align:center;">Opiniones de nuestros clientes</h2>
     <p class="rating-line" style="justify-content:center;"><?= stars_html($rsum['avg']) ?> <b><?= h(number_format($rsum['avg'], 1, ',', '')) ?></b> de 5 · <?= (int) $rsum['n'] ?> reseñas verificadas</p>
-    <div class="reviews-grid">
+    <div class="reviews-wrap"><button type="button" class="rv-arrow prev" aria-label="Anterior">‹</button><button type="button" class="rv-arrow next" aria-label="Siguiente">›</button><div class="reviews-grid">
       <?php foreach ($homeRevs as $r): ?>
       <div class="review-card"><?= stars_html((float) $r['rating']) ?><p><?= h($r['content']) ?></p><span class="rv-by"><?= h($r['author']) ?> · <?= h(date('d/m/Y', strtotime($r['review_date']))) ?></span></div>
       <?php endforeach; ?>
-    </div>
+    </div></div>
   </div>
 </section>
-<?php endif; ?>
+<?php reviews_scroll_js(); endif; ?>
 
 <?php site_footer();

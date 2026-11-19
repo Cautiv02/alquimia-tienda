@@ -88,3 +88,15 @@ function review_token(int $orderId): string {
 function review_link(int $orderId): string {
     return SITE_URL . '/resena.php?o=' . $orderId . '&k=' . review_token($orderId);
 }
+
+/** Flechas para los carruseles de reseñas (.reviews-wrap > .reviews-grid). */
+function reviews_scroll_js(): void { ?>
+<script>
+document.querySelectorAll('.reviews-wrap').forEach(function (w) {
+  var g = w.querySelector('.reviews-grid');
+  w.querySelectorAll('.rv-arrow').forEach(function (b) {
+    b.addEventListener('click', function () { g.scrollBy({ left: (b.classList.contains('next') ? 1 : -1) * (g.clientWidth * 0.8), behavior: 'smooth' }); });
+  });
+});
+</script>
+<?php }

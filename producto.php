@@ -31,7 +31,7 @@ $descHtml = strip_tags((string) $p['description_html'], '<p><br><ul><ol><li><str
 $img = $p['image_url'] ?: null;
 $revs = []; $rAvg = 0.0;
 try {
-    $rs = $pdo->prepare("SELECT author, rating, content, review_date FROM reviews WHERE product_id = :id AND published = 1 ORDER BY featured DESC, review_date DESC LIMIT 30");
+    $rs = $pdo->prepare("SELECT author, rating, content, review_date FROM reviews WHERE product_id = :id AND published = 1 ORDER BY featured DESC, review_date DESC LIMIT 200");
     $rs->execute([':id' => $id]);
     $revs = $rs->fetchAll();
     if ($revs) $rAvg = array_sum(array_column($revs, 'rating')) / count($revs);
@@ -129,16 +129,17 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
   <section id="opiniones" class="reviews-block">
     <h2>Opiniones de clientes</h2>
     <p class="rating-line"><?= stars_html($rAvg) ?> <b><?= h(number_format($rAvg, 1, ',', '')) ?></b> de 5 · <?= (int) $rCount ?> opinión<?= $rCount === 1 ? '' : 'es' ?></p>
-    <div class="reviews-grid">
-      <?php foreach ($revs as $r): ?>
+    <div class="reviews-wrap"><button type="button" class="rv-arrow prev" aria-label="Anterior">‹</button><button type="button" class="rv-arrow next" aria-label="Siguiente">›</button><div class="reviews-grid">
+      <?php foreach ($revs as $r): if (trim($r['content']) === '') continue; ?>
       <div class="review-card">
         <?= stars_html((float) $r['rating']) ?>
         <?php if (trim($r['content']) !== ''): ?><p><?= h($r['content']) ?></p><?php endif; ?>
         <span class="rv-by"><?= h($r['author']) ?> · <?= h(date('d/m/Y', strtotime($r['review_date']))) ?></span>
       </div>
       <?php endforeach; ?>
-    </div>
+    </div></div>
   </section>
+  <?php reviews_scroll_js(); ?>
   <script type="application/ld+json"><?= json_encode(['@context' => 'https://schema.org', '@type' => 'Product', 'name' => $p['title'],
       'aggregateRating' => ['@type' => 'AggregateRating', 'ratingValue' => round($rAvg, 1), 'reviewCount' => (int) $rCount]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
   <?php endif; ?>
