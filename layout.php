@@ -108,8 +108,8 @@ function site_header(string $title, string $description = ''): void {
   .product-grid { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 32px; align-items: start; }
   .pg-side { position: sticky; top: 16px; grid-column: 1; grid-row: 1; }
   .pg-main { grid-column: 2; grid-row: 1; }
-  .product-img { background: var(--surface-tint); border-radius: var(--radius-card); overflow: hidden; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; }
-  .product-img img { width: 100%; height: 100%; object-fit: cover; }
+  .product-img { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-card); overflow: hidden; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; }
+  .product-img img { width: 100%; height: 100%; object-fit: contain; object-position: center; }
   .desc { color: var(--text-dim); font-size: 0.95rem; margin-top: 22px; }
   .desc p { margin: 0 0 12px; }
   .price-big { font-size: 1.6rem; font-weight: 600; }
