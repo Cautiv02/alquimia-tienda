@@ -27,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cart = [];
     }
     cart_save($cart);
+    if ($action === 'add' && !empty($_POST['stay']) && (int) ($_POST['product_ref'] ?? 0) > 0) { header('Location: producto.php?id=' . (int) $_POST['product_ref'] . '&added=1'); exit; }
     header('Location: carrito.php');
     exit;
 }

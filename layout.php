@@ -85,6 +85,7 @@ function site_header(string $title, string $description = ''): void {
   .opt:has(input:checked) { border-color: var(--gold); background: var(--surface-tint); box-shadow: 0 0 0 3px rgba(184,137,46,.15); }
   .opt:has(input:checked)::after { content: '✓'; position: absolute; top: 8px; right: 10px; color: var(--gold); font-weight: 700; }
   .buybox { margin-bottom: 0; }
+  .added-note { background: #e4f4ea; color: #1b5e33; border-radius: 10px; padding: 10px 14px; font-size: .9rem; margin: 0 0 14px; } .added-note a { color: inherit; font-weight: 600; }
   @media (max-width: 800px) { .product-grid { grid-template-columns: 1fr; } .pg-side { order: -1; position: static; display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: center; } .pg-side .quick-facts { margin: 0; } }
 </style>
 </head>

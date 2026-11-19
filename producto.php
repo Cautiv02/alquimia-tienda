@@ -53,10 +53,11 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
     <div class="panel buybox">
       <h1 style="font-size:1.5rem;"><?= h($p['title']) ?></h1>
       <?php if ($rCount): ?><p class="rating-line"><?= stars_html($rAvg) ?> <b><?= h(number_format($rAvg, 1, ',', '')) ?></b> · <a href="#opiniones"><?= (int) $rCount ?> opinión<?= $rCount === 1 ? '' : 'es' ?></a></p><?php endif; ?>
+      <?php if (!empty($_GET['added'])): ?><p class="added-note">✓ Agregado al carrito. <a href="carrito.php">Ver carrito</a></p><?php endif; ?>
       <?php if (!$variants): ?>
         <p class="lead">Este producto no está disponible por ahora. Escríbenos por WhatsApp.</p>
       <?php else: ?>
-      <form method="post" action="checkout-create-preference.php">
+      <form method="post" action="carrito.php"><input type="hidden" name="action" value="add"><input type="hidden" name="product_ref" value="<?= (int) $id ?>">
         <div class="field">
           <label>Elige tu opción</label>
           <div class="opt-grid" role="radiogroup">
@@ -82,29 +83,9 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
           <label for="qty">Cantidad</label>
           <input id="qty" type="number" name="quantity" value="1" min="1" max="10">
         </div>
-        <div class="field">
-          <label for="name">Nombre</label>
-          <input id="name" type="text" name="name" autocomplete="name" required>
-        </div>
-        <div class="field">
-          <label for="email">Correo (aquí te enviamos tus claves)</label>
-          <input id="email" type="email" name="email" autocomplete="email" required>
-        </div>
-        <div class="field">
-          <label for="phone">WhatsApp (opcional)</label>
-          <input id="phone" type="tel" name="phone" autocomplete="tel" placeholder="+56 9 ...">
-        </div>
-        <div class="hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
-
-        <?php if (transfer_enabled()): ?>
-        <div class="pay-choice" role="radiogroup" aria-label="Medio de pago">
-          <label><input type="radio" name="payment_method" value="mercadopago" checked> Mercado Pago (tarjeta, débito, saldo)</label>
-          <label><input type="radio" name="payment_method" value="transferencia"> Transferencia bancaria</label>
-        </div>
-        <?php endif; ?>
         <button class="btn-block" type="submit">Comprar ahora · <span id="total"></span></button>
-        <button class="btn-block" type="submit" formaction="carrito.php" formnovalidate name="action" value="add" style="background:transparent;color:var(--text);border:1px solid var(--line);margin-top:10px;">🛒 Agregar al carrito</button>
-        <p style="font-size:.78rem;color:var(--ash);margin:12px 0 0;text-align:center;">Pago seguro con Mercado Pago. Recibirás tu clave por correo.</p>
+        <button class="btn-block" type="submit" name="stay" value="1" style="background:transparent;color:var(--text);border:1px solid var(--line);margin-top:10px;">🛒 Agregar al carrito</button>
+        <p style="font-size:.78rem;color:var(--ash);margin:12px 0 0;text-align:center;">Tus datos y el medio de pago los eliges en el carrito. Recibirás tu clave por correo.</p>
       </form>
       <script>
         (function () {
