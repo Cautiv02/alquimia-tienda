@@ -85,10 +85,7 @@ function site_footer(): void { ?>
   <div class="wrap">
     <div class="footer-grid2">
       <div class="footer-pay">
-        <a class="mp-badge" href="https://www.mercadopago.cl" rel="noopener" target="_blank" aria-label="Mercado Pago">
-          <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="22" fill="#009EE3"/><path d="M8 24c3-5 7-8 10-8 2 0 3 1 4 2 1-1 2-2 4-2 3 0 7 3 10 8-3 3-6 5-9 5-2 0-3-1-5-3-2 2-3 3-5 3-3 0-6-2-9-5z" fill="#fff"/></svg>
-          <span><b>Mercado Pago</b><small>Pago seguro</small></span>
-        </a>
+        <a href="https://www.mercadopago.cl" rel="noopener" target="_blank" aria-label="Mercado Pago"><img class="mp-logo" src="images/mercadopago.png" alt="Mercado Pago" width="210" loading="lazy"></a>
         <p class="footer-desc2">Licencias originales de software para Chile, desde 2018.</p>
       </div>
       <div class="footer-col2">
