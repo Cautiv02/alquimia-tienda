@@ -112,7 +112,7 @@ function site_header(string $title, string $description = ''): void {
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="site.css?v=<?= (int) @filemtime(__DIR__ . '/site.css') ?>">
 <style>
-  .page { padding: 40px 0 20px; }
+  .page { padding-top: 40px; padding-bottom: 20px; }
   .page h1 { font-family: var(--serif); font-size: clamp(1.6rem, 3vw, 2.2rem); margin: 0 0 8px; }
   .page .lead { color: var(--text-dim); margin: 0 0 28px; }
   .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 26px; }

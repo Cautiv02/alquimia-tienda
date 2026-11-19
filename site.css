@@ -589,3 +589,7 @@
   .nav-actions .btn-gold { display: none; }
   .nav-row { gap: 12px; }
 }
+
+/* ---- Móvil: sin logo en el encabezado y márgenes laterales compactos ---- */
+@media (max-width: 900px) { header .logo { display: none; } }
+@media (max-width: 600px) { .wrap { padding-left: 16px; padding-right: 16px; } }
