@@ -9,21 +9,50 @@ require_once __DIR__ . '/delivery-engine.php';
 require_once __DIR__ . '/config.php';
 $pdo = get_pdo();
 
-// Productos destacados de la portada, en este orden. Cada uno se busca por nombre en la base (ignorando
-// caracteres invisibles); si hay varias publicaciones parecidas se elige la que tiene el precio indicado.
-$featuredSlots = [
-    ['/Office 365.*Cuenta Original.*5 Dispositivos/iu', 4990],
-    ['/Office 2024 Profesional Plus LTSC/iu', 7990],
-    ['/Acrobat Pro 2026/iu', 12990],
-    ['/^Windows 11 Professional/iu', 4990],
-    ['/^Autodesk (Suscripci|todas)/iu', 42990],
-    ['/Office 2021 Profesional Plus LTSC/iu', 6990],
-    ['/Duolingo/iu', 29990],
-    ['/Spotify Premium.*12/iu', 27950],
-    ['/Creative Cloud.*1 A(Ñ|N)O/iu', 24990],
-    ['/^Windows 10 Professional/iu', 4990],
-    ['/^Project - Visio 2021/iu', 9990],
-    ['/Perplexity/iu', 89990],
+// Bloques de la portada. Cada producto se busca por nombre en la base (ignorando caracteres invisibles);
+// si hay varias publicaciones parecidas se elige la que tiene el precio indicado (o la primera).
+// Formato de cada casilla: [expresión del nombre, precio esperado o null, marcar como agotado].
+$homeSections = [
+    ['id' => 'ofertas', 'title' => 'Los más vendidos', 'link' => ['catalogo.php', 'Ver todo el catálogo'], 'slots' => [
+        ['/Office 365.*Cuenta Original.*5 Dispositivos/iu', 4990], ['/Office 2024 Profesional Plus LTSC/iu', 7990],
+        ['/Acrobat Pro 2026/iu', 12990], ['/^Windows 11 Professional/iu', 4990],
+        ['/^Autodesk (Suscripci|todas)/iu', 42990], ['/Office 2021 Profesional Plus LTSC/iu', 6990],
+        ['/Duolingo/iu', 29990], ['/Spotify Premium.*12/iu', 27950],
+        ['/Creative Cloud.*1 A(Ñ|N)O/iu', 24990], ['/^Windows 10 Professional/iu', 4990],
+        ['/^Project - Visio 2021/iu', 9990], ['/Perplexity/iu', 89990],
+    ]],
+    ['id' => 'flash', 'title' => 'Ofertas flash', 'link' => ['catalogo.php', 'Ver todas las ofertas'], 'slots' => [
+        ['/Gemini/iu'], ['/Visio 2024 PRO/iu'], ['/Project 2024 Professional/iu'], ['/^Pack Office \+ Mcafee/iu'],
+        ['/Perplexity/iu'], ['/Spotify Premium.*12/iu'], ['/Creative Cloud.*1 A(Ñ|N)O/iu'], ['/Chat ?GPT Plus/iu', null, true],
+    ]],
+    ['id' => 'office', 'title' => 'Office más vendidos', 'link' => ['catalogo.php?cat=office', 'Ver todos los Office disponibles'], 'slots' => [
+        ['/^Office 2024 Profesional Plus - Windows/iu'], ['/Office 2021 Profesional Plus LTSC/iu'],
+        ['/^Office 365 - Cuenta Original - 5 Dispositivos/iu'], ['/Visio 2024 STD/iu'], ['/Project 2024 Professional/iu'],
+        ['/^Office 365 - 5 Dispositivos \+ OneDrive - Suscripción 1 Año/iu'],
+    ]],
+    ['id' => 'windows', 'title' => 'Windows más vendidos', 'link' => ['catalogo.php?cat=windows', 'Ver todos los Windows'], 'slots' => [
+        ['/^Windows 10 Professional\s*$/iu'], ['/^Windows 11 Professional/iu'], ['/^Windows 10 Home/iu'],
+        ['/^Windows 11 Home/iu'], ['/^Windows 7 Professional/iu'], ['/^Windows 8\.1 Professional/iu'],
+    ]],
+    ['id' => 'suscripciones', 'title' => 'Suscripciones más vendidas', 'link' => ['catalogo.php', 'Ver todas las suscripciones'], 'slots' => [
+        ['/Creative Cloud 2026/iu'], ['/AUTOCAD 2.?022\/2027 para .?Windows/iu'], ['/Spotify Premium Barato/iu'],
+    ]],
+    ['id' => 'promos', 'title' => 'Promociones y packs', 'link' => ['catalogo.php', 'Ver todas las promociones'], 'slots' => [
+        ['/^Pack Windows 10 Pro/iu'], ['/^Pack Windows 11 Pro/iu'], ['/^Project - Visio 2021 PRO\s*$/iu'],
+        ['/^Autodesk Suscripción Original 2026/iu'], ['/^Pack Office \+ Mcafee/iu'], ['/^Windows 11 Pro \+ Office 2021-2024/iu'],
+    ]],
+    ['id' => 'oficina', 'title' => 'Productividad y oficina', 'link' => ['catalogo.php?cat=office', 'Ver más'], 'slots' => [
+        ['/AUTOCAD 2.?022\/2027 para .?Windows/iu'], ['/Acrobat PRO 2024/iu', null, true], ['/AUTOCAD 2.?022\/2027 para .?MAC/iu'],
+        ['/^Pack Office \+ Mcafee/iu'], ['/Acrobat STD DC 2025 para MAC/iu'], ['/CIVIL 3D/iu'],
+    ]],
+    ['id' => 'macos', 'title' => 'Solo para macOS', 'link' => ['catalogo.php', 'Ver todo para Mac'], 'slots' => [
+        ['/Office 2016 Home & Business para Mac/iu'], ['/Office 2019 Home & Business para Mac/iu'],
+        ['/Office 2021 Hogar & Empresas para Mac/iu'], ['/Office 2024 Hogar & Empresas para Mac/iu'],
+        ['/AUTOCAD 2.?022\/2027 para .?MAC/iu'], ['/Acrobat STD DC 2025 para MAC/iu'],
+    ]],
+    ['id' => 'packs', 'title' => 'Packs', 'link' => ['catalogo.php', 'Ver todos los packs'], 'slots' => [
+        ['/^Pack Windows 10 Pro/iu'], ['/^Pack Windows 11 Pro/iu'], ['/^Project - Visio 2021 PRO\s*$/iu'],
+    ]],
 ];
 $allActive = $pdo->query("
     SELECT p.id AS product_id, p.title AS product_title, p.image_url, MIN(pv.price) AS price, COUNT(pv.id) AS nvar,
@@ -34,20 +63,26 @@ $allActive = $pdo->query("
     GROUP BY p.id, p.title, p.image_url
     ORDER BY p.id ASC
 ")->fetchAll();
-$offers = []; $usedIds = [];
-foreach ($featuredSlots as [$rx, $expected]) {
-    $first = null; $exact = null;
-    foreach ($allActive as $row) {
-        if (isset($usedIds[$row['product_id']])) continue;
-        $clean = preg_replace('/[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}\x{FEFF}]/u', '', (string) $row['product_title']);
-        if (!preg_match($rx, $clean)) continue;
-        $row['clean_title'] = $clean;
-        if ($first === null) $first = $row;
-        if ($exact === null && (int) round((float) $row['price']) === $expected) $exact = $row;
-    }
-    $pick = $exact ?: $first;
-    if ($pick) { $offers[] = $pick; $usedIds[$pick['product_id']] = true; }
+foreach ($allActive as &$row) {
+    $row['clean_title'] = preg_replace('/[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}\x{FEFF}]/u', '', (string) $row['product_title']);
 }
+unset($row);
+foreach ($homeSections as &$sec) {
+    $items = []; $used = [];
+    foreach ($sec['slots'] as $slot) {
+        $rx = $slot[0]; $expected = $slot[1] ?? null; $soldOut = !empty($slot[2]);
+        $first = null; $exact = null;
+        foreach ($allActive as $row) {
+            if (isset($used[$row['product_id']]) || !preg_match($rx, $row['clean_title'])) continue;
+            if ($first === null) $first = $row;
+            if ($expected !== null && $exact === null && (int) round((float) $row['price']) === $expected) $exact = $row;
+        }
+        $pick = $exact ?: $first;
+        if ($pick) { $pick['sold_out'] = $soldOut; $items[] = $pick; $used[$pick['product_id']] = true; }
+    }
+    $sec['items'] = $items;
+}
+unset($sec);
 
 function money($n) { return '$' . number_format((float)$n, 0, ',', '.'); }
 ?>
@@ -114,20 +149,22 @@ function money($n) { return '$' . number_format((float)$n, 0, ',', '.'); }
   </div>
 </div>
 
-<section class="section" id="ofertas">
+<?php foreach ($homeSections as $sec): if (empty($sec['items'])) continue; ?>
+<section class="section" id="<?= htmlspecialchars($sec["id"]) ?>">
   <div class="wrap">
     <div class="section-head">
-      <h2 class="section-title">Los más vendidos</h2>
-      <p class="section-note"><a href="catalogo.php" style="color:inherit;">Ver todo el catálogo</a></p>
+      <h2 class="section-title"><?= htmlspecialchars($sec['title']) ?></h2>
+      <p class="section-note"><a href="<?= htmlspecialchars($sec['link'][0]) ?>" style="color:inherit;"><?= htmlspecialchars($sec['link'][1]) ?></a></p>
     </div>
     <div class="offer-grid">
-      <?php foreach ($offers as $o):
+      <?php foreach ($sec['items'] as $o):
         $hasDiscount = $o['compare_at_price'] && $o['compare_at_price'] > $o['price'];
         $imgSrc = $o['image_url'] ?: null;
       ?>
       <a class="offer-card" href="producto.php?id=<?= (int) $o['product_id'] ?>" style="text-decoration:none;">
         <div class="offer-image">
-          <?php if ($hasDiscount): ?><span class="offer-badge disponible">Oferta</span><?php endif; ?>
+          <?php if (!empty($o['sold_out'])): ?><span class="offer-badge agotado">Agotado</span>
+          <?php elseif ($hasDiscount): ?><span class="offer-badge disponible">Oferta</span><?php endif; ?>
           <?php if ($imgSrc): ?>
             <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($o['clean_title']) ?>">
           <?php else: ?>
@@ -143,12 +180,11 @@ function money($n) { return '$' . number_format((float)$n, 0, ',', '.'); }
         </div>
       </a>
       <?php endforeach; ?>
-      <?php if (empty($offers)): ?>
-        <p style="color:var(--ash);">Aún no hay productos cargados en el catálogo.</p>
-      <?php endif; ?>
     </div>
   </div>
 </section>
+<?php endforeach; ?>
+<?php if (!$allActive): ?><div class="wrap"><p style="color:var(--ash);">Aún no hay productos cargados en el catálogo.</p></div><?php endif; ?>
 
 
 <section class="section on-paper" id="como-funciona">
