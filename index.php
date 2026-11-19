@@ -139,6 +139,7 @@ if ($homeRevs): $rsum = reviews_store_summary(); ?>
       <div class="review-card"><div class="rv-top"><?= stars_html((float) $r['rating']) ?><?= verified_badge() ?></div><p><?= h($r['content']) ?></p><span class="rv-by"><?= h($r['author']) ?> · <?= h(date('d/m/Y', strtotime($r['review_date']))) ?></span></div>
       <?php endforeach; ?>
     </div></div>
+    <p style="text-align:center;margin:6px 0 0;"><a href="resenas.php" style="color:var(--gold);font-weight:600;text-decoration:none;">Ver todas las reseñas →</a></p>
   </div>
 </section>
 <?php reviews_scroll_js(); endif; ?>

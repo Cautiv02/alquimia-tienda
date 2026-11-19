@@ -170,6 +170,7 @@ function site_footer(): void { ?>
       <div class="footer-col2">
         <h4>Info</h4>
         <a href="catalogo.php">Búsqueda</a>
+        <a href="resenas.php">Opiniones</a>
         <a href="legal.php?p=terminos">Términos del servicio</a>
         <a href="legal.php?p=reembolso">Política de reembolso</a>
         <a href="legal.php?p=envios">Política de envío</a>

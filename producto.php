@@ -134,6 +134,7 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
       </div>
       <?php endforeach; ?>
     </div></div>
+    <p style="text-align:center;margin:6px 0 0;"><a href="resenas.php?p=<?= (int) $id ?>" style="color:var(--gold);font-weight:600;text-decoration:none;">Ver todas las opiniones de este producto →</a></p>
   </section>
   <?php reviews_scroll_js(); ?>
   <script type="application/ld+json"><?= json_encode(['@context' => 'https://schema.org', '@type' => 'Product', 'name' => $p['title'],
