@@ -87,7 +87,6 @@ track_event('view');
   <div class="wrap">
     <div class="section-head">
       <h2 class="section-title"><?= htmlspecialchars($sec['title']) ?></h2>
-      <p class="section-note"><a href="<?= htmlspecialchars($sec['link'][0]) ?>" style="color:inherit;"><?= htmlspecialchars($sec['link'][1]) ?></a></p>
     </div>
     <div class="offer-grid">
       <?php foreach ($sec['items'] as $o):
