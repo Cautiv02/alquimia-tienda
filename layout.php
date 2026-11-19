@@ -81,34 +81,46 @@ function site_header(string $title, string $description = ''): void { ?>
 <?php }
 
 function site_footer(): void { ?>
-<footer>
+<footer class="site-footer">
   <div class="wrap">
-    <div class="footer-grid">
-      <div>
-        <p class="footer-brand"><?= h(SITE_NAME) ?></p>
-        <p class="footer-desc">Licencias originales de software para Chile, desde 2018. Pago seguro y soporte real.</p>
+    <div class="footer-grid2">
+      <div class="footer-pay">
+        <a class="mp-badge" href="https://www.mercadopago.cl" rel="noopener" target="_blank" aria-label="Mercado Pago">
+          <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="22" fill="#009EE3"/><path d="M8 24c3-5 7-8 10-8 2 0 3 1 4 2 1-1 2-2 4-2 3 0 7 3 10 8-3 3-6 5-9 5-2 0-3-1-5-3-2 2-3 3-5 3-3 0-6-2-9-5z" fill="#fff"/></svg>
+          <span><b>Mercado Pago</b><small>Pago seguro</small></span>
+        </a>
+        <p class="footer-desc2">Licencias originales de software para Chile, desde 2018.</p>
       </div>
-      <div class="footer-col">
-        <h4>Categorías</h4>
-        <a href="catalogo.php?cat=windows">Windows</a>
-        <a href="catalogo.php?cat=office">Office</a>
-        <a href="catalogo.php?cat=antivirus">Antivirus</a>
-        <a href="catalogo.php?cat=adobe">Adobe</a>
-        <a href="catalogo.php?cat=autodesk">Autodesk</a>
-      </div>
-      <div class="footer-col">
-        <h4>Ayuda</h4>
+      <div class="footer-col2">
+        <h4>Info</h4>
+        <a href="catalogo.php">Búsqueda</a>
+        <a href="legal.php?p=terminos">Términos del servicio</a>
+        <a href="legal.php?p=reembolso">Política de reembolso</a>
+        <a href="legal.php?p=envios">Política de envío</a>
+        <a href="legal.php?p=privacidad">Política de privacidad</a>
         <a href="portal.php">Consultar mi pedido</a>
-        <a href="https://api.whatsapp.com/send?phone=<?= h(SUPPORT_WHATSAPP) ?>">Soporte por WhatsApp</a>
       </div>
-      <div class="footer-col">
-        <h4>Contacto</h4>
-        <a href="https://api.whatsapp.com/send?phone=<?= h(SUPPORT_WHATSAPP) ?>">WhatsApp</a>
-        <a href="mailto:<?= h(NOTIFY_EMAIL) ?>"><?= h(NOTIFY_EMAIL) ?></a>
-        <a href="https://www.instagram.com/digital.alquimia/">Instagram</a>
+      <div class="footer-col2">
+        <h4>Nuestras redes sociales</h4>
+        <a class="em" href="https://www.instagram.com/digital.alquimia/" rel="noopener" target="_blank">Instagram</a>
+        <a class="em" href="https://api.whatsapp.com/send?phone=<?= h(SUPPORT_WHATSAPP) ?>" rel="noopener" target="_blank">Whatsapp</a>
+        <a class="em" href="https://api.whatsapp.com/send?phone=<?= h(SUPPORT_WHATSAPP) ?>" rel="noopener" target="_blank">+<?= h(preg_replace('/^(\d{2})(\d)(\d{3})(\d{4})$/', '$1 $2 $3 $4', (string) SUPPORT_WHATSAPP)) ?></a>
+        <a class="plain" href="mailto:<?= h(NOTIFY_EMAIL) ?>"><?= h(NOTIFY_EMAIL) ?></a>
       </div>
     </div>
-    <div class="footer-bottom">
+
+    <div class="footer-news" id="suscripcion">
+      <p class="news-title">Suscríbete para recibir ofertas</p>
+      <form method="post" action="suscribir.php" class="news-form">
+        <input type="email" name="email" placeholder="Correo electrónico" required autocomplete="email" aria-label="Correo electrónico">
+        <div class="hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
+        <button type="submit" aria-label="Suscribirme">→</button>
+      </form>
+      <?php if (($_GET['sub'] ?? '') === 'ok'): ?><p class="news-msg">¡Gracias! Quedaste suscrito.</p>
+      <?php elseif (($_GET['sub'] ?? '') === 'error'): ?><p class="news-msg err">Revisa tu correo e inténtalo de nuevo.</p><?php endif; ?>
+    </div>
+
+    <div class="footer-bottom2">
       <span>© <?= date('Y') ?> <?= h(SITE_NAME) ?> CL</span>
       <span>Santiago, Chile</span>
     </div>

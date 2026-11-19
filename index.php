@@ -14,7 +14,7 @@ $allActive = home_products($pdo);
 $homeSections = home_load($pdo);
 if ($homeSections === null) $homeSections = home_resolve_defaults($allActive);
 
-function money($n) { return '$' . number_format((float)$n, 0, ',', '.'); }
+require_once __DIR__ . '/layout.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -170,41 +170,4 @@ function money($n) { return '$' . number_format((float)$n, 0, ',', '.'); }
   </div>
 </section>
 
-<footer>
-  <div class="wrap">
-    <div class="footer-grid">
-      <div>
-        <p class="footer-brand">Alquimia Digital</p>
-        <p class="footer-desc">Licencias originales de software para Chile, desde 2018. Entrega automática, pago seguro, soporte real.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Categorías</h4>
-        <a href="catalogo.php?cat=windows">Windows</a>
-        <a href="catalogo.php?cat=office">Office</a>
-        <a href="catalogo.php?cat=antivirus">Antivirus</a>
-        <a href="catalogo.php?cat=adobe">Adobe</a>
-        <a href="catalogo.php?cat=autodesk">Autodesk</a>
-      </div>
-      <div class="footer-col">
-        <h4>Ayuda</h4>
-        <a href="#como-funciona">Cómo funciona</a>
-        <a href="portal.php">Consultar mi pedido</a>
-        <a href="https://api.whatsapp.com/send?phone=56953993785">Soporte por WhatsApp</a>
-        
-      </div>
-      <div class="footer-col">
-        <h4>Contacto</h4>
-        <a href="https://api.whatsapp.com/send?phone=56953993785">WhatsApp</a>
-        <a href="mailto:<?= htmlspecialchars(NOTIFY_EMAIL) ?>"><?= htmlspecialchars(NOTIFY_EMAIL) ?></a>
-        <a href="https://www.instagram.com/digital.alquimia/">Instagram</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 Alquimia Digital CL</span>
-      <span>Santiago, Chile</span>
-    </div>
-  </div>
-</footer>
-
-</body>
-</html>
+<?php site_footer();

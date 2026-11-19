@@ -440,6 +440,32 @@
     color: var(--text-on-dark-dim);
   }
 
+
+  /* ---------- FOOTER (diseño claro con columnas Info / Redes y suscripción) ---------- */
+  footer.site-footer { background: var(--surface-tint); color: var(--text); padding: 44px 0 26px; border-top: 1px solid var(--line); }
+  .footer-grid2 { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 36px; margin-bottom: 30px; }
+  .mp-badge { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
+  .mp-badge span { display: flex; flex-direction: column; line-height: 1.2; }
+  .mp-badge b { font-size: 1rem; }
+  .mp-badge small { color: var(--ash); font-size: .78rem; }
+  .footer-desc2 { color: var(--text-dim); font-size: .85rem; max-width: 30ch; margin: 14px 0 0; }
+  .footer-col2 h4 { font-size: 1rem; font-weight: 500; margin: 0 0 16px; color: var(--text); }
+  .footer-col2 a { display: block; font-family: var(--mono); font-size: .8rem; color: var(--text-dim); text-decoration: none; margin-bottom: 12px; }
+  .footer-col2 a:hover { color: var(--gold); text-decoration: underline; }
+  .footer-col2 a.em { font-style: italic; font-weight: 600; color: var(--text); text-decoration: underline; }
+  .footer-col2 a.plain { text-decoration: none; }
+  .footer-news { border-top: 1px solid var(--line); padding-top: 24px; margin-bottom: 26px; }
+  .news-title { font-size: 1rem; margin: 0 0 12px; }
+  .news-form { display: flex; max-width: 360px; border: 1px solid var(--ash); background: #fff; }
+  .news-form input[type=email] { flex: 1; border: 0; padding: 14px 14px; font-family: var(--mono); font-size: .85rem; background: transparent; min-width: 0; }
+  .news-form input:focus { outline: none; }
+  .news-form button { border: 0; background: transparent; padding: 0 16px; font-size: 1.1rem; cursor: pointer; color: var(--text); }
+  .news-form button:hover { color: var(--gold); }
+  .news-msg { font-size: .85rem; color: var(--teal); margin: 10px 0 0; }
+  .news-msg.err { color: #a33; }
+  .footer-bottom2 { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-top: 1px solid var(--line); padding-top: 20px; font-size: .8rem; color: var(--ash); }
+  @media (max-width: 800px) { .footer-grid2 { grid-template-columns: 1fr; gap: 26px; } }
+
   /* ---------- RESPONSIVE ---------- */
   @media (max-width: 900px) {
     nav.links { display: none; }
