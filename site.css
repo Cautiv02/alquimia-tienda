@@ -546,4 +546,4 @@
   .ns-list li.on a, .ns-list a:hover { background: var(--surface-tint); }
   .ns-t { flex: 1; min-width: 0; } .ns-list b { font-size: .88rem; white-space: nowrap; }
   .ns-list a.ns-all { justify-content: center; color: var(--gold); font-weight: 600; }
-@media (max-width: 900px) { .nav-search { max-width: none; } .nav-actions .btn-gold { display: none; } }
+@media (max-width: 900px) { .nav-search { max-width: none; } }
