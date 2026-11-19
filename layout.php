@@ -29,6 +29,29 @@ function site_banner(): void {
 <script>(function(){var b=document.getElementById('site-banner');try{if(b&&localStorage.getItem('bn_'+b.dataset.id)==='1')b.style.display='none';}catch(e){}})();</script>
 <?php }
 
+function site_mobile_menu(): void { ?>
+<button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-panel">☰</button>
+<?php }
+
+function site_mobile_panel(): void { ?>
+<nav class="mobile-panel" id="mobile-panel" hidden>
+  <a href="catalogo.php?cat=windows">Windows</a>
+  <a href="catalogo.php?cat=office">Office</a>
+  <a href="catalogo.php?cat=antivirus">Antivirus</a>
+  <a href="catalogo.php?cat=adobe">Adobe</a>
+  <a href="catalogo.php?cat=autodesk">Autodesk</a>
+  <a href="catalogo.php">Catálogo completo</a>
+  <a href="resenas.php">Opiniones</a>
+  <a href="portal.php" class="mp-order">Consultar pedido</a>
+</nav>
+<script>
+(function () {
+  var b = document.querySelector('.menu-toggle'), p = document.getElementById('mobile-panel'); if (!b || !p) return;
+  b.addEventListener('click', function () { var open = p.hidden; p.hidden = !open; b.setAttribute('aria-expanded', open ? 'true' : 'false'); b.textContent = open ? '✕' : '☰'; });
+})();
+</script>
+<?php }
+
 function site_search_box(): void { ?>
 <form class="nav-search" action="catalogo.php" method="get" role="search" autocomplete="off">
   <input type="search" name="q" placeholder="Buscar licencias…" aria-label="Buscar" maxlength="60">
@@ -155,7 +178,9 @@ function site_header(string $title, string $description = ''): void {
       <a href="carrito.php" class="cart-link" aria-label="Carrito">🛒 Carrito<?php $cc = cart_count(); if ($cc): ?> <span class="cart-badge"><?= (int) $cc ?></span><?php endif; ?></a>
       <a class="btn-gold" href="portal.php">Consultar pedido</a>
     </div>
+    <?php site_mobile_menu(); ?>
   </div>
+  <?php site_mobile_panel(); ?>
 </header>
 <?php }
 

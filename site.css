@@ -579,3 +579,13 @@
 .step-card:hover { transform: translateY(-3px); box-shadow: 0 12px 26px rgba(60,50,30,.12); }
 .trust-item span { display: block; }
 .trust-strip .trust-item { gap: 14px; }
+
+/* ---- Menú móvil ---- */
+.mobile-panel { display: none; }
+@media (max-width: 900px) {
+  .mobile-panel:not([hidden]) { display: flex; flex-direction: column; background: #fff; border-top: 1px solid var(--line); padding: 6px 20px 14px; box-shadow: 0 14px 28px rgba(0,0,0,.1); }
+  .mobile-panel a { padding: 13px 4px; text-decoration: none; color: var(--text); font-weight: 500; border-bottom: 1px solid var(--line); }
+  .mobile-panel a.mp-order { margin-top: 12px; border: 0; background: var(--gold); color: #FFFBF3; text-align: center; border-radius: 8px; font-weight: 600; }
+  .nav-actions .btn-gold { display: none; }
+  .nav-row { gap: 12px; }
+}
