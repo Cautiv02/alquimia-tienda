@@ -593,3 +593,17 @@
 /* ---- Móvil: sin logo en el encabezado y márgenes laterales compactos ---- */
 @media (max-width: 900px) { header .logo { display: none; } }
 @media (max-width: 600px) { .wrap { padding-left: 16px; padding-right: 16px; } }
+
+/* ---- Ficha de producto: tipografía más compacta en móvil ---- */
+@media (max-width: 600px) {
+  .buybox { padding: 20px 18px; }
+  .buybox h1 { font-size: 1.25rem !important; line-height: 1.3; }
+  .buybox .rating-line { font-size: .84rem; }
+  .buybox .field label { font-size: .78rem; }
+  .opt-name { font-size: .85rem; } .opt-price { font-size: .92rem; }
+  .price-big { font-size: 1.4rem; } .price-old { font-size: .9rem; }
+  .buybox .btn-block { font-size: .95rem; padding: 13px 20px; }
+  .pg-main .desc { font-size: .88rem; }
+  .reviews-block h2 { font-size: 1.2rem; }
+  .quick-facts li { font-size: .8rem; padding: 8px 12px; }
+}
