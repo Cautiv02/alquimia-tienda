@@ -143,6 +143,7 @@ flash_show();
     <?php foreach ($items as $i): ?>
       <tr><td><?= h($i['title']) ?></td><td><?= (int) $i['quantity'] ?></td><td><?= money($i['unit_price']) ?></td></tr>
     <?php endforeach; ?>
+    <?php if (!empty($o['discount_code'])): ?><tr><td colspan="2" style="text-align:right;">Descuento (<?= h($o['discount_code']) ?>)</td><td>−<?= money($o['discount_amount'] ?? 0) ?></td></tr><?php endif; ?>
     <tr><td colspan="2" style="text-align:right;"><b>Total</b></td><td><b><?= money($o['total_amount']) ?></b></td></tr>
   </table>
 </div>

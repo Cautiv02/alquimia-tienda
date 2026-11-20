@@ -11,6 +11,7 @@
 require_once __DIR__ . '/delivery-engine.php';
 require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/cart-lib.php';
+require_once __DIR__ . '/coupon-lib.php';
 
 function get_product_prefix(?string $productType): string {
     $map = ['windows' => 'WIN', 'office' => 'OFC', 'adobe' => 'ADB', 'autodesk' => 'ADSK', 'antivirus' => 'AV'];
@@ -109,6 +110,20 @@ foreach ($wanted as $vid => $qty) {
     $totalAmount += $unitPrice * (int) $qty;
 }
 
+// Código de descuento del primer pedido (se valida aquí con el correo; el precio nunca viene del navegador)
+$couponCode = null; $discount = 0;
+$couponIn = trim((string) ($_POST['coupon'] ?? ''));
+if ($couponIn !== '') {
+    $chk = coupon_check($pdo, $couponIn, $email);
+    if (!$chk['ok']) checkout_error($chk['msg'], 422);
+    $couponCode = $chk['code'];
+    $newTotal = 0;
+    foreach ($lines as &$l) { $l['orig'] = $l['unit']; $l['unit'] = max(1, (int) round($l['unit'] * (100 - $chk['percent']) / 100)); $newTotal += $l['unit'] * $l['qty']; }
+    unset($l);
+    $discount = $totalAmount - $newTotal; $totalAmount = $newTotal;
+    try { coupon_ensure_columns($pdo); } catch (Throwable $e) { error_log('[checkout] columnas de descuento: ' . $e->getMessage()); $couponCode = null; }
+}
+
 // Cliente: buscar o crear por correo
 $st = $pdo->prepare("SELECT id FROM customers WHERE email = :e LIMIT 1");
 $st->execute([':e' => $email]);
@@ -148,7 +163,10 @@ try {
         VALUES (:oid, :pid, :vid, :title, :qty, :price)
     ");
     foreach ($lines as $l) {
-        $insItem->execute([':oid' => $orderId, ':pid' => $l['v']['product_id'], ':vid' => $l['v']['id'], ':title' => $l['title'], ':qty' => $l['qty'], ':price' => $l['unit']]);
+        $insItem->execute([':oid' => $orderId, ':pid' => $l['v']['product_id'], ':vid' => $l['v']['id'], ':title' => $l['title'], ':qty' => $l['qty'], ':price' => $l['orig'] ?? $l['unit']]);
+    }
+    if ($couponCode) {
+        $pdo->prepare("UPDATE orders SET discount_code = :c, discount_amount = :d WHERE id = :id")->execute([':c' => $couponCode, ':d' => $discount, ':id' => $orderId]);
     }
 
     $pdo->commit();

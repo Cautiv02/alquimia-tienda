@@ -17,6 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'banner_link_label' => trim(mb_substr((string) ($_POST['banner_link_label'] ?? ''), 0, 80)),
         'banner_link_url'   => $url,
         'notify_extra'      => trim(mb_substr((string) ($_POST['notify_extra'] ?? ''), 0, 300)),
+        'coupon_enabled'    => !empty($_POST['coupon_enabled']) ? '1' : '0',
+        'coupon_code'       => strtoupper(preg_replace('/[^A-Za-z0-9_-]/', '', (string) ($_POST['coupon_code'] ?? ''))),
+        'coupon_percent'    => (string) max(1, min(90, (int) ($_POST['coupon_percent'] ?? 10))),
         'transfer_enabled'  => !empty($_POST['transfer_enabled']) ? '1' : '0',
         'transfer_details'  => trim(mb_substr((string) ($_POST['transfer_details'] ?? ''), 0, 1500)),
         'transfer_note'     => trim(mb_substr((string) ($_POST['transfer_note'] ?? ''), 0, 800)),
@@ -48,6 +51,16 @@ flash_show();
     <strong>Avisos de pedidos nuevos</strong>
     <p class="tag" style="margin:6px 0 12px;">Cada pedido nuevo (pagado, o por transferencia pendiente) te llega por correo a <b><?= h(NOTIFY_EMAIL) ?></b>. Aquí puedes agregar otros correos que también lo reciban, por ejemplo uno que tengas en el móvil. Sepáralos con coma.</p>
     <label class="tag">Correos extra<br><input name="notify_extra" value="<?= h($s['notify_extra']) ?>" style="<?= $in ?>" maxlength="300" placeholder="correo@ejemplo.com, otro@ejemplo.com"></label>
+  </div>
+
+  <div class="box">
+    <strong>Código de descuento para el primer pedido</strong>
+    <p class="tag" style="margin:6px 0 12px;">El cliente lo escribe en el carrito. Solo funciona si su correo no tiene compras pagadas anteriores (un pedido abandonado no cuenta). El descuento se aplica al total del pedido.</p>
+    <label style="display:block;margin-bottom:12px;"><input type="checkbox" name="coupon_enabled" value="1" <?= $s['coupon_enabled'] === '1' ? 'checked' : '' ?>> Activar el código</label>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <label class="tag">Código<br><input name="coupon_code" value="<?= h($s['coupon_code']) ?>" maxlength="30" style="<?= $in ?>width:200px;text-transform:uppercase;"></label>
+      <label class="tag">Descuento (%)<br><input type="number" name="coupon_percent" value="<?= h($s['coupon_percent']) ?>" min="1" max="90" style="<?= $in ?>width:110px;"></label>
+    </div>
   </div>
 
   <div class="box">
