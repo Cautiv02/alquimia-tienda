@@ -46,6 +46,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 soldout_set($pdo, (int) $id, !empty($_POST['sold_out']));
             }
         }
+    } elseif ($a === 'variantes' && !empty($_POST['del_variant'])) {
+        $dv = (int) $_POST['del_variant'];
+        $n = $pdo->prepare("SELECT COUNT(*) FROM product_variants WHERE product_id = :p"); $n->execute([':p' => $id]);
+        $used = $pdo->prepare("SELECT COUNT(*) FROM order_items WHERE variant_id = :v"); $used->execute([':v' => $dv]);
+        if ((int) $n->fetchColumn() <= 1) { $err = true; $msg = 'No puedes quitar la única opción del producto.'; }
+        elseif ((int) $used->fetchColumn() > 0) { $err = true; $msg = 'Esa opción ya tiene pedidos, así que no se puede borrar. Ponle 0 unidades disponibles para dejarla agotada.'; }
+        else {
+            try { $pdo->prepare("DELETE FROM license_keys WHERE variant_id = :v AND status = 'disponible'")->execute([':v' => $dv]); } catch (Throwable $e) {}
+            $pdo->prepare("DELETE FROM product_variants WHERE id = :v AND product_id = :p")->execute([':v' => $dv, ':p' => $id]);
+            $msg = 'Opción eliminada.';
+        }
     } elseif ($a === 'variantes') {
         variant_stock_ensure($pdo);
         $u = $pdo->prepare("UPDATE product_variants SET title = :t, price = :p, compare_at_price = :c, stock_manual = :sm WHERE id = :v AND product_id = :pid");
@@ -156,9 +167,10 @@ flash_show();
 </form>
 
 <form method="post" class="box"><?= csrf_field() ?><input type="hidden" name="action" value="variantes">
+  <button type="submit" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">Guardar</button>
   <strong>Precios y opciones</strong>
   <table class="t" style="margin-top:12px;">
-    <tr><th>Opción</th><th>Precio (CLP)</th><th>Precio anterior (tachado)</th><th>Unidades disponibles</th><th>Claves cargadas</th></tr>
+    <tr><th>Opción</th><th>Precio (CLP)</th><th>Precio anterior (tachado)</th><th>Unidades disponibles</th><th>Claves cargadas</th><th></th></tr>
     <?php foreach ($variants as $v): ?>
     <tr>
       <td><input name="v[<?= (int) $v['id'] ?>][title]" value="<?= h($v['title']) ?>" style="<?= $in ?>"></td>
@@ -166,6 +178,7 @@ flash_show();
       <td><input name="v[<?= (int) $v['id'] ?>][compare]" value="<?= $v['compare_at_price'] ? (int) round((float) $v['compare_at_price']) : '' ?>" inputmode="numeric" style="<?= $in ?>width:130px;"></td>
       <td><input name="v[<?= (int) $v['id'] ?>][stock]" value="<?= isset($v['stock_manual']) && $v['stock_manual'] !== null ? (int) $v['stock_manual'] : '' ?>" inputmode="numeric" placeholder="sin límite" style="<?= $in ?>width:110px;"></td>
       <td><?= (int) $v['stock'] ?></td>
+      <td><?php if (count($variants) > 1): ?><button class="link-btn" type="submit" name="del_variant" value="<?= (int) $v['id'] ?>" formnovalidate onclick="return confirm('¿Quitar la opción «<?= h(addslashes($v['title'])) ?>»?')" style="color:#a33;background:none;border:0;cursor:pointer;font:inherit;text-decoration:underline;">Quitar</button><?php endif; ?></td>
     </tr>
     <?php endforeach; ?>
   </table>
