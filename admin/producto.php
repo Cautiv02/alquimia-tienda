@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $msg = 'Guardado.'; $err = false;
 
     if ($a === 'datos') {
+        try { $pdo->exec("ALTER TABLE products ADD COLUMN quick_facts TEXT NULL"); } catch (Throwable $e) {}
         $title = trim(mb_substr((string) ($_POST['title'] ?? ''), 0, 250));
         $status = in_array($_POST['status'] ?? '', ['activo', 'borrador', 'archivado', (string) $p['status']], true) ? $_POST['status'] : $p['status'];
         $imageUrl = $p['image_url'];
@@ -44,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ->execute([':t' => $title, ':s' => $status, ':pt' => trim(mb_substr((string) ($_POST['product_type'] ?? ''), 0, 120)),
                                ':d' => (string) ($_POST['description_html'] ?? ''), ':i' => $imageUrl, ':id' => $id]);
                 soldout_set($pdo, (int) $id, !empty($_POST['sold_out']));
+                $pdo->prepare("UPDATE products SET quick_facts = :q WHERE id = :id")->execute([':q' => mb_substr(trim((string) ($_POST['quick_facts'] ?? '')), 0, 1000), ':id' => $id]);
             }
         }
     } elseif ($a === 'variantes' && !empty($_POST['del_variant'])) {
@@ -130,6 +132,8 @@ flash_show();
       <label class="tag" style="display:block;margin-top:8px;">…o dirección de una imagen<br><input name="image_url_text" value="" placeholder="<?= h($p['image_url']) ?>" style="<?= $in ?>"></label>
     </div>
   </div>
+  <label class="tag" style="display:block;margin-top:12px;">Datos rápidos (cuadro bajo la imagen) — una línea por dato, con formato <i>Etiqueta: valor</i>. Vacío = automático (Marca, Compatible, Entrega, Pago)<br>
+    <textarea name="quick_facts" rows="5" placeholder="Marca: Microsoft&#10;Compatible: Windows&#10;Entrega: Por correo&#10;Pago: Mercado Pago" style="<?= $in ?>"><?= h((string) ($p['quick_facts'] ?? '')) ?></textarea></label>
   <div class="tag" style="margin-top:12px;">Descripción</div>
   <div id="rt-bar" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;">
     <button type="button" class="btn-a" data-c="bold" style="padding:5px 10px;"><b>N</b></button>

@@ -119,12 +119,15 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
       <div class="product-img">
         <?php if ($img): ?><img src="<?= h($img) ?>" width="840" height="840" fetchpriority="high" alt="<?= h($p['title']) ?>"><?php else: ?><span style="color:var(--ash)">Sin imagen</span><?php endif; ?>
       </div>
+      <?php $qf = []; foreach (preg_split('/\R/', (string) ($p['quick_facts'] ?? '')) as $ln) { if (strpos($ln, ':') !== false) { [$a1, $b1] = array_map('trim', explode(':', $ln, 2)); if ($a1 !== '' && $b1 !== '') $qf[] = [$a1, $b1]; } } ?>
       <ul class="quick-facts">
+        <?php if ($qf): foreach ($qf as $row): ?><li><span><?= h($row[0]) ?></span><b><?= h($row[1]) ?></b></li><?php endforeach; else: ?>
         <li><span>Marca</span><b><?= h($fac['brand']) ?></b></li>
         <?php if ($fac['platforms']): ?><li><span>Compatible</span><b><?= h(implode(', ', $fac['platforms'])) ?></b></li><?php endif; ?>
         <?php if ($fac['duration'] !== ''): ?><li><span>Vigencia</span><b><?= h($fac['duration']) ?></b></li><?php endif; ?>
         <li><span>Entrega</span><b>Por correo</b></li>
         <li><span>Pago</span><b>Mercado Pago</b></li>
+        <?php endif; ?>
       </ul>
     </aside>
   </div>
