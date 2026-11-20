@@ -387,14 +387,10 @@ function notify_paid_order(PDO $pdo, int $orderId): void {
     $html .= "<p><a href=\"" . $e($adminUrl) . "\">Abrir el pedido en el panel</a></p>";
     notify_admins("Nuevo pedido pagado {$order['order_number']} ({$total})", $html, $order['email']);
 
-    // 2) Confirmación para el cliente (sin claves)
-    $portalUrl = SITE_URL . '/portal.php?modo=codigo&codigo=' . urlencode($order['unique_code']);
-    $c  = "<p>Hola" . ($name ? ' ' . $e($name) : '') . ",</p>";
-    $c .= "<p>¡Gracias por tu compra! Recibimos tu pago correctamente y estamos preparando tu(s) clave(s). Te las enviaremos a este correo en breve.</p>";
-    $c .= "<p>Tu pedido <b>" . $e($order['order_number']) . "</b>:</p><ul>$li</ul>";
-    $c .= "<p>Puedes revisar el estado cuando quieras aquí: <a href=\"" . $e($portalUrl) . "\">Ver mi pedido</a><br>Tu código único: <code>" . $e($order['unique_code']) . "</code></p>";
-    $c .= "<p>Si necesitas ayuda escríbenos a " . $e(NOTIFY_EMAIL) . " o por WhatsApp.</p><p>— " . $e(MAIL_FROM_NAME) . "</p>";
-    smtp_send($order['email'], "Recibimos tu pago - Pedido {$order['order_number']}", $c, '', NOTIFY_EMAIL);
+    // 2) Confirmación para el cliente (sin claves) — texto editable en admin/correos.php
+    require_once __DIR__ . '/mail-templates-lib.php';
+    [$cs, $ch] = mail_render('pago', mail_order_vars($pdo, $orderId));
+    smtp_send($order['email'], $cs, $ch, '', NOTIFY_EMAIL);
 }
 
 
@@ -405,20 +401,14 @@ function notify_shipped(PDO $pdo, int $orderId): bool {
         $st->execute([':id' => $orderId]);
         $o = $st->fetch();
         if (!$o || !filter_var($o['email'], FILTER_VALIDATE_EMAIL)) return false;
-        $n = htmlspecialchars((string) ($o['first_name'] ?: 'cliente'), ENT_QUOTES, 'UTF-8');
-        $num = htmlspecialchars((string) $o['order_number'], ENT_QUOTES, 'UTF-8');
-        $rv = '';
+        require_once __DIR__ . '/mail-templates-lib.php';
+        $vars = mail_order_vars($pdo, $orderId);
         try {
             require_once __DIR__ . '/reviews-lib.php';
-            $rv = "<p style=\"margin:20px 0;\"><a href=\"" . htmlspecialchars(review_link($orderId), ENT_QUOTES, 'UTF-8') . "\" style=\"background:#b8892e;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;\">Dejar mi opinión</a></p><p style=\"font-size:13px;color:#666\">¿Todo funcionó bien? Tu opinión ayuda a otros clientes.</p>";
+            $vars['boton_resena'] = "<p style=\"margin:20px 0;\"><a href=\"" . htmlspecialchars(review_link($orderId), ENT_QUOTES, 'UTF-8') . "\" style=\"background:#b8892e;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;\">Dejar mi opinión</a></p><p style=\"font-size:13px;color:#666\">¿Todo funcionó bien? Tu opinión ayuda a otros clientes.</p>";
         } catch (Throwable $e) { }
-        $wa = defined('SUPPORT_WHATSAPP') ? htmlspecialchars((string) SUPPORT_WHATSAPP, ENT_QUOTES, 'UTF-8') : '';
-        $html = "<div style=\"font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#222\">"
-              . "<h2>¡Tu pedido {$num} fue enviado!</h2><p>Hola {$n},</p>"
-              . "<p>Ya te enviamos las claves/datos de tu licencia. Revisa tu correo (y la carpeta de spam) y tu WhatsApp.</p>"
-              . "<p>Si necesitas ayuda con la activación, escríbenos" . ($wa ? " al WhatsApp +{$wa}" : '') . " o responde a este correo.</p>"
-              . $rv . "<p>Gracias por confiar en " . htmlspecialchars((string) SITE_NAME, ENT_QUOTES, 'UTF-8') . ".</p></div>";
-        return smtp_send((string) $o['email'], 'Tu pedido ' . $o['order_number'] . ' fue enviado - ' . SITE_NAME, $html, '', defined('NOTIFY_EMAIL') ? NOTIFY_EMAIL : null);
+        [$subject, $html] = mail_render('enviado', $vars);
+        return smtp_send((string) $o['email'], $subject, $html, '', defined('NOTIFY_EMAIL') ? NOTIFY_EMAIL : null);
     } catch (Throwable $e) { error_log('notify_shipped: ' . $e->getMessage()); return false; }
 }
 
@@ -433,24 +423,10 @@ function notify_cancelled(PDO $pdo, int $orderId, string $mode): bool {
         $st->execute([':id' => $orderId]);
         $o = $st->fetch();
         if (!$o || !filter_var($o['email'], FILTER_VALIDATE_EMAIL)) return false;
-        $e = fn($x) => htmlspecialchars((string) $x, ENT_QUOTES, 'UTF-8');
-        $n = $e($o['first_name'] ?: 'cliente'); $num = $e($o['order_number']);
-        $total = '$' . number_format((float) $o['total_amount'], 0, ',', '.');
-        $wa = defined('SUPPORT_WHATSAPP') ? $e(SUPPORT_WHATSAPP) : '';
-        if ($mode === 'refunded') {
-            $body = "<p>Tu pedido <b>{$num}</b> fue cancelado y ya procesamos el reembolso de <b>{$total}</b>.</p>"
-                  . "<p>Según tu banco o tarjeta, el dinero puede tardar algunos días hábiles en reflejarse. Si pagaste por transferencia, ya te devolvimos el monto a tu cuenta.</p>";
-            $title = "Reembolso de tu pedido {$o['order_number']}";
-        } elseif ($mode === 'pending') {
-            $body = "<p>Tu pedido <b>{$num}</b> fue cancelado. Estamos gestionando la devolución de <b>{$total}</b> y te avisaremos cuando esté realizada.</p>";
-            $title = "Tu pedido {$o['order_number']} fue cancelado";
-        } else {
-            $body = "<p>Tu pedido <b>{$num}</b> fue cancelado.</p>";
-            $title = "Tu pedido {$o['order_number']} fue cancelado";
-        }
-        $html = "<div style=\"font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#222\"><h2>" . $e($title) . "</h2><p>Hola {$n},</p>" . $body
-              . "<p>Si tienes dudas, escríbenos" . ($wa ? " al WhatsApp +{$wa}" : '') . " o responde a este correo.</p><p>" . $e(SITE_NAME) . "</p></div>";
-        $ok = smtp_send((string) $o['email'], $title . ' - ' . SITE_NAME, $html, '', defined('NOTIFY_EMAIL') ? NOTIFY_EMAIL : null);
+        require_once __DIR__ . '/mail-templates-lib.php';
+        $key = $mode === 'refunded' ? 'reembolsado' : ($mode === 'pending' ? 'cancelado_pendiente' : 'cancelado');
+        [$title, $html] = mail_render($key, mail_order_vars($pdo, $orderId));
+        $ok = smtp_send((string) $o['email'], $title, $html, '', defined('NOTIFY_EMAIL') ? NOTIFY_EMAIL : null);
         try { notify_admins('Copia: ' . $title . ' (' . $o['email'] . ')', "<p><i>Aviso enviado al cliente:</i></p>" . $html); } catch (Throwable $e2) {}
         return $ok;
     } catch (Throwable $e) { error_log('notify_cancelled: ' . $e->getMessage()); return false; }
@@ -477,10 +453,7 @@ function notify_transfer_order(PDO $pdo, int $orderId): void {
     $a .= "<p>Cuando veas el dinero en tu cuenta, abre el pedido y pulsa «Marcar como pagado»: <a href=\"" . $e(SITE_URL . '/admin/pedido.php?id=' . $orderId) . "\">abrir pedido</a></p>";
     notify_admins("Pedido por transferencia {$o['order_number']} ({$total})", $a, $o['email']);
 
-    $c  = "<p>Hola" . ($name ? ' ' . $e($name) : '') . ",</p>";
-    $c .= "<p>Recibimos tu pedido <b>" . $e($o['order_number']) . "</b> por <b>$total</b>. Para completarlo, realiza una transferencia con estos datos:</p>";
-    $c .= "<p style=\"background:#f6f2e6;padding:12px 14px;border-radius:8px;\">" . nl2br($e(setting('transfer_details'))) . "<br><br><b>Monto: $total</b><br><b>Referencia: " . $e($o['order_number']) . "</b></p>";
-    $c .= "<ul>$li</ul><p>" . nl2br($e(setting('transfer_note'))) . "</p>";
-    $c .= "<p>Estado de tu pedido: <a href=\"" . $e(SITE_URL . '/portal.php?modo=codigo&codigo=' . urlencode($o['unique_code'])) . "\">ver mi pedido</a><br>Si tienes dudas escríbenos a " . $e(NOTIFY_EMAIL) . ".</p><p>— " . $e(MAIL_FROM_NAME) . "</p>";
-    smtp_send($o['email'], "Datos para transferir - Pedido {$o['order_number']}", $c, '', NOTIFY_EMAIL);
+    require_once __DIR__ . '/mail-templates-lib.php';
+    [$cs, $ch] = mail_render('transferencia', mail_order_vars($pdo, $orderId));
+    smtp_send($o['email'], $cs, $ch, '', NOTIFY_EMAIL);
 }

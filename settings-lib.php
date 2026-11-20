@@ -3,9 +3,10 @@
  * settings-lib.php — ajustes editables desde el panel (admin/ajustes.php): aviso superior y pago por transferencia.
  * Se guardan en la tabla site_settings. Si la tabla no existe todavía, se usan los valores por defecto.
  */
+require_once __DIR__ . '/mail-templates-lib.php';
 function settings_defaults(): array {
     $wa = defined('SUPPORT_WHATSAPP') ? SUPPORT_WHATSAPP : '';
-    return [
+    return mail_template_setting_defaults() + [
         'banner_enabled'    => '1',
         'banner_text'       => 'Renovamos nuestra tienda. Si ya eres cliente, tu pedido y tu soporte siguen igual.',
         'banner_link_label' => 'Escríbenos por WhatsApp',
