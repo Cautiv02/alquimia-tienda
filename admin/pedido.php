@@ -108,6 +108,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($o['refund_pending'])) { $err = true; $msg = 'Este pedido no tiene un reembolso pendiente.'; }
             else { $markRefunded(); $msg = 'Pedido marcado como reembolsado (devolución hecha por tu cuenta).'; }
         }
+        if (!$err && !empty($_POST['avisar'])) {
+            $mode = ($a === 'cancelar_pedido') ? (($wasPaid && $refund === 'now') ? 'refunded' : (($wasPaid && $refund === 'later') ? 'pending' : 'none')) : 'refunded';
+            $msg .= notify_cancelled($pdo, $id, $mode) ? ' Se avisó al cliente por correo.' : ' No se pudo enviar el correo al cliente.';
+        }
         flash_set($msg, $err);
     } elseif ($a === 'cancelar') {
         $u = $pdo->prepare("UPDATE orders SET financial_status = 'anulado', updated_at = NOW() WHERE id = :id AND fulfillment_status <> 'entregado' AND financial_status <> 'anulado'");
@@ -233,6 +237,7 @@ flash_show();
       <p class="tag" style="margin:0 0 8px;">Este pedido aún no está pagado, no hay dinero que devolver.</p>
       <input type="hidden" name="refund" value="none">
     <?php endif; ?>
+    <label class="tag" style="display:block;margin-top:10px;"><input type="checkbox" name="avisar" value="1" checked> Avisar al cliente por correo</label>
     <button class="btn-a ghost" type="submit" style="margin-top:8px;" onclick="return confirm('¿Cancelar el pedido <?= h($o['order_number']) ?>? Si elegiste reembolsar ahora, el dinero se devuelve al cliente de inmediato y no se puede deshacer.')">✕ Cancelar pedido</button>
     <?php if ($o['fulfillment_status'] === 'entregado'): ?><p class="tag" style="margin:8px 0 0;">Ojo: este pedido ya figura como entregado.</p><?php endif; ?>
   </form>
@@ -241,6 +246,7 @@ flash_show();
 <div class="box">
   <strong>Reembolso pendiente · <?= money($o['total_amount']) ?></strong>
   <form method="post" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;"><?= csrf_field() ?>
+    <label class="tag" style="display:block;width:100%;"><input type="checkbox" name="avisar" value="1" checked> Avisar al cliente por correo</label>
     <?php if ($hasMp): ?><button class="btn-a" name="action" value="reembolsar" onclick="return confirm('Se devolverán <?= h(money($o['total_amount'])) ?> al cliente por Mercado Pago. No se puede deshacer. ¿Continuar?')">Reembolsar ahora por Mercado Pago</button><?php endif; ?>
     <button class="btn-a ghost" name="action" value="reembolso_manual" onclick="return confirm('¿Confirmas que ya devolviste el dinero por tu cuenta (transferencia, etc.)?')">Ya lo devolví yo (marcar reembolsado)</button>
   </form>

@@ -423,6 +423,39 @@ function notify_shipped(PDO $pdo, int $orderId): bool {
 }
 
 
+/**
+ * Avisa al cliente de que su pedido fue cancelado. $mode: 'none' (sin reembolso) | 'pending' (reembolso por hacer) | 'refunded' (ya devuelto).
+ * Envía copia a los correos de aviso del admin. Devuelve true si el correo al cliente salió.
+ */
+function notify_cancelled(PDO $pdo, int $orderId, string $mode): bool {
+    try {
+        $st = $pdo->prepare("SELECT o.order_number, o.email, o.total_amount, c.first_name FROM orders o LEFT JOIN customers c ON c.id = o.customer_id WHERE o.id = :id");
+        $st->execute([':id' => $orderId]);
+        $o = $st->fetch();
+        if (!$o || !filter_var($o['email'], FILTER_VALIDATE_EMAIL)) return false;
+        $e = fn($x) => htmlspecialchars((string) $x, ENT_QUOTES, 'UTF-8');
+        $n = $e($o['first_name'] ?: 'cliente'); $num = $e($o['order_number']);
+        $total = '$' . number_format((float) $o['total_amount'], 0, ',', '.');
+        $wa = defined('SUPPORT_WHATSAPP') ? $e(SUPPORT_WHATSAPP) : '';
+        if ($mode === 'refunded') {
+            $body = "<p>Tu pedido <b>{$num}</b> fue cancelado y ya procesamos el reembolso de <b>{$total}</b>.</p>"
+                  . "<p>Según tu banco o tarjeta, el dinero puede tardar algunos días hábiles en reflejarse. Si pagaste por transferencia, ya te devolvimos el monto a tu cuenta.</p>";
+            $title = "Reembolso de tu pedido {$o['order_number']}";
+        } elseif ($mode === 'pending') {
+            $body = "<p>Tu pedido <b>{$num}</b> fue cancelado. Estamos gestionando la devolución de <b>{$total}</b> y te avisaremos cuando esté realizada.</p>";
+            $title = "Tu pedido {$o['order_number']} fue cancelado";
+        } else {
+            $body = "<p>Tu pedido <b>{$num}</b> fue cancelado.</p>";
+            $title = "Tu pedido {$o['order_number']} fue cancelado";
+        }
+        $html = "<div style=\"font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#222\"><h2>" . $e($title) . "</h2><p>Hola {$n},</p>" . $body
+              . "<p>Si tienes dudas, escríbenos" . ($wa ? " al WhatsApp +{$wa}" : '') . " o responde a este correo.</p><p>" . $e(SITE_NAME) . "</p></div>";
+        $ok = smtp_send((string) $o['email'], $title . ' - ' . SITE_NAME, $html, '', defined('NOTIFY_EMAIL') ? NOTIFY_EMAIL : null);
+        try { notify_admins('Copia: ' . $title . ' (' . $o['email'] . ')', "<p><i>Aviso enviado al cliente:</i></p>" . $html); } catch (Throwable $e2) {}
+        return $ok;
+    } catch (Throwable $e) { error_log('notify_cancelled: ' . $e->getMessage()); return false; }
+}
+
 /** Pedido por transferencia: avisa al admin y envía al cliente los datos bancarios. */
 function notify_transfer_order(PDO $pdo, int $orderId): void {
     $st = $pdo->prepare("SELECT o.*, c.first_name FROM orders o LEFT JOIN customers c ON c.id = o.customer_id WHERE o.id = :id");
