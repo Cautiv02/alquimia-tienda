@@ -18,6 +18,7 @@ if (!$o) { http_response_code(404); admin_header('Pedido no encontrado'); echo '
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $a = (string) ($_POST['action'] ?? '');
+    try { $pdo->exec("ALTER TABLE orders ADD COLUMN refund_pending TINYINT NOT NULL DEFAULT 0"); } catch (Throwable $e) {}
 
     if ($a === 'entregado') {
         $pdo->prepare("UPDATE orders SET fulfillment_status = 'entregado', updated_at = NOW() WHERE id = :id AND financial_status = 'pagado'")->execute([':id' => $id]);
@@ -64,6 +65,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 flash_set('Número de pedido actualizado a ' . $new . '.');
             }
         }
+    } elseif ($a === 'cancelar_pedido' || $a === 'reembolsar' || $a === 'reembolso_manual') {
+        $wasPaid = $o['financial_status'] === 'pagado';
+        $refund = (string) ($_POST['refund'] ?? 'none');
+        $pr = $pdo->prepare("SELECT gateway_ref FROM payments WHERE order_id = :id AND gateway = 'mercadopago' AND status = 'aprobado' ORDER BY id DESC LIMIT 1");
+        $pr->execute([':id' => $id]); $mpPay = $pr->fetchColumn();
+        $err = false; $msg = '';
+        $restock = function () use ($pdo, $id) {
+            try {
+                $it = $pdo->prepare("SELECT variant_id, quantity FROM order_items WHERE order_id = :id"); $it->execute([':id' => $id]);
+                $up = $pdo->prepare("UPDATE product_variants SET stock_manual = stock_manual + :q WHERE id = :v AND stock_manual IS NOT NULL");
+                foreach ($it->fetchAll() as $r) if ($r['variant_id']) $up->execute([':q' => (int) $r['quantity'], ':v' => (int) $r['variant_id']]);
+            } catch (Throwable $e) {}
+        };
+        $markRefunded = function () use ($pdo, $id) {
+            try { $pdo->prepare("UPDATE orders SET financial_status = 'reembolsado', refund_pending = 0, updated_at = NOW() WHERE id = :id")->execute([':id' => $id]); }
+            catch (Throwable $e) { $pdo->prepare("UPDATE orders SET financial_status = 'anulado', refund_pending = 0, updated_at = NOW() WHERE id = :id")->execute([':id' => $id]); } // el dinero ya se devolvió; si la base no admite 'reembolsado' queda como cancelado
+            try { $pdo->prepare("UPDATE payments SET status = 'reembolsado' WHERE order_id = :id AND gateway = 'mercadopago' AND status = 'aprobado'")->execute([':id' => $id]); } catch (Throwable $e) {}
+        };
+        if ($a === 'cancelar_pedido') {
+            if (in_array($o['financial_status'], ['anulado', 'reembolsado'], true)) { $err = true; $msg = 'Este pedido ya estaba cancelado.'; }
+            elseif ($wasPaid && $refund === 'now') {
+                if (!$mpPay) { $err = true; $msg = 'No hay un pago de Mercado Pago registrado en este pedido, así que no puedo reembolsarlo desde aquí. Elige "Reembolsar después" y devuelve el dinero por tu cuenta; luego márcalo como reembolsado.'; }
+                else {
+                    [$ok, $m] = mp_refund_payment((string) $mpPay);
+                    if ($ok) { $markRefunded(); $restock(); $msg = 'Pedido cancelado y reembolsado. ' . $m; }
+                    else { $err = true; $msg = $m . ' El pedido NO se canceló.'; }
+                }
+            } else {
+                $pdo->prepare("UPDATE orders SET financial_status = 'anulado', refund_pending = :rp, updated_at = NOW() WHERE id = :id")->execute([':rp' => ($wasPaid && $refund === 'later') ? 1 : 0, ':id' => $id]);
+                $restock();
+                $msg = 'Pedido cancelado.' . (($wasPaid && $refund === 'later') ? ' Quedó con reembolso pendiente: puedes hacerlo cuando quieras desde esta misma página.' : '');
+            }
+        } elseif ($a === 'reembolsar') {
+            if (empty($o['refund_pending'])) { $err = true; $msg = 'Este pedido no tiene un reembolso pendiente.'; }
+            elseif (!$mpPay) { $err = true; $msg = 'No hay un pago de Mercado Pago registrado en este pedido.'; }
+            else {
+                [$ok, $m] = mp_refund_payment((string) $mpPay);
+                if ($ok) { $markRefunded(); $msg = $m; } else { $err = true; $msg = $m; }
+            }
+        } else { // reembolso_manual
+            if (empty($o['refund_pending'])) { $err = true; $msg = 'Este pedido no tiene un reembolso pendiente.'; }
+            else { $markRefunded(); $msg = 'Pedido marcado como reembolsado (devolución hecha por tu cuenta).'; }
+        }
+        flash_set($msg, $err);
     } elseif ($a === 'cancelar') {
         $u = $pdo->prepare("UPDATE orders SET financial_status = 'anulado', updated_at = NOW() WHERE id = :id AND fulfillment_status <> 'entregado' AND financial_status <> 'anulado'");
         $u->execute([':id' => $id]);
@@ -156,9 +201,6 @@ flash_show();
       <button class="btn-a" name="action" value="entregado" onclick="return confirm('¿Ya enviaste las claves al cliente?')">✔ Marcar como entregado (ya envié las claves)</button>
       <button class="btn-a ghost" name="action" value="entregar_stock" onclick="return confirm('Se asignarán claves del stock cargado y se enviará el correo con el enlace al cliente. ¿Continuar?')">Entregar con claves del stock</button>
     <?php endif; ?>
-    <?php if ($o['fulfillment_status'] !== 'entregado' && $o['financial_status'] !== 'anulado'): ?>
-      <button class="btn-a ghost" name="action" value="cancelar" onclick="return confirm('¿Cancelar este pedido? Si ya estaba cobrado, reembólsalo en Mercado Pago.')">✕ Cancelar pedido</button>
-    <?php endif; ?>
     <?php if ($o['fulfillment_status'] === 'entregado'): ?>
       <button class="btn-a ghost" name="action" value="deshacer_envio" onclick="return confirm('¿Volver a marcar este pedido como por enviar?')">↩ Deshacer envío</button>
     <?php endif; ?>
@@ -171,6 +213,39 @@ flash_show();
     <?php endif; ?>
   </form>
 </div>
+
+<?php
+  $isPaid = $o['financial_status'] === 'pagado';
+  $pr2 = $pdo->prepare("SELECT gateway_ref FROM payments WHERE order_id = :id AND gateway = 'mercadopago' AND status = 'aprobado' ORDER BY id DESC LIMIT 1");
+  $pr2->execute([':id' => $id]); $hasMp = (bool) $pr2->fetchColumn();
+  $canCancel = !in_array($o['financial_status'], ['anulado', 'reembolsado'], true);
+?>
+<?php if ($canCancel): ?>
+<div class="box">
+  <strong>Cancelar pedido</strong>
+  <form method="post" style="margin-top:12px;"><?= csrf_field() ?><input type="hidden" name="action" value="cancelar_pedido">
+    <?php if ($isPaid): ?>
+      <p class="tag" style="margin:0 0 8px;">Este pedido está pagado (<?= money($o['total_amount']) ?>). ¿Qué hacemos con el dinero?</p>
+      <label style="display:block;margin:6px 0;"><input type="radio" name="refund" value="now" <?= $hasMp ? 'checked' : 'disabled' ?>> Reembolsar ahora por Mercado Pago <?= $hasMp ? '' : '<span class="tag">(no hay pago de MP registrado)</span>' ?></label>
+      <label style="display:block;margin:6px 0;"><input type="radio" name="refund" value="later" <?= $hasMp ? '' : 'checked' ?>> Cancelar y reembolsar después (queda pendiente)</label>
+      <label style="display:block;margin:6px 0;"><input type="radio" name="refund" value="none"> Solo cancelar, sin reembolso</label>
+    <?php else: ?>
+      <p class="tag" style="margin:0 0 8px;">Este pedido aún no está pagado, no hay dinero que devolver.</p>
+      <input type="hidden" name="refund" value="none">
+    <?php endif; ?>
+    <button class="btn-a ghost" type="submit" style="margin-top:8px;" onclick="return confirm('¿Cancelar el pedido <?= h($o['order_number']) ?>? Si elegiste reembolsar ahora, el dinero se devuelve al cliente de inmediato y no se puede deshacer.')">✕ Cancelar pedido</button>
+    <?php if ($o['fulfillment_status'] === 'entregado'): ?><p class="tag" style="margin:8px 0 0;">Ojo: este pedido ya figura como entregado.</p><?php endif; ?>
+  </form>
+</div>
+<?php elseif (!empty($o['refund_pending'])): ?>
+<div class="box">
+  <strong>Reembolso pendiente · <?= money($o['total_amount']) ?></strong>
+  <form method="post" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;"><?= csrf_field() ?>
+    <?php if ($hasMp): ?><button class="btn-a" name="action" value="reembolsar" onclick="return confirm('Se devolverán <?= h(money($o['total_amount'])) ?> al cliente por Mercado Pago. No se puede deshacer. ¿Continuar?')">Reembolsar ahora por Mercado Pago</button><?php endif; ?>
+    <button class="btn-a ghost" name="action" value="reembolso_manual" onclick="return confirm('¿Confirmas que ya devolviste el dinero por tu cuenta (transferencia, etc.)?')">Ya lo devolví yo (marcar reembolsado)</button>
+  </form>
+</div>
+<?php endif; ?>
 
 <div class="box">
   <strong>Número de pedido</strong>

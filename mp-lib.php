@@ -108,3 +108,31 @@ function process_mp_payment(PDO $pdo, string $paymentId): string {
     }
     return 'processed';
 }
+
+/** POST a la API de Mercado Pago (JSON). Devuelve ['code','data','raw']. */
+function mp_post(string $path, array $body, string $idemKey): array {
+    $ch = curl_init('https://api.mercadopago.com' . $path);
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $body ? json_encode($body) : '{}',
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . MP_ACCESS_TOKEN, 'Content-Type: application/json', 'X-Idempotency-Key: ' . $idemKey],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 30,
+    ]);
+    $raw  = curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    $data = is_string($raw) ? json_decode($raw, true) : null;
+    return ['code' => $code, 'data' => is_array($data) ? $data : null, 'raw' => (string) $raw];
+}
+
+/**
+ * Reembolso TOTAL de un pago de Mercado Pago. Devuelve [ok(bool), mensaje].
+ * La clave de idempotencia evita doble reembolso si se pulsa dos veces.
+ */
+function mp_refund_payment(string $paymentId): array {
+    $r = mp_post('/v1/payments/' . rawurlencode($paymentId) . '/refunds', [], 'refund-' . $paymentId);
+    if ($r['code'] === 200 || $r['code'] === 201) return [true, 'Reembolso aprobado en Mercado Pago (#' . ($r['data']['id'] ?? '?') . ').'];
+    $msg = (string) ($r['data']['message'] ?? $r['data']['error'] ?? $r['raw']);
+    return [false, 'Mercado Pago no pudo reembolsar (HTTP ' . $r['code'] . '): ' . mb_substr($msg, 0, 200)];
+}

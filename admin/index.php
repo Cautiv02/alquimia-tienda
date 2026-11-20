@@ -55,7 +55,7 @@ if ($f === 'porenviar')      $where[] = "o.financial_status = 'pagado' AND o.ful
 elseif ($f === 'entregados') $where[] = "o.fulfillment_status = 'entregado'";
 elseif ($f === 'pendientes') $where[] = "o.financial_status = 'pendiente'";
 elseif ($f === 'pagados')    $where[] = "o.financial_status = 'pagado'";
-elseif ($f === 'cancelados') $where[] = "o.financial_status = 'anulado'";
+elseif ($f === 'cancelados') $where[] = "o.financial_status IN ('anulado','reembolsado')";
 if ($q !== '') {
     $where[] = "(o.order_number LIKE :q OR o.email LIKE :q OR o.unique_code LIKE :q OR CONCAT_WS(' ', c.first_name, c.last_name) LIKE :q)";
     $args[':q'] = '%' . $q . '%';
