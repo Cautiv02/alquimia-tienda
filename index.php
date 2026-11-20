@@ -16,6 +16,7 @@ if ($homeSections === null) $homeSections = home_resolve_defaults($allActive);
 
 require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/icons3d.php';
+require_once __DIR__ . '/coupon-lib.php';
 track_event('view');
 ?>
 <!DOCTYPE html>
@@ -192,4 +193,5 @@ document.querySelectorAll('.car-wrap').forEach(function (w) {
 });
 </script>
 
+<?php site_popup(); ?>
 <?php site_footer();

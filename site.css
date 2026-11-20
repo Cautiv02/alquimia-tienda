@@ -616,3 +616,16 @@
   .home-block .offer-grid { padding-bottom: 6px; }
   .brands { padding: 16px 0; }
 }
+
+/* ---- Ventana emergente de la portada ---- */
+.alq-pop { position: fixed; inset: 0; background: rgba(20,18,12,.55); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 200; }
+.alq-pop[hidden] { display: none; }
+.alq-pop-box { position: relative; background: #fff; border-radius: 18px; padding: 34px 30px 22px; max-width: 420px; width: 100%; text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,.3); animation: alq-pop-in .25s ease; }
+@keyframes alq-pop-in { from { transform: translateY(14px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
+.alq-pop-box h2 { font-family: var(--sans); font-size: 1.45rem; line-height: 1.25; margin: 0 0 10px; }
+.alq-pop-box p { color: var(--text-dim); margin: 0 0 16px; font-size: .95rem; }
+.alq-pop-x { position: absolute; top: 10px; right: 12px; background: none; border: 0; font-size: 1.1rem; cursor: pointer; color: var(--ash); padding: 6px; }
+.alq-pop-code { display: inline-flex; align-items: center; gap: 10px; border: 2px dashed var(--gold); background: var(--surface-tint); color: var(--text); font: 700 1.2rem var(--mono); letter-spacing: .08em; padding: 10px 18px; border-radius: 10px; cursor: pointer; margin: 0 0 16px; }
+.alq-pop-code span { font: 500 .72rem var(--sans); letter-spacing: 0; color: var(--ash); }
+.alq-pop-go { display: block; text-decoration: none; text-align: center; }
+.alq-pop-no { background: none; border: 0; color: var(--ash); font-size: .82rem; cursor: pointer; margin-top: 12px; text-decoration: underline; }

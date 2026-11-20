@@ -17,6 +17,48 @@ if (!function_exists('money')) {
 
 require_once __DIR__ . '/reviews-lib.php';
 
+/** Ventana emergente de la portada (se configura en Ajustes). */
+function site_popup(): void {
+    $s = settings_all();
+    if ($s['popup_enabled'] !== '1' || trim($s['popup_title']) === '') return;
+    $cp = function_exists('coupon_config') ? coupon_config() : ['enabled' => false, 'code' => '', 'percent' => 0];
+    $rep = function (string $t) use ($cp): string { return str_replace(['{codigo}', '{porcentaje}'], [$cp['code'], (string) $cp['percent']], $t); };
+    $title = $rep($s['popup_title']); $text = $rep($s['popup_text']);
+    $hasCode = $cp['enabled'] && strpos($s['popup_title'] . $s['popup_text'], '{codigo}') !== false;
+    $key = 'alq_pop_' . substr(md5($title . $text), 0, 8);
+    ?>
+<div id="alq-pop" class="alq-pop" hidden role="dialog" aria-modal="true" aria-labelledby="alq-pop-t">
+  <div class="alq-pop-box">
+    <button type="button" class="alq-pop-x" aria-label="Cerrar">✕</button>
+    <h2 id="alq-pop-t"><?= h($title) ?></h2>
+    <?php if (trim($text) !== ''): ?><p><?= h($text) ?></p><?php endif; ?>
+    <?php if ($hasCode): ?><button type="button" class="alq-pop-code" data-code="<?= h($cp['code']) ?>" title="Copiar código"><?= h($cp['code']) ?> <span>📋 Copiar</span></button><?php endif; ?>
+    <a class="btn-gold alq-pop-go" href="<?= h($s['popup_button_url'] ?: 'catalogo.php') ?>"><?= h($s['popup_button_label'] ?: 'Ver productos') ?></a>
+    <button type="button" class="alq-pop-no">No, gracias</button>
+  </div>
+</div>
+<script>
+(function () {
+  var key = <?= json_encode($key) ?>, days = <?= (int) $s['popup_days'] ?>, delay = <?= (int) $s['popup_delay'] ?> * 1000;
+  var el = document.getElementById('alq-pop');
+  try { var t = localStorage.getItem(key); if (t && days > 0 && Date.now() - (+t) < days * 86400000) return; } catch (e) {}
+  function close() { el.hidden = true; document.removeEventListener('keydown', onKey); try { localStorage.setItem(key, String(Date.now())); } catch (e) {} }
+  function onKey(e) { if (e.key === 'Escape') close(); }
+  setTimeout(function () {
+    el.hidden = false; document.addEventListener('keydown', onKey);
+    var go = el.querySelector('.alq-pop-go'); if (go) go.focus();
+  }, delay);
+  el.addEventListener('click', function (e) { if (e.target === el || e.target.closest('.alq-pop-x') || e.target.closest('.alq-pop-no') || e.target.closest('.alq-pop-go')) close(); });
+  var cb = el.querySelector('.alq-pop-code');
+  if (cb) cb.addEventListener('click', function () {
+    var c = cb.dataset.code, sp = cb.querySelector('span'), done = function () { sp.textContent = '✓ Copiado'; };
+    function fb() { var a = document.createElement('textarea'); a.value = c; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); done(); } catch (x) {} a.remove(); }
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(c).then(done, fb); else fb();
+  });
+})();
+</script>
+<?php }
+
 function site_banner(): void {
     $s = settings_all();
     if ($s['banner_enabled'] !== '1' || trim($s['banner_text']) === '') return;

@@ -20,6 +20,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'coupon_enabled'    => !empty($_POST['coupon_enabled']) ? '1' : '0',
         'coupon_code'       => strtoupper(preg_replace('/[^A-Za-z0-9_-]/', '', (string) ($_POST['coupon_code'] ?? ''))),
         'coupon_percent'    => (string) max(1, min(90, (int) ($_POST['coupon_percent'] ?? 10))),
+        'popup_enabled'     => !empty($_POST['popup_enabled']) ? '1' : '0',
+        'popup_title'       => trim(mb_substr((string) ($_POST['popup_title'] ?? ''), 0, 120)),
+        'popup_text'        => trim(mb_substr((string) ($_POST['popup_text'] ?? ''), 0, 300)),
+        'popup_button_label'=> trim(mb_substr((string) ($_POST['popup_button_label'] ?? ''), 0, 40)),
+        'popup_button_url'  => (function ($u) { $u = trim(mb_substr((string) $u, 0, 255)); return preg_match('#^(https?://|[A-Za-z0-9_./?=&%-]+$)#', $u) ? $u : 'catalogo.php'; })($_POST['popup_button_url'] ?? ''),
+        'popup_delay'       => (string) max(0, min(60, (int) ($_POST['popup_delay'] ?? 4))),
+        'popup_days'        => (string) max(0, min(90, (int) ($_POST['popup_days'] ?? 7))),
         'transfer_enabled'  => !empty($_POST['transfer_enabled']) ? '1' : '0',
         'transfer_details'  => trim(mb_substr((string) ($_POST['transfer_details'] ?? ''), 0, 1500)),
         'transfer_note'     => trim(mb_substr((string) ($_POST['transfer_note'] ?? ''), 0, 800)),
@@ -51,6 +58,23 @@ flash_show();
     <strong>Avisos de pedidos nuevos</strong>
     <p class="tag" style="margin:6px 0 12px;">Cada pedido nuevo (pagado, o por transferencia pendiente) te llega por correo a <b><?= h(NOTIFY_EMAIL) ?></b>. Aquí puedes agregar otros correos que también lo reciban, por ejemplo uno que tengas en el móvil. Sepáralos con coma.</p>
     <label class="tag">Correos extra<br><input name="notify_extra" value="<?= h($s['notify_extra']) ?>" style="<?= $in ?>" maxlength="300" placeholder="correo@ejemplo.com, otro@ejemplo.com"></label>
+  </div>
+
+  <div class="box">
+    <strong>Ventana emergente en la portada</strong>
+    <p class="tag" style="margin:6px 0 12px;">Aparece una sola vez al entrar a la portada. En los textos puedes usar <code>{codigo}</code> y <code>{porcentaje}</code>: se reemplazan por los del código de descuento de abajo.</p>
+    <label style="display:block;margin-bottom:12px;"><input type="checkbox" name="popup_enabled" value="1" <?= $s['popup_enabled'] === '1' ? 'checked' : '' ?>> Mostrar la ventana emergente</label>
+    <label class="tag">Título<br><input name="popup_title" value="<?= h($s['popup_title']) ?>" style="<?= $in ?>" maxlength="120"></label><br><br>
+    <label class="tag">Texto<br><input name="popup_text" value="<?= h($s['popup_text']) ?>" style="<?= $in ?>" maxlength="300"></label><br><br>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <label class="tag">Texto del botón<br><input name="popup_button_label" value="<?= h($s['popup_button_label']) ?>" style="<?= $in ?>width:200px;" maxlength="40"></label>
+      <label class="tag">Enlace del botón<br><input name="popup_button_url" value="<?= h($s['popup_button_url']) ?>" style="<?= $in ?>width:220px;"></label>
+      <label class="tag">Aparece a los (segundos)<br><input type="number" name="popup_delay" value="<?= h($s['popup_delay']) ?>" min="0" max="60" style="<?= $in ?>width:110px;"></label>
+      <label class="tag">No repetir durante (días)<br><input type="number" name="popup_days" value="<?= h($s['popup_days']) ?>" min="0" max="90" style="<?= $in ?>width:110px;"></label>
+    </div>
+    <?php if ($s['popup_enabled'] === '1' && $s['coupon_enabled'] !== '1' && (strpos($s['popup_title'] . $s['popup_text'], '{codigo}') !== false)): ?>
+      <p class="flash err" style="margin:12px 0 0;">El texto usa el código de descuento, pero el código está desactivado más abajo: el cliente vería el texto sin código.</p>
+    <?php endif; ?>
   </div>
 
   <div class="box">
