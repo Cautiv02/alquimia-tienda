@@ -94,6 +94,8 @@ foreach ($wanted as $vid => $qty) {
     $stmt->execute([':id' => $vid]);
     $variant = $stmt->fetch();
     if (!$variant) checkout_error('Uno de los productos ya no está disponible. Revisa tu carrito.', 404);
+    $vsm = variant_stock_map();
+    if (isset($vsm[(int) $variant['id']]) && $vsm[(int) $variant['id']] < (int) $qty) checkout_error('«' . $variant['product_title'] . '» (' . $variant['variant_title'] . ') ' . ($vsm[(int) $variant['id']] <= 0 ? 'está agotado' : 'solo tiene ' . $vsm[(int) $variant['id']] . ' unidad(es) disponible(s)') . '. Ajusta tu carrito.', 409);
     if (is_soldout((int) $variant['product_id'])) checkout_error('«' . $variant['product_title'] . '» está agotado por ahora. Quítalo del carrito para continuar.', 409);
     $unitPrice = (int) round((float) $variant['price']);
     if ($unitPrice <= 0) checkout_error('Un producto no tiene un precio válido. Escríbenos por WhatsApp.', 422);
@@ -167,6 +169,10 @@ try {
     foreach ($lines as $l) {
         $insItem->execute([':oid' => $orderId, ':pid' => $l['v']['product_id'], ':vid' => $l['v']['id'], ':title' => $l['title'], ':qty' => $l['qty'], ':price' => $l['orig'] ?? $l['unit']]);
     }
+    try {
+        $dec = $pdo->prepare("UPDATE product_variants SET stock_manual = GREATEST(stock_manual - :q, 0) WHERE id = :v AND stock_manual IS NOT NULL");
+        foreach ($lines as $l) $dec->execute([':q' => $l['qty'], ':v' => $l['v']['id']]);
+    } catch (Throwable $e) { /* columna aún no creada */ }
     if ($couponCode) {
         $pdo->prepare("UPDATE orders SET discount_code = :c, discount_amount = :d WHERE id = :id")->execute([':c' => $couponCode, ':d' => $discount, ':id' => $orderId]);
     }

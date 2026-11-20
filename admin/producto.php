@@ -47,12 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     } elseif ($a === 'variantes') {
-        $u = $pdo->prepare("UPDATE product_variants SET title = :t, price = :p, compare_at_price = :c WHERE id = :v AND product_id = :pid");
+        variant_stock_ensure($pdo);
+        $u = $pdo->prepare("UPDATE product_variants SET title = :t, price = :p, compare_at_price = :c, stock_manual = :sm WHERE id = :v AND product_id = :pid");
         foreach ((array) ($_POST['v'] ?? []) as $vid => $row) {
             $price = money_in($row['price'] ?? '');
             if (!$price) continue;
             $u->execute([':t' => trim(mb_substr((string) ($row['title'] ?? 'Default Title'), 0, 200)) ?: 'Default Title',
-                         ':p' => $price, ':c' => money_in($row['compare'] ?? ''), ':v' => (int) $vid, ':pid' => $id]);
+                         ':p' => $price, ':c' => money_in($row['compare'] ?? ''),
+                         ':sm' => (trim((string) ($row['stock'] ?? '')) === '' ? null : max(0, (int) $row['stock'])), ':v' => (int) $vid, ':pid' => $id]);
         }
         $msg = 'Precios guardados.';
     } elseif ($a === 'nueva_variante') {
@@ -117,26 +119,58 @@ flash_show();
       <label class="tag" style="display:block;margin-top:8px;">…o dirección de una imagen<br><input name="image_url_text" value="" placeholder="<?= h($p['image_url']) ?>" style="<?= $in ?>"></label>
     </div>
   </div>
-  <label class="tag" style="display:block;margin-top:12px;">Descripción (acepta HTML básico: p, br, ul, li, strong)<br>
-    <textarea name="description_html" rows="7" style="<?= $in ?>font-family:var(--mono);"><?= h($p['description_html']) ?></textarea></label>
+  <div class="tag" style="margin-top:12px;">Descripción</div>
+  <div id="rt-bar" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;">
+    <button type="button" class="btn-a" data-c="bold" style="padding:5px 10px;"><b>N</b></button>
+    <button type="button" class="btn-a" data-c="italic" style="padding:5px 10px;"><i>C</i></button>
+    <button type="button" class="btn-a" data-c="formatBlock:h3" style="padding:5px 10px;">Título</button>
+    <button type="button" class="btn-a" data-c="formatBlock:p" style="padding:5px 10px;">Párrafo</button>
+    <button type="button" class="btn-a" data-c="insertUnorderedList" style="padding:5px 10px;">• Lista</button>
+    <button type="button" class="btn-a" data-c="insertOrderedList" style="padding:5px 10px;">1. Lista</button>
+    <button type="button" class="btn-a" data-c="removeFormat" style="padding:5px 10px;">Limpiar formato</button>
+    <button type="button" class="btn-a" id="rt-toggle" style="padding:5px 10px;margin-left:auto;">Ver HTML</button>
+  </div>
+  <div id="rt" contenteditable="true" style="<?= $in ?>min-height:180px;max-height:420px;overflow:auto;background:#fff;"></div>
+  <textarea name="description_html" id="rt-src" rows="9" style="<?= $in ?>font-family:var(--mono);display:none;"><?= h($p['description_html']) ?></textarea>
+  <script>
+  (function () {
+    var rt = document.getElementById('rt'), src = document.getElementById('rt-src'), html = false;
+    function clean(h) { var d = document.createElement('div'); d.innerHTML = h;
+      d.querySelectorAll('[style],[color],[class]').forEach(function (e) { e.removeAttribute('style'); e.removeAttribute('color'); e.removeAttribute('class'); });
+      d.querySelectorAll('span').forEach(function (s) { while (s.firstChild) s.parentNode.insertBefore(s.firstChild, s); s.remove(); });
+      d.querySelectorAll('div').forEach(function (s) { var p = document.createElement('p'); while (s.firstChild) p.appendChild(s.firstChild); s.replaceWith(p); });
+      return d.innerHTML; }
+    rt.innerHTML = clean(src.value);
+    document.getElementById('rt-bar').addEventListener('mousedown', function (e) { if (e.target.tagName === 'BUTTON') e.preventDefault(); });
+    document.querySelectorAll('#rt-bar [data-c]').forEach(function (b) { b.addEventListener('click', function () {
+      if (html) return; var c = b.dataset.c.split(':'); rt.focus(); document.execCommand(c[0], false, c[1] ? '<' + c[1] + '>' : null); }); });
+    document.getElementById('rt-toggle').addEventListener('click', function () {
+      html = !html;
+      if (html) { src.value = rt.innerHTML; src.style.display = 'block'; rt.style.display = 'none'; this.textContent = 'Ver editor'; }
+      else { rt.innerHTML = src.value; src.style.display = 'none'; rt.style.display = 'block'; this.textContent = 'Ver HTML'; }
+    });
+    rt.closest('form').addEventListener('submit', function () { if (!html) src.value = rt.innerHTML; });
+  })();
+  </script>
   <p style="margin:14px 0 0;"><button class="btn-a" type="submit">Guardar datos</button></p>
 </form>
 
 <form method="post" class="box"><?= csrf_field() ?><input type="hidden" name="action" value="variantes">
   <strong>Precios y opciones</strong>
   <table class="t" style="margin-top:12px;">
-    <tr><th>Opción</th><th>Precio (CLP)</th><th>Precio anterior (tachado)</th><th>Stock de claves</th></tr>
+    <tr><th>Opción</th><th>Precio (CLP)</th><th>Precio anterior (tachado)</th><th>Unidades disponibles</th><th>Claves cargadas</th></tr>
     <?php foreach ($variants as $v): ?>
     <tr>
       <td><input name="v[<?= (int) $v['id'] ?>][title]" value="<?= h($v['title']) ?>" style="<?= $in ?>"></td>
       <td><input name="v[<?= (int) $v['id'] ?>][price]" value="<?= (int) round((float) $v['price']) ?>" inputmode="numeric" style="<?= $in ?>width:130px;"></td>
       <td><input name="v[<?= (int) $v['id'] ?>][compare]" value="<?= $v['compare_at_price'] ? (int) round((float) $v['compare_at_price']) : '' ?>" inputmode="numeric" style="<?= $in ?>width:130px;"></td>
+      <td><input name="v[<?= (int) $v['id'] ?>][stock]" value="<?= isset($v['stock_manual']) && $v['stock_manual'] !== null ? (int) $v['stock_manual'] : '' ?>" inputmode="numeric" placeholder="sin límite" style="<?= $in ?>width:110px;"></td>
       <td><?= (int) $v['stock'] ?></td>
     </tr>
     <?php endforeach; ?>
   </table>
   <p style="margin:14px 0 0;"><button class="btn-a" type="submit">Guardar precios</button>
-    <span class="tag">"Default Title" significa que el producto tiene una sola opción.</span></p>
+    <span class="tag">Unidades disponibles: déjalo vacío para vender sin límite; con un número, baja solo en cada pedido y en 0 la opción queda agotada. "Default Title" significa que el producto tiene una sola opción.</span></p>
 </form>
 
 <form method="post" class="box"><?= csrf_field() ?><input type="hidden" name="action" value="nueva_variante">

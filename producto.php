@@ -26,6 +26,8 @@ if (!$p) {
 $vs = $pdo->prepare("SELECT id, title, price, compare_at_price FROM product_variants WHERE product_id = :id ORDER BY price ASC, id ASC");
 $vs->execute([':id' => $id]);
 $variants = $vs->fetchAll();
+$vstock = variant_stock_map();
+$firstOk = null; foreach ($variants as $i => $v) { if (!isset($vstock[(int) $v['id']]) || $vstock[(int) $v['id']] > 0) { $firstOk = $i; break; } }
 
 // Descripción de Shopify: dejamos solo etiquetas básicas
 $descHtml = strip_tags((string) $p['description_html'], '<p><br><ul><ol><li><strong><b><em><i><h2><h3><h4>');
@@ -66,11 +68,11 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
               $label = ($v['title'] === 'Default Title' || trim((string) $v['title']) === '') ? 'Licencia' : $v['title'];
               $off = ($v['compare_at_price'] && $v['compare_at_price'] > $v['price']) ? (int) round((1 - $v['price'] / $v['compare_at_price']) * 100) : 0; ?>
               <label class="opt">
-                <input type="radio" name="variant_id" value="<?= (int) $v['id'] ?>" <?= $i === 0 ? 'checked' : '' ?> required
+                <input type="radio" name="variant_id" value="<?= (int) $v['id'] ?>" <?= $i === $firstOk ? 'checked' : '' ?> <?= (isset($vstock[(int) $v['id']]) && $vstock[(int) $v['id']] <= 0) ? 'disabled' : '' ?> required
                   data-price="<?= (int) round((float) $v['price']) ?>"
                   data-old="<?= $v['compare_at_price'] ? (int) round((float) $v['compare_at_price']) : 0 ?>">
                 <span class="opt-name"><?= h($label) ?><?php if ($off > 0): ?> <em>-<?= $off ?>%</em><?php endif; ?></span>
-                <span class="opt-price"><?= money($v['price']) ?></span>
+                <span class="opt-price"><?= (isset($vstock[(int) $v['id']]) && $vstock[(int) $v['id']] <= 0) ? 'Agotado' : money($v['price']) ?></span>
               </label>
             <?php endforeach; ?>
           </div>
@@ -84,7 +86,7 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
           <label for="qty">Cantidad</label>
           <input id="qty" type="number" name="quantity" value="1" min="1" max="10">
         </div>
-        <?php if (is_soldout((int) $id)): ?>
+        <?php if (is_soldout((int) $id) || $firstOk === null): ?>
         <button class="btn-block" type="button" disabled style="opacity:.55;cursor:not-allowed;">Agotado por ahora</button>
         <p style="font-size:.85rem;color:var(--ash);margin:10px 0 0;text-align:center;">Este producto está agotado temporalmente. <a href="https://wa.me/" onclick="this.href='catalogo.php';">Ver otros productos</a></p>
         <?php else: ?>

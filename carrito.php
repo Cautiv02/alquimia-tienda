@@ -17,6 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($vid > 0) {
             $pidAdd = 0;
             try { $pq = get_pdo()->prepare("SELECT product_id FROM product_variants WHERE id = :v"); $pq->execute([':v' => $vid]); $pidAdd = (int) $pq->fetchColumn(); } catch (Throwable $e) {}
+            $vsm = variant_stock_map();
+            if (isset($vsm[$vid]) && $vsm[$vid] <= 0) { header('Location: producto.php?id=' . $pidAdd); exit; }
             if ($pidAdd && is_soldout($pidAdd)) { header('Location: ' . ($pidAdd ? 'producto.php?id=' . $pidAdd : 'catalogo.php')); exit; }
             $cart[$vid] = min(CART_MAX_QTY, ($cart[$vid] ?? 0) + $qty);
             try { track_event('cart_add', $pidAdd ?: null); } catch (Throwable $e) {}
@@ -48,7 +50,7 @@ foreach ($cart as $vid => $qty) {
     if (!$r || (int) round((float) $r['price']) <= 0) continue; // producto retirado: se omite
     $unit = (int) round((float) $r['price']);
     $title = $r['pt'] . ((trim((string) $r['vt']) !== '' && $r['vt'] !== 'Default Title') ? ' — ' . $r['vt'] : '');
-    $lines[] = ['vid' => $vid, 'qty' => $qty, 'unit' => $unit, 'title' => $title, 'pid' => $r['pid'], 'img' => $r['image_url'], 'sold' => is_soldout((int) $r['pid'])];
+    $lines[] = ['vid' => $vid, 'qty' => $qty, 'unit' => $unit, 'title' => $title, 'pid' => $r['pid'], 'img' => $r['image_url'], 'sold' => is_soldout((int) $r['pid']) || (isset(variant_stock_map()[(int) $vid]) && variant_stock_map()[(int) $vid] < (int) $qty)];
     $total += $unit * $qty; $clean[$vid] = $qty;
 }
 $soldLines = []; foreach ($lines as $l) if (!empty($l['sold'])) $soldLines[] = $l['title'];

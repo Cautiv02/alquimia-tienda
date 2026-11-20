@@ -20,3 +20,13 @@ function soldout_set(PDO $pdo, int $productId, bool $on): void {
     $pdo->prepare("UPDATE products SET sold_out = :x WHERE id = :id")->execute([':x' => $on ? 1 : 0, ':id' => $productId]);
     try { $pdo->prepare("UPDATE home_section_items SET sold_out = :x WHERE product_id = :id")->execute([':x' => $on ? 1 : 0, ':id' => $productId]); } catch (Throwable $e) {}
 }
+
+/** Stock manual por opción (product_variants.stock_manual; NULL = sin límite). @return array<int,int> */
+function variant_stock_map(): array {
+    static $m = null; if ($m !== null) return $m; $m = [];
+    try { foreach (get_pdo()->query("SELECT id, stock_manual FROM product_variants WHERE stock_manual IS NOT NULL")->fetchAll() as $r) $m[(int) $r['id']] = (int) $r['stock_manual']; } catch (Throwable $e) {}
+    return $m;
+}
+function variant_stock_ensure(PDO $pdo): void {
+    try { $pdo->exec("ALTER TABLE product_variants ADD COLUMN stock_manual INT NULL DEFAULT NULL"); } catch (Throwable $e) {}
+}
