@@ -6,6 +6,7 @@
 require_once __DIR__ . '/delivery-engine.php';
 require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/catalog-lib.php';
+require_once __DIR__ . '/soldout-lib.php';
 
 $pdo = get_pdo();
 $id = (int) ($_GET['id'] ?? 0);
@@ -83,8 +84,13 @@ site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercad
           <label for="qty">Cantidad</label>
           <input id="qty" type="number" name="quantity" value="1" min="1" max="10">
         </div>
+        <?php if (is_soldout((int) $id)): ?>
+        <button class="btn-block" type="button" disabled style="opacity:.55;cursor:not-allowed;">Agotado por ahora</button>
+        <p style="font-size:.85rem;color:var(--ash);margin:10px 0 0;text-align:center;">Este producto está agotado temporalmente. <a href="https://wa.me/" onclick="this.href='catalogo.php';">Ver otros productos</a></p>
+        <?php else: ?>
         <button class="btn-block" type="submit">Comprar ahora · <span id="total"></span></button>
         <button class="btn-block" type="submit" name="stay" value="1" style="background:transparent;color:var(--text);border:1px solid var(--line);margin-top:10px;">🛒 Agregar al carrito</button>
+        <?php endif; ?>
         <p style="font-size:.78rem;color:var(--ash);margin:12px 0 0;text-align:center;">Tus datos y el medio de pago los eliges en el carrito. Recibirás tu clave por correo.</p>
       </form>
       <script>

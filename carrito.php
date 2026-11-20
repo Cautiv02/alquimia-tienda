@@ -6,6 +6,7 @@ require_once __DIR__ . '/delivery-engine.php';
 require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/cart-lib.php';
 require_once __DIR__ . '/coupon-lib.php';
+require_once __DIR__ . '/soldout-lib.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cart = cart_get();
@@ -14,8 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $vid = (int) ($_POST['variant_id'] ?? 0);
         $qty = max(1, min(CART_MAX_QTY, (int) ($_POST['quantity'] ?? 1)));
         if ($vid > 0) {
+            $pidAdd = 0;
+            try { $pq = get_pdo()->prepare("SELECT product_id FROM product_variants WHERE id = :v"); $pq->execute([':v' => $vid]); $pidAdd = (int) $pq->fetchColumn(); } catch (Throwable $e) {}
+            if ($pidAdd && is_soldout($pidAdd)) { header('Location: ' . ($pidAdd ? 'producto.php?id=' . $pidAdd : 'catalogo.php')); exit; }
             $cart[$vid] = min(CART_MAX_QTY, ($cart[$vid] ?? 0) + $qty);
-            try { $pq = get_pdo()->prepare("SELECT product_id FROM product_variants WHERE id = :v"); $pq->execute([':v' => $vid]); track_event('cart_add', (int) $pq->fetchColumn() ?: null); } catch (Throwable $e) {}
+            try { track_event('cart_add', $pidAdd ?: null); } catch (Throwable $e) {}
         }
     } elseif ($action === 'set') {
         foreach ((array) ($_POST['qty'] ?? []) as $vid => $qty) {
@@ -44,9 +48,10 @@ foreach ($cart as $vid => $qty) {
     if (!$r || (int) round((float) $r['price']) <= 0) continue; // producto retirado: se omite
     $unit = (int) round((float) $r['price']);
     $title = $r['pt'] . ((trim((string) $r['vt']) !== '' && $r['vt'] !== 'Default Title') ? ' — ' . $r['vt'] : '');
-    $lines[] = ['vid' => $vid, 'qty' => $qty, 'unit' => $unit, 'title' => $title, 'pid' => $r['pid'], 'img' => $r['image_url']];
+    $lines[] = ['vid' => $vid, 'qty' => $qty, 'unit' => $unit, 'title' => $title, 'pid' => $r['pid'], 'img' => $r['image_url'], 'sold' => is_soldout((int) $r['pid'])];
     $total += $unit * $qty; $clean[$vid] = $qty;
 }
+$soldLines = []; foreach ($lines as $l) if (!empty($l['sold'])) $soldLines[] = $l['title'];
 if ($clean !== $cart) cart_save($clean); // quita productos que ya no existen
 
 site_header('Carrito', 'Tu carrito de compra');
@@ -125,8 +130,12 @@ site_header('Carrito', 'Tu carrito de compra');
           <label><input type="radio" name="payment_method" value="transferencia"> Transferencia bancaria</label>
         </div>
         <?php endif; ?>
+        <?php if ($soldLines): ?><p class="added-note" style="background:#fdeaea;color:#8a1f1f;">Hay productos agotados en tu carrito (<?= h(implode(', ', $soldLines)) ?>). Quítalos para continuar.</p>
+        <button class="btn-block" type="button" disabled style="opacity:.55;cursor:not-allowed;">No disponible</button>
+        <?php else: ?>
         <button class="btn-block" type="submit"><?= transfer_enabled() ? 'Continuar' : 'Pagar con Mercado Pago' ?> · <?= money($total) ?></button>
         <p style="font-size:.78rem;color:var(--ash);margin:12px 0 0;text-align:center;">Pago seguro con Mercado Pago. Recibirás tus claves por correo.</p>
+        <?php endif; ?>
       </form>
     </div>
   </div>

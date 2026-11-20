@@ -3,6 +3,7 @@
 require_once __DIR__ . '/delivery-engine.php';
 require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/catalog-lib.php';
+require_once __DIR__ . '/soldout-lib.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
@@ -29,7 +30,7 @@ foreach ($rows as $r) {
     foreach ($words as $w) if (strpos($hay, $w) === false) { $ok = false; break; }
     if (!$ok) continue;
     $score = (strpos($norm($clean), $q) === 0 ? 0 : 1) * 1000 + mb_strlen($clean);
-    $out[] = ['s' => $score, 'id' => (int) $r['id'], 't' => $clean, 'p' => money($r['price']), 'i' => (string) $r['image_url']];
+    $out[] = ['s' => $score, 'id' => (int) $r['id'], 't' => $clean, 'p' => is_soldout((int) $r['id']) ? 'Agotado' : money($r['price']), 'i' => (string) $r['image_url']];
 }
 usort($out, fn($a, $b) => $a['s'] <=> $b['s']);
 echo json_encode(array_map(function ($o) { unset($o['s']); return $o; }, array_slice($out, 0, 7)), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

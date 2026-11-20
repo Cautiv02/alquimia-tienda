@@ -3,6 +3,7 @@
  * admin/producto.php?id=ID — editar un producto: datos, imagen, precios por opción y carga de claves (stock).
  */
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/../soldout-lib.php';
 $pdo = get_pdo();
 $id = (int) ($_GET['id'] ?? 0);
 $st = $pdo->prepare("SELECT * FROM products WHERE id = :id"); $st->execute([':id' => $id]);
@@ -42,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->prepare("UPDATE products SET title = :t, status = :s, product_type = :pt, description_html = :d, image_url = :i WHERE id = :id")
                     ->execute([':t' => $title, ':s' => $status, ':pt' => trim(mb_substr((string) ($_POST['product_type'] ?? ''), 0, 120)),
                                ':d' => (string) ($_POST['description_html'] ?? ''), ':i' => $imageUrl, ':id' => $id]);
+                soldout_set($pdo, (int) $id, !empty($_POST['sold_out']));
             }
         }
     } elseif ($a === 'variantes') {
@@ -102,6 +104,7 @@ flash_show();
   <strong>Datos del producto</strong>
   <div style="display:grid;grid-template-columns:1fr 180px;gap:12px;margin-top:12px;">
     <label class="tag">Nombre<br><input name="title" value="<?= h($clean) ?>" style="<?= $in ?>" required></label>
+    <label class="tag" style="display:block;margin-bottom:10px;"><input type="checkbox" name="sold_out" value="1" <?= is_soldout((int) $id) ? 'checked' : '' ?>> <b>Agotado</b> (no se puede comprar)</label>
     <label class="tag">Estado<br><select name="status" style="<?= $in ?>">
       <?php foreach (array_unique(['activo', 'borrador', 'archivado', (string) $p['status']]) as $s): ?><option value="<?= $s ?>" <?= $p['status'] === $s ? 'selected' : '' ?>><?= $s ?></option><?php endforeach; ?>
     </select></label>

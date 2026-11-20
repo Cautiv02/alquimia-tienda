@@ -5,6 +5,7 @@
  */
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/../home-lib.php';
+require_once __DIR__ . '/../soldout-lib.php';
 $pdo = get_pdo();
 home_ensure_tables($pdo);
 
@@ -76,9 +77,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$soldOut && !isset(home_badges()[$b])) $b = '';
         if ($soldOut) $b = '';
         $pdo->prepare("UPDATE home_section_items SET sold_out = :x, badge = :b WHERE id = :id")->execute([':x' => $soldOut, ':b' => $b, ':id' => $iid]);
+        $pq = $pdo->prepare("SELECT product_id FROM home_section_items WHERE id = :id"); $pq->execute([':id' => $iid]);
+        if ($pid = (int) $pq->fetchColumn()) soldout_set($pdo, $pid, (bool) $soldOut);
         $msg = 'Etiqueta actualizada.';
     } elseif ($a === 'toggle_soldout') {
         $pdo->prepare("UPDATE home_section_items SET sold_out = 1 - sold_out WHERE id = :id")->execute([':id' => $iid]);
+        $pq = $pdo->prepare("SELECT product_id, sold_out FROM home_section_items WHERE id = :id"); $pq->execute([':id' => $iid]);
+        if ($rr = $pq->fetch()) soldout_set($pdo, (int) $rr['product_id'], (bool) $rr['sold_out']);
     } elseif ($a === 'reset') {
         $pdo->exec("DELETE FROM home_section_items");
         $pdo->exec("DELETE FROM home_sections");

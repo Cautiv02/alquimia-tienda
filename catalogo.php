@@ -6,6 +6,7 @@
 require_once __DIR__ . '/delivery-engine.php';
 require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/catalog-lib.php';
+require_once __DIR__ . '/soldout-lib.php';
 
 $pdo = get_pdo();
 
@@ -160,7 +161,7 @@ site_header($pageTitle, 'Licencias originales de software para Chile.');
           <div class="pcard">
             <a class="pc-link" href="producto.php?id=<?= (int) $o['id'] ?>">
               <div class="offer-image">
-                <?php if ($hasOld): ?><span class="offer-badge disponible">Oferta</span><?php endif; ?>
+                <?php if (is_soldout((int) $o['id'])): ?><span class="offer-badge agotado">Agotado</span><?php elseif ($hasOld): ?><span class="offer-badge disponible">Oferta</span><?php endif; ?>
                 <?php if ($o['image_url']): ?><img src="<?= h($o['image_url']) ?>" width="600" height="600" alt="<?= h($o['clean']) ?>" loading="lazy"><?php else: ?><span class="placeholder-mark">sin imagen</span><?php endif; ?>
               </div>
             </a>
@@ -177,7 +178,9 @@ site_header($pageTitle, 'Licencias originales de software para Chile.');
                 <b><?= h(money($o['min_price'])) ?></b>
                 <?php if ($hasOld): ?><s><?= h(money($o['old_price'])) ?></s><?php endif; ?>
               </div>
-              <?php if ((int) $o['nvar'] > 1): ?>
+              <?php if (is_soldout((int) $o['id'])): ?>
+                <a class="pc-btn ghost" href="producto.php?id=<?= (int) $o['id'] ?>">Agotado</a>
+              <?php elseif ((int) $o['nvar'] > 1): ?>
                 <a class="pc-btn ghost" href="producto.php?id=<?= (int) $o['id'] ?>">Ver opciones</a>
               <?php else: ?>
                 <button class="pc-btn" type="submit" formmethod="post" formaction="carrito.php" name="add" value="<?= (int) $o['first_variant'] ?>" onclick="addCart(this)">🛒 Agregar al carrito</button>

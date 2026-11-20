@@ -3,6 +3,7 @@
  * admin/productos.php — lista de productos: buscar, ver precio y stock, crear uno nuevo, editar.
  */
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/../soldout-lib.php';
 $pdo = get_pdo();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'crear') {
@@ -81,7 +82,7 @@ flash_show();
   <tr>
     <td><?php if ($p['image_url']): ?><img src="<?= h(adm_img($p['image_url'])) ?>" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:6px;"><?php endif; ?></td>
     <td><a href="producto.php?id=<?= (int) $p['id'] ?>"><b><?= h(mb_substr($t, 0, 90)) ?></b></a></td>
-    <td><span class="pill <?= $p['status'] === 'activo' ? 'pagado' : 'pendiente' ?>"><?= h($p['status']) ?></span></td>
+    <td><span class="pill <?= $p['status'] === 'activo' ? 'pagado' : 'pendiente' ?>"><?= h($p['status']) ?></span><?= is_soldout((int) $p['id']) ? ' <span class="pill anulado">agotado</span>' : '' ?></td>
     <td><?= $p['pmin'] === null ? '—' : ($p['pmin'] == $p['pmax'] ? money($p['pmin']) : money($p['pmin']) . ' – ' . money($p['pmax'])) ?></td>
     <td><?= (int) $p['nvar'] ?></td>
     <td><?= (int) $p['stock'] ?></td>

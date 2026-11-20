@@ -12,6 +12,7 @@ require_once __DIR__ . '/delivery-engine.php';
 require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/cart-lib.php';
 require_once __DIR__ . '/coupon-lib.php';
+require_once __DIR__ . '/soldout-lib.php';
 
 function get_product_prefix(?string $productType): string {
     $map = ['windows' => 'WIN', 'office' => 'OFC', 'adobe' => 'ADB', 'autodesk' => 'ADSK', 'antivirus' => 'AV'];
@@ -93,6 +94,7 @@ foreach ($wanted as $vid => $qty) {
     $stmt->execute([':id' => $vid]);
     $variant = $stmt->fetch();
     if (!$variant) checkout_error('Uno de los productos ya no está disponible. Revisa tu carrito.', 404);
+    if (is_soldout((int) $variant['product_id'])) checkout_error('«' . $variant['product_title'] . '» está agotado por ahora. Quítalo del carrito para continuar.', 409);
     $unitPrice = (int) round((float) $variant['price']);
     if ($unitPrice <= 0) checkout_error('Un producto no tiene un precio válido. Escríbenos por WhatsApp.', 422);
     $itemTitle = $variant['product_title'];

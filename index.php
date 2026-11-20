@@ -17,6 +17,7 @@ if ($homeSections === null) $homeSections = home_resolve_defaults($allActive);
 require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/icons3d.php';
 require_once __DIR__ . '/coupon-lib.php';
+require_once __DIR__ . '/soldout-lib.php';
 track_event('view');
 ?>
 <!DOCTYPE html>
@@ -102,7 +103,7 @@ track_event('view');
       <a class="offer-card" href="producto.php?id=<?= (int) $o['product_id'] ?>" style="text-decoration:none;">
         <div class="offer-image">
           <?php $bd = (string) ($o['badge'] ?? ''); $bdl = home_badges();
-          if (!empty($o['sold_out'])): ?><span class="offer-badge agotado">Agotado</span>
+          if (!empty($o['sold_out']) || is_soldout((int) $o['product_id'])): ?><span class="offer-badge agotado">Agotado</span>
           <?php elseif ($bd !== '' && isset($bdl[$bd])): ?><span class="offer-badge b-<?= htmlspecialchars($bd) ?>"><?= htmlspecialchars($bdl[$bd]) ?></span>
           <?php elseif ($hasDiscount): ?><span class="offer-badge disponible">Oferta</span><?php endif; ?>
           <?php if ($imgSrc): ?>
