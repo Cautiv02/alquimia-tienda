@@ -62,7 +62,10 @@ if ($q !== '') {
 }
 $sql = "SELECT o.id, o.order_number, o.email, c.first_name, c.last_name, o.total_amount, o.financial_status, o.fulfillment_status, o.created_at,
                (SELECT GROUP_CONCAT(CONCAT(oi.quantity, ' x ', oi.title) SEPARATOR '; ') FROM order_items oi WHERE oi.order_id = o.id) AS items
-        FROM orders o LEFT JOIN customers c ON c.id = o.customer_id" . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . " ORDER BY o.created_at DESC, o.id DESC LIMIT 150";
+        FROM orders o LEFT JOIN customers c ON c.id = o.customer_id" . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . " ORDER BY o.created_at DESC, o.id DESC LIMIT 100 OFFSET " . (max(0, (int) ($_GET['p'] ?? 1) - 1) * 100);
+$cq = $pdo->prepare("SELECT COUNT(*) FROM orders o LEFT JOIN customers c ON c.id = o.customer_id" . ($where ? ' WHERE ' . implode(' AND ', $where) : ''));
+$cq->execute($args); $totalRows = (int) $cq->fetchColumn();
+$pg = max(1, (int) ($_GET['p'] ?? 1)); $pages = max(1, (int) ceil($totalRows / 100));
 $st = $pdo->prepare($sql);
 $st->execute($args);
 $rows = $st->fetchAll();
@@ -142,6 +145,10 @@ flash_show();
     <?php if (!$rows): ?><tr><td colspan="8" class="tag">No hay pedidos en esta vista.</td></tr><?php endif; ?>
   </table>
 </form>
+<p class="tag" style="margin:12px 0;"><?= number_format($totalRows, 0, ',', '.') ?> pedidos en esta vista · página <?= $pg ?> de <?= $pages ?>
+  <?php $pl = fn($n) => 'index.php?f=' . urlencode($f) . '&q=' . urlencode($q) . '&p=' . $n; ?>
+  <?php if ($pg > 1): ?> · <a href="<?= h($pl($pg - 1)) ?>">← Más recientes</a><?php endif; ?>
+  <?php if ($pg < $pages): ?> · <a href="<?= h($pl($pg + 1)) ?>">Anteriores →</a><?php endif; ?></p>
 <script>
   document.addEventListener('click', function (e) {
     var b = e.target.closest('.copy-mail'); if (!b) return; e.preventDefault();

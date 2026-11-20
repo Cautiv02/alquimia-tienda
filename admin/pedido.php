@@ -164,7 +164,7 @@ flash_show();
     <span class="pill <?= h($o['financial_status']) ?>"><?= h($o['financial_status']) ?></span>
     <span class="pill <?= h($o['fulfillment_status']) ?>"><?= h($o['fulfillment_status']) ?></span></h2>
   <p class="tag" style="margin:0 0 14px;"><?= h(date('d/m/Y H:i', strtotime($o['created_at']))) ?> · código único <code><?= h($o['unique_code']) ?></code> · <?= h($o['payment_method']) ?></p>
-  <p style="margin:0;"><b>Cliente:</b> <?= h($name ?: '(sin nombre)') ?><br>
+  <p style="margin:0;"><b>Cliente:</b> <?php if (!empty($o['customer_id'])): ?><a href="clientes.php?id=<?= (int) $o['customer_id'] ?>"><?= h($name ?: '(sin nombre)') ?></a> <span class="tag">(ver todos sus pedidos)</span><?php else: ?><?= h($name ?: '(sin nombre)') ?><?php endif; ?><br>
      <b>Correo:</b> <a href="mailto:<?= h($o['email']) ?>"><?= h($o['email']) ?></a>
      <button type="button" class="btn-a ghost" style="padding:2px 10px;font-size:.78rem;margin-left:6px;" onclick="document.getElementById('edit-mail').style.display='block';this.style.display='none';document.getElementById('nuevo_correo').focus();">✎ Editar correo</button><br>
      <b>Teléfono:</b> <?= h($o['phone'] ?: '-') ?>
