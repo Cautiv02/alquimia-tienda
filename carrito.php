@@ -126,16 +126,17 @@ site_header('Carrito', 'Tu carrito de compra');
         })();
         </script>
         <?php endif; ?>
-        <?php if (transfer_enabled()): ?>
+        <?php if (transfer_enabled() || binance_enabled()): ?>
         <div class="pay-choice" role="radiogroup" aria-label="Medio de pago">
           <label><input type="radio" name="payment_method" value="mercadopago" checked> Mercado Pago (tarjeta, débito, saldo)</label>
-          <label><input type="radio" name="payment_method" value="transferencia"> Transferencia bancaria</label>
+          <?php if (transfer_enabled()): ?><label><input type="radio" name="payment_method" value="transferencia"> Transferencia bancaria</label><?php endif; ?>
+          <?php if (binance_enabled()): ?><label><input type="radio" name="payment_method" value="binance"> Binance Pay (USDT) <span class="tag">≈ <?= h(binance_usdt($total)) ?> USDT</span></label><?php endif; ?>
         </div>
         <?php endif; ?>
         <?php if ($soldLines): ?><p class="added-note" style="background:#fdeaea;color:#8a1f1f;">Hay productos agotados en tu carrito (<?= h(implode(', ', $soldLines)) ?>). Quítalos para continuar.</p>
         <button class="btn-block" type="button" disabled style="opacity:.55;cursor:not-allowed;">No disponible</button>
         <?php else: ?>
-        <button class="btn-block" type="submit"><?= transfer_enabled() ? 'Continuar' : 'Pagar con Mercado Pago' ?> · <?= money($total) ?></button>
+        <button class="btn-block" type="submit"><?= (transfer_enabled() || binance_enabled()) ? 'Continuar' : 'Pagar con Mercado Pago' ?> · <?= money($total) ?></button>
         <p style="font-size:.78rem;color:var(--ash);margin:12px 0 0;text-align:center;">Pago seguro con Mercado Pago. Recibirás tus claves por correo.</p>
         <?php endif; ?>
       </form>

@@ -27,6 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'popup_button_url'  => (function ($u) { $u = trim(mb_substr((string) $u, 0, 255)); return preg_match('#^(https?://|[A-Za-z0-9_./?=&%-]+$)#', $u) ? $u : 'catalogo.php'; })($_POST['popup_button_url'] ?? ''),
         'popup_delay'       => (string) max(0, min(60, (int) ($_POST['popup_delay'] ?? 4))),
         'popup_days'        => (string) max(0, min(90, (int) ($_POST['popup_days'] ?? 7))),
+        'binance_enabled'   => !empty($_POST['binance_enabled']) ? '1' : '0',
+        'binance_details'   => trim(mb_substr((string) ($_POST['binance_details'] ?? ''), 0, 800)),
+        'binance_rate'      => trim(mb_substr((string) ($_POST['binance_rate'] ?? ''), 0, 20)),
+        'binance_note'      => trim(mb_substr((string) ($_POST['binance_note'] ?? ''), 0, 800)),
         'transfer_enabled'  => !empty($_POST['transfer_enabled']) ? '1' : '0',
         'transfer_details'  => trim(mb_substr((string) ($_POST['transfer_details'] ?? ''), 0, 1500)),
         'transfer_note'     => trim(mb_substr((string) ($_POST['transfer_note'] ?? ''), 0, 800)),
@@ -97,6 +101,20 @@ flash_show();
       <textarea name="transfer_note" rows="3" style="<?= $in ?>"><?= h($s['transfer_note']) ?></textarea></label>
     <?php if ($s['transfer_enabled'] === '1' && trim($s['transfer_details']) === ''): ?>
       <p class="flash err" style="margin:12px 0 0;">La transferencia está activada pero faltan los datos bancarios: no se mostrará hasta que los completes.</p>
+    <?php endif; ?>
+  </div>
+  <div class="box">
+    <strong>Pago con Binance Pay (manual, en USDT)</strong>
+    <p class="tag" style="margin:6px 0 12px;">El cliente ve tu Binance Pay ID y el monto en USDT, paga desde su app y te envía el comprobante. El pedido queda <b>pago pendiente</b> hasta que lo marques como pagado en el panel.</p>
+    <label style="display:block;margin-bottom:12px;"><input type="checkbox" name="binance_enabled" value="1" <?= $s['binance_enabled'] === '1' ? 'checked' : '' ?>> Ofrecer pago con Binance Pay</label>
+    <label class="tag">Tu Binance Pay ID / datos para recibir (se muestran al cliente y se envían por correo)<br>
+      <textarea name="binance_details" rows="4" style="<?= $in ?>font-family:var(--mono);" placeholder="Binance Pay ID: 123456789&#10;Nombre: ...&#10;Red: Binance Pay (sin comisión)"><?= h($s['binance_details']) ?></textarea></label>
+    <label class="tag" style="display:block;margin-top:12px;">Tasa: cuántos pesos chilenos (CLP) vale 1 USDT<br>
+      <input name="binance_rate" value="<?= h($s['binance_rate']) ?>" inputmode="decimal" placeholder="ej. 960" style="<?= $in ?>max-width:160px;"></label>
+    <label class="tag" style="display:block;margin-top:12px;">Instrucciones para el cliente<br>
+      <textarea name="binance_note" rows="3" style="<?= $in ?>"><?= h($s['binance_note']) ?></textarea></label>
+    <?php if ($s['binance_enabled'] === '1' && (trim($s['binance_details']) === '' || binance_rate() <= 0)): ?>
+      <p class="flash err" style="margin:12px 0 0;">Binance Pay está activado pero falta tu ID o la tasa: no se mostrará hasta que los completes.</p>
     <?php endif; ?>
   </div>
   <button class="btn-a" type="submit">Guardar ajustes</button>

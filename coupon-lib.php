@@ -21,7 +21,7 @@ function coupon_check(PDO $pdo, string $input, string $email): array {
     if (!$cfg['enabled'] || coupon_norm($input) !== coupon_norm($cfg['code'])) {
         return $bad('El código de descuento no es válido. Revísalo o quítalo para continuar sin descuento.');
     }
-    $st = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE LOWER(email) = :e AND (financial_status = 'pagado' OR (financial_status = 'pendiente' AND payment_method = 'transferencia'))");
+    $st = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE LOWER(email) = :e AND (financial_status = 'pagado' OR (financial_status = 'pendiente' AND payment_method IN ('transferencia','binance')))");
     $st->execute([':e' => strtolower($email)]);
     if ((int) $st->fetchColumn() > 0) {
         return $bad('Este código es solo para el primer pedido y ya tienes compras con este correo. Quita el código para continuar sin descuento.');

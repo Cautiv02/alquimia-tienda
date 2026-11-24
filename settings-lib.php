@@ -22,6 +22,10 @@ function settings_defaults(): array {
         'popup_button_url'  => 'catalogo.php',
         'popup_delay'       => '4',
         'popup_days'        => '7',
+        'binance_enabled'   => '0',
+        'binance_details'   => '',
+        'binance_rate'      => '',
+        'binance_note'      => 'Paga desde la app de Binance (Pay → Enviar) usando el ID de arriba y escribe tu número de pedido en la nota. Luego envíanos el comprobante por WhatsApp o correo. Despachamos tu clave apenas confirmemos el pago.',
         'transfer_enabled'  => '0',
         'transfer_details'  => '',
         'transfer_note'     => 'Una vez hecha la transferencia, envíanos el comprobante por WhatsApp o por correo indicando tu número de pedido. Despachamos tu clave apenas confirmemos el pago.',
@@ -48,6 +52,14 @@ function setting(string $k): string { $a = settings_all(); return (string) ($a[$
 function transfer_enabled(): bool {
     return setting('transfer_enabled') === '1' && trim(setting('transfer_details')) !== '';
 }
+
+/** Binance Pay manual: activado, con datos y con tasa CLP por 1 USDT. */
+function binance_enabled(): bool {
+    return setting('binance_enabled') === '1' && trim(setting('binance_details')) !== '' && binance_rate() > 0;
+}
+function binance_rate(): float { return (float) str_replace(',', '.', preg_replace('/[^0-9,.]/', '', setting('binance_rate'))); }
+/** Monto en USDT (2 decimales, redondeado hacia arriba) para un total en CLP. */
+function binance_usdt($clp): string { $r = binance_rate(); return $r > 0 ? number_format(ceil(((float) $clp / $r) * 100) / 100, 2, '.', '') : '0.00'; }
 
 function settings_ensure_table(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS site_settings (

@@ -446,14 +446,15 @@ function notify_transfer_order(PDO $pdo, int $orderId): void {
     $total = '$' . number_format((float) $o['total_amount'], 0, ',', '.');
     $name = trim((string) $o['first_name']);
 
-    safe_notify($pdo, 'venta', "Pedido #{$o['order_number']} por TRANSFERENCIA ({$o['email']}) por {$total}: pendiente de pago.", 'order', $orderId);
+    safe_notify($pdo, 'venta', "Pedido #{$o['order_number']} por " . (($o['payment_method'] ?? '') === 'binance' ? 'BINANCE PAY' : 'TRANSFERENCIA') . " ({$o['email']}) por {$total}: pendiente de pago.", 'order', $orderId);
 
-    $a  = "<p><strong>Nuevo pedido por transferencia, pendiente de pago.</strong></p>";
+    $isBn = ($o['payment_method'] ?? '') === 'binance';
+    $a  = "<p><strong>Nuevo pedido por " . ($isBn ? 'Binance Pay (' . binance_usdt($o['total_amount']) . ' USDT)' : 'transferencia') . ", pendiente de pago.</strong></p>";
     $a .= "<p>Pedido: <b>" . $e($o['order_number']) . "</b><br>Total: <b>$total</b><br>Cliente: " . $e($name ?: '(sin nombre)') . "<br>Correo: " . $e($o['email']) . "<br>Teléfono: " . $e($o['phone'] ?: '-') . "</p><ul>$li</ul>";
     $a .= "<p>Cuando veas el dinero en tu cuenta, abre el pedido y pulsa «Marcar como pagado»: <a href=\"" . $e(SITE_URL . '/admin/pedido.php?id=' . $orderId) . "\">abrir pedido</a></p>";
-    notify_admins("Pedido por transferencia {$o['order_number']} ({$total})", $a, $o['email']);
+    notify_admins(($isBn ? "Pedido por Binance Pay " : "Pedido por transferencia ") . "{$o['order_number']} ({$total})", $a, $o['email']);
 
     require_once __DIR__ . '/mail-templates-lib.php';
-    [$cs, $ch] = mail_render('transferencia', mail_order_vars($pdo, $orderId));
+    [$cs, $ch] = mail_render(($o['payment_method'] ?? '') === 'binance' ? 'binance' : 'transferencia', mail_order_vars($pdo, $orderId));
     smtp_send($o['email'], $cs, $ch, '', NOTIFY_EMAIL);
 }
