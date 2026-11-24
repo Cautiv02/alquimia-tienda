@@ -52,7 +52,7 @@ site_header('Resultado de tu pedido');
     <h1>El pago no se completó</h1>
     <p class="lead">No se realizó ningún cobro. Puedes intentarlo de nuevo con otro medio de pago.</p>
     <p><a class="btn-gold" href="catalogo.php">Volver al catálogo</a></p>
-  <?php elseif ($order['payment_method'] === 'binance'): ?>
+  <?php elseif ($order['payment_method'] === 'binance' || $estado === 'binance'): ?>
     <h1>Pedido recibido: falta tu pago con Binance Pay</h1>
     <p class="lead">Pedido <b><?= h($order['order_number']) ?></b> por <b><?= h(binance_usdt($order['total_amount'])) ?> USDT</b> (<?= h(money($order['total_amount'])) ?>).</p>
     <p>Envía el pago por Binance Pay a:</p>

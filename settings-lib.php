@@ -64,6 +64,18 @@ function binance_rate(): float { return (float) str_replace(',', '.', preg_repla
 /** Monto en USDT (2 decimales, redondeado hacia arriba) para un total en CLP. */
 function binance_usdt($clp): string { $r = binance_rate(); return $r > 0 ? number_format(ceil(((float) $clp / $r) * 100) / 100, 2, '.', '') : '0.00'; }
 
+/** Si orders.payment_method es un ENUM antiguo, lo pasa a texto para admitir 'binance' (y futuros medios). */
+function orders_ensure_payment_method(PDO $pdo): void {
+    try {
+        $c = $pdo->query("SHOW COLUMNS FROM orders LIKE 'payment_method'")->fetch();
+        if ($c && stripos((string) $c['Type'], 'enum') === 0) {
+            $null = strtoupper((string) $c['Null']) === 'YES' ? 'NULL' : 'NOT NULL';
+            $def  = $c['Default'] !== null ? "DEFAULT " . $pdo->quote((string) $c['Default']) : ($null === 'NULL' ? 'DEFAULT NULL' : "DEFAULT 'mercadopago'");
+            $pdo->exec("ALTER TABLE orders MODIFY payment_method VARCHAR(30) $null $def");
+        }
+    } catch (Throwable $e) { error_log('[checkout] payment_method: ' . $e->getMessage()); }
+}
+
 function settings_ensure_table(PDO $pdo): void {
     $pdo->exec("CREATE TABLE IF NOT EXISTS site_settings (
         k VARCHAR(60) NOT NULL PRIMARY KEY,

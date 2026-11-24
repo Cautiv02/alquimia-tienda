@@ -433,11 +433,12 @@ function notify_cancelled(PDO $pdo, int $orderId, string $mode): bool {
 }
 
 /** Pedido por transferencia: avisa al admin y envía al cliente los datos bancarios. */
-function notify_transfer_order(PDO $pdo, int $orderId): void {
+function notify_transfer_order(PDO $pdo, int $orderId, string $method = ''): void {
     $st = $pdo->prepare("SELECT o.*, c.first_name FROM orders o LEFT JOIN customers c ON c.id = o.customer_id WHERE o.id = :id");
     $st->execute([':id' => $orderId]);
     $o = $st->fetch();
     if (!$o) return;
+    if ($method !== '') $o['payment_method'] = $method; // por si la columna de la base aún no admite el valor
     $it = $pdo->prepare("SELECT title, quantity FROM order_items WHERE order_id = :id ORDER BY id");
     $it->execute([':id' => $orderId]);
     $e = fn($x) => htmlspecialchars((string) $x, ENT_QUOTES, 'UTF-8');

@@ -145,6 +145,7 @@ if (!$customerId) {
 // Pedido en estado pendiente (el número lleva el id correlativo: PREFIJO-DD/MM-id)
 $orderId = 0; $orderNumber = ''; $uniqueCode = '';
 $useSeq = ensure_order_seq($pdo);
+if ($payMethod === 'binance') orders_ensure_payment_method($pdo);
 $pdo->beginTransaction();
 try {
     for ($try = 0; $try < 5 && !$orderId; $try++) {
@@ -190,9 +191,9 @@ try {
 
 // Pago por transferencia: no se crea cobro en Mercado Pago; se envían los datos bancarios y se avisa al admin
 if ($payMethod === 'transferencia' || $payMethod === 'binance') {
-    try { notify_transfer_order($pdo, $orderId); } catch (Throwable $e) { error_log('[checkout] transferencia: ' . $e->getMessage()); }
+    try { notify_transfer_order($pdo, $orderId, $payMethod); } catch (Throwable $e) { error_log('[checkout] transferencia: ' . $e->getMessage()); }
     if ($fromCart) cart_save([]);
-    header('Location: ' . SITE_URL . '/pedido-resultado.php?codigo=' . urlencode($uniqueCode) . '&estado=transferencia');
+    header('Location: ' . SITE_URL . '/pedido-resultado.php?codigo=' . urlencode($uniqueCode) . '&estado=' . ($payMethod === 'binance' ? 'binance' : 'transferencia'));
     exit;
 }
 
