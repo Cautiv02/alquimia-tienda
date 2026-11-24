@@ -41,6 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash_set((int) $n . ' reseña(s) de 1 y 2 estrellas eliminadas.');
         header('Location: resenas.php'); exit;
     }
+    if ($a === 'reward') {
+        require_once __DIR__ . '/../review-requests-lib.php';
+        $rv = $pdo->prepare("SELECT id, order_id FROM reviews WHERE id = ?"); $rv->execute([(int) ($_POST['id'] ?? 0)]); $rv = $rv->fetch();
+        if ($rv && $rv['order_id']) {
+            $pdo->prepare("UPDATE reviews SET published = 1 WHERE id = ?")->execute([(int) $rv['id']]);
+            [$okr, $mr] = review_reward_send($pdo, (int) $rv['order_id'], (int) $rv['id']);
+            flash_set('Reseña publicada. ' . $mr, !$okr);
+        } else flash_set('Esta reseña no está ligada a un pedido.', true);
+        header('Location: resenas.php?' . http_build_query(['f' => $_POST['f'] ?? ''])); exit;
+    }
     $id = (int) ($_POST['id'] ?? 0);
     if ($a === 'toggle')   $pdo->prepare("UPDATE reviews SET published = 1 - published WHERE id = ?")->execute([$id]);
     if ($a === 'feature')  $pdo->prepare("UPDATE reviews SET featured = 1 - featured WHERE id = ?")->execute([$id]);
@@ -53,7 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $f = (string) ($_GET['f'] ?? '');
 $w = ['' => '1', 'sinproducto' => 'r.product_id IS NULL', 'ocultas' => 'r.published = 0', 'nuevas' => "r.source = 'cliente'"][$f] ?? '1';
-$rows = $pdo->query("SELECT r.*, p.title AS ptitle FROM reviews r LEFT JOIN products p ON p.id = r.product_id WHERE $w ORDER BY r.review_date DESC LIMIT 300")->fetchAll();
+try { require_once __DIR__ . '/../review-requests-lib.php'; review_requests_ensure($pdo); } catch (Throwable $e) {}
+$rows = $pdo->query("SELECT r.*, p.title AS ptitle, (SELECT k.code FROM review_coupons k WHERE k.order_id = r.order_id AND r.order_id IS NOT NULL LIMIT 1) AS reward_code FROM reviews r LEFT JOIN products p ON p.id = r.product_id WHERE $w ORDER BY r.review_date DESC LIMIT 300")->fetchAll();
 $tot = $pdo->query("SELECT COUNT(*) n, SUM(published) pub, AVG(CASE WHEN published=1 THEN rating END) a, SUM(product_id IS NULL) sp FROM reviews")->fetch();
 
 admin_header('Reseñas');
@@ -101,6 +112,11 @@ flash_show();
       <form method="post" style="display:inline;"><?= csrf_field() ?><input type="hidden" name="a" value="<?= $act ?>"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="f" value="<?= h($f) ?>">
         <button class="btn-a ghost" style="padding:4px 10px;font-size:.78rem;" <?= $act === 'delete' ? "onclick=\"return confirm('¿Borrar esta reseña?')\"" : '' ?>><?= h($lab) ?></button></form>
       <?php endforeach; ?>
+      <?php if ($r['order_id'] && $r['source'] === 'cliente'): ?>
+        <?php if ($r['reward_code']): ?><br><span class="tag">🎁 Descuento enviado: <?= h($r['reward_code']) ?></span>
+        <?php elseif (reward_enabled()): ?><form method="post" style="display:inline;"><?= csrf_field() ?><input type="hidden" name="a" value="reward"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="f" value="<?= h($f) ?>">
+          <button class="btn-a" style="padding:4px 10px;font-size:.78rem;margin-top:6px;" onclick="return confirm('Se publicará la reseña y se enviará un código de descuento al cliente. ¿Continuar?')">🎁 Publicar y enviar descuento</button></form><?php endif; ?>
+      <?php endif; ?>
     </td>
   </tr>
   <?php endforeach; if (!$rows): ?><tr><td colspan="6" class="tag">No hay reseñas en esta vista.</td></tr><?php endif; ?>

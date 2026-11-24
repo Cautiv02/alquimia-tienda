@@ -24,6 +24,18 @@ function mail_template_defs(): array {
             'subject' => 'Datos para pagar con Binance Pay - Pedido {pedido}',
             'body' => "Hola {nombre},\n\nRecibimos tu pedido {pedido} por {total} ({monto_usdt} USDT). Para completarlo, envía el pago por Binance Pay con estos datos:\n\n{datos_binance}\n\n{productos}\n\n{nota_binance}\n\n{boton_confirmar}\n\nEstado de tu pedido: {enlace_pedido}\nSi tienes dudas escríbenos a {correo_contacto}.\n\n— {tienda}",
         ],
+        'resena_solicitud' => [
+            'label' => 'Pedir una reseña al cliente (lo envías tú a mano)',
+            'vars'  => ['nombre', 'pedido', 'productos', 'boton_resena', 'porcentaje', 'dias_vigencia', 'correo_contacto', 'whatsapp', 'tienda'],
+            'subject' => '{nombre}, ¿cómo te fue con tu pedido? Te regalamos {porcentaje}% de descuento',
+            'body' => "Hola {nombre},\n\nEsperamos que tu pedido {pedido} haya funcionado perfecto. Tu opinión nos ayuda mucho y también a otros clientes.\n\nSi nos dejas una reseña, te enviaremos un código de {porcentaje}% de descuento para tu próxima compra.\n\n{boton_resena}\n\nSi tuviste algún problema, respóndenos a este correo o escríbenos al WhatsApp +{whatsapp} y lo resolvemos de inmediato.\n\nGracias por confiar en {tienda}.",
+        ],
+        'resena_descuento' => [
+            'label' => 'Código de descuento por dejar una reseña (lo envías tú al aprobarla)',
+            'vars'  => ['nombre', 'pedido', 'porcentaje', 'codigo_descuento', 'vence', 'dias_vigencia', 'correo_contacto', 'whatsapp', 'tienda'],
+            'subject' => '¡Gracias por tu reseña! Aquí tienes tu {porcentaje}% de descuento',
+            'body' => "Hola {nombre},\n\n¡Gracias por dejar tu opinión! Como agradecimiento, aquí tienes tu código de descuento:\n\nCódigo: {codigo_descuento}\n\nDa {porcentaje}% de descuento en tu próxima compra. Ingrésalo en el carrito antes de pagar. Es personal (solo funciona con este correo), de un solo uso y vence el {vence}. No aplica al pagar en USDT.\n\n{tienda}",
+        ],
         'enviado' => [
             'label' => 'Pedido enviado (cuando marcas "entregado")',
             'vars'  => ['nombre', 'pedido', 'total', 'productos', 'boton_resena', 'correo_contacto', 'whatsapp', 'tienda'],

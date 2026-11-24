@@ -12,12 +12,35 @@ function coupon_config(): array {
     ];
 }
 
+/** ¿Se muestra el campo de código en el carrito? (primer pedido o descuento por reseña) */
+function coupon_field_visible(): bool {
+    return coupon_config()['enabled'] || setting('review_reward_enabled') === '1';
+}
+
 function coupon_norm(string $c): string { return strtoupper(preg_replace('/\s+/', '', $c)); }
 
 /** @return array{ok:bool,msg:string,code:string,percent:int} */
 function coupon_check(PDO $pdo, string $input, string $email): array {
     $cfg = coupon_config();
     $bad = fn(string $m) => ['ok' => false, 'msg' => $m, 'code' => '', 'percent' => 0];
+    // Código único de agradecimiento por reseña (personal, un solo uso, con vencimiento)
+    if (preg_match('/^GRACIAS-[A-Z0-9]{6}$/', coupon_norm($input))) {
+        try {
+            $k = $pdo->prepare("SELECT code, email, percent, expires_at FROM review_coupons WHERE code = :c");
+            $k->execute([':c' => coupon_norm($input)]);
+            $k = $k->fetch();
+            if (!$k) return $bad('El código de descuento no es válido. Revísalo o quítalo para continuar sin descuento.');
+            if (strtolower($k['email']) !== strtolower(trim($email))) return $bad('Este código es personal y solo funciona con el correo al que lo enviamos.');
+            if (strtotime($k['expires_at']) < time()) return $bad('Este código ya venció.');
+            $used = 0;
+            try {
+                $u = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE discount_code = :c AND (financial_status = 'pagado' OR (financial_status = 'pendiente' AND payment_method = 'transferencia'))");
+                $u->execute([':c' => $k['code']]); $used = (int) $u->fetchColumn();
+            } catch (Throwable $e) { /* aún no existe la columna: nunca se ha usado */ }
+            if ($used > 0) return $bad('Este código ya fue utilizado.');
+            return ['ok' => true, 'msg' => '', 'code' => $k['code'], 'percent' => (int) $k['percent']];
+        } catch (Throwable $e) { return $bad('No pudimos validar el código ahora. Inténtalo de nuevo en unos minutos.'); }
+    }
     if (!$cfg['enabled'] || coupon_norm($input) !== coupon_norm($cfg['code'])) {
         return $bad('El código de descuento no es válido. Revísalo o quítalo para continuar sin descuento.');
     }

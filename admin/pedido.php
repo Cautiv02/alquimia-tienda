@@ -24,6 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->prepare("UPDATE orders SET fulfillment_status = 'entregado', updated_at = NOW() WHERE id = :id AND financial_status = 'pagado'")->execute([':id' => $id]);
         $m = !empty($_POST['silent']) ? false : notify_shipped($pdo, $id);
         flash_set('Pedido marcado como entregado' . (!empty($_POST['silent']) ? ' (sin email al cliente).' : ($m ? ' y se envió el email de confirmación al cliente.' : '. No se pudo enviar el email de confirmación.')), false);
+    } elseif ($a === 'solicitar_resena') {
+        require_once __DIR__ . '/../review-requests-lib.php';
+        flash_set(review_request_send($pdo, $id) ? 'Se envió la solicitud de reseña al cliente.' : 'No se pudo enviar la solicitud (revisa el correo del cliente o el envío de correos).', false);
     } elseif ($a === 'editar_correo') {
         $new = strtolower(trim((string) ($_POST['nuevo_correo'] ?? '')));
         if (!filter_var($new, FILTER_VALIDATE_EMAIL) || mb_strlen($new) > 190) {
@@ -204,6 +207,9 @@ flash_show();
       <label class="tag" style="display:block;margin-bottom:8px;"><input type="checkbox" name="silent" value="1"> No avisar al cliente por email</label>
       <button class="btn-a" name="action" value="entregado" onclick="return confirm('¿Ya enviaste las claves al cliente?')">✔ Marcar como entregado (ya envié las claves)</button>
       <button class="btn-a ghost" name="action" value="entregar_stock" onclick="return confirm('Se asignarán claves del stock cargado y se enviará el correo con el enlace al cliente. ¿Continuar?')">Entregar con claves del stock</button>
+    <?php endif; ?>
+    <?php if ($o['fulfillment_status'] === 'entregado' && $o['financial_status'] === 'pagado'): ?>
+      <button class="btn-a ghost" name="action" value="solicitar_resena" onclick="return confirm('¿Enviar al cliente la solicitud de reseña?')">⭐ Pedir reseña<?= !empty($o['review_requested_at']) ? ' (ya enviada el ' . h(date('d/m', strtotime($o['review_requested_at']))) . ')' : '' ?></button>
     <?php endif; ?>
     <?php if ($o['fulfillment_status'] === 'entregado'): ?>
       <button class="btn-a ghost" name="action" value="deshacer_envio" onclick="return confirm('¿Volver a marcar este pedido como por enviar?')">↩ Deshacer envío</button>

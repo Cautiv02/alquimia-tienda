@@ -60,9 +60,16 @@ function admin_header(string $title): void { ?>
 <div class="adm">
   <div class="adm-top">
     <div><strong style="font-family:var(--serif);font-size:1.2rem;">Panel · <?= h(SITE_NAME) ?></strong></div>
-    <div><a href="index.php">Pedidos</a><a href="clientes.php">Clientes</a><a href="estadisticas.php">Estadísticas</a><a href="productos.php">Productos</a><a href="portada.php">Portada</a><a href="resenas.php">Reseñas</a><a href="correos.php">Correos</a><a href="ajustes.php">Ajustes</a><a href="diagnostico.php">Diagnóstico</a><a href="../index.php" target="_blank">Ver tienda</a><a href="logout.php">Salir</a></div>
+    <div><a href="index.php">Pedidos</a><a href="clientes.php">Clientes</a><a href="estadisticas.php">Estadísticas</a><a href="productos.php">Productos</a><a href="portada.php">Portada</a><a href="resenas.php">Reseñas</a><a href="pedir-resenas.php">Pedir reseñas<?php $rp = admin_review_pending(); if ($rp > 0): ?> <span style="background:#b8892e;color:#fff;border-radius:10px;padding:1px 8px;font-size:.75rem;"><?= $rp ?></span><?php endif; ?></a><a href="correos.php">Correos</a><a href="ajustes.php">Ajustes</a><a href="diagnostico.php">Diagnóstico</a><a href="../index.php" target="_blank">Ver tienda</a><a href="logout.php">Salir</a></div>
   </div>
 <?php }
+/** Cantidad de pedidos pendientes de pedir reseña (para el aviso del menú). Nunca rompe el panel. */
+function admin_review_pending(): int {
+    static $n = null; if ($n !== null) return $n;
+    try { require_once __DIR__ . '/../settings-lib.php'; require_once __DIR__ . '/../review-requests-lib.php'; $n = (int) review_pending_orders(get_pdo(), true); }
+    catch (Throwable $e) { $n = 0; }
+    return $n;
+}
 function admin_footer(): void { echo '</div></body></html>'; }
 
 function flash_set(string $msg, bool $err = false): void { $_SESSION['flash'] = [$msg, $err]; }

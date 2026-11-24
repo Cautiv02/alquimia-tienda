@@ -40,7 +40,7 @@ site_header('Deja tu opinión', 'Cuéntanos cómo te fue con tu compra.');
 <?php if (!$order): ?>
   <h1>Enlace no válido</h1><p class="lead">Este enlace no es válido o el pedido aún no fue enviado.</p>
 <?php elseif ($done): ?>
-  <h1>¡Gracias por tu opinión!</h1><p class="lead">La revisaremos y la publicaremos pronto.</p><p><a class="btn-gold" href="catalogo.php">Ver el catálogo</a></p>
+  <h1>¡Gracias por tu opinión!</h1><p class="lead">La revisaremos y la publicaremos pronto.<?php if (function_exists('setting') && setting('review_reward_enabled') === '1' && (int) setting('review_reward_percent') > 0): ?> Cuando esté aprobada te enviaremos por correo un código de <b><?= (int) setting('review_reward_percent') ?>% de descuento</b> para tu próxima compra.<?php endif; ?></p><p><a class="btn-gold" href="catalogo.php">Ver el catálogo</a></p>
 <?php else: ?>
   <h1>Deja tu opinión</h1>
   <?php if ($msg): ?><p style="color:#b00020;"><?= h($msg) ?></p><?php endif; ?>

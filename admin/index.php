@@ -83,6 +83,7 @@ $fulLabel = ['pendiente' => 'por enviar', 'entregado' => 'enviado', 'parcial' =>
 admin_header('Pedidos');
 flash_show();
 ?>
+<?php if (($rpn = admin_review_pending()) > 0): ?><div class="box" style="border-color:#b8892e;">⭐ <b><?= $rpn ?></b> pedido(s) entregados hace más de 3 días esperan que decidas si les pides una reseña. <a href="pedir-resenas.php">Revisar ahora</a></div><?php endif; ?>
 <div class="box" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
   <div><span style="font-size:1.8rem;font-weight:600;"><?= $cnt ?></span> <span class="tag">pedidos pagados por enviar</span></div>
   <form method="get" style="display:flex;gap:8px;flex-wrap:wrap;">

@@ -40,6 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'popup_button_url'  => (function ($u) { $u = trim(mb_substr((string) $u, 0, 255)); return preg_match('#^(https?://|[A-Za-z0-9_./?=&%-]+$)#', $u) ? $u : 'catalogo.php'; })($_POST['popup_button_url'] ?? ''),
         'popup_delay'       => (string) max(0, min(60, (int) ($_POST['popup_delay'] ?? 4))),
         'popup_days'        => (string) max(0, min(90, (int) ($_POST['popup_days'] ?? 7))),
+        'review_reward_enabled' => !empty($_POST['review_reward_enabled']) ? '1' : '0',
+        'review_reward_percent' => (string) max(1, min(90, (int) ($_POST['review_reward_percent'] ?? 10))),
+        'review_reward_days'    => (string) max(1, min(365, (int) ($_POST['review_reward_days'] ?? 60))),
         'binance_enabled'   => !empty($_POST['binance_enabled']) ? '1' : '0',
         'binance_details'   => trim(mb_substr((string) ($_POST['binance_details'] ?? ''), 0, 800)),
         'binance_rate'      => trim(mb_substr((string) ($_POST['binance_rate'] ?? ''), 0, 20)),
@@ -116,6 +119,14 @@ flash_show();
       <p class="flash err" style="margin:12px 0 0;">La transferencia está activada pero faltan los datos bancarios: no se mostrará hasta que los completes.</p>
     <?php endif; ?>
   </div>
+  <div class="box">
+    <strong>Descuento por dejar una reseña</strong>
+    <p class="tag" style="margin:6px 0 12px;">Tú eliges a quién pedirle la reseña (menú «Pedir reseñas» o desde el pedido). Cuando el cliente la deje y tú la apruebes, le envías con un clic un código único de descuento, válido solo con su correo y de un solo uso.</p>
+    <label style="display:block;margin-bottom:12px;"><input type="checkbox" name="review_reward_enabled" value="1" <?= $s['review_reward_enabled'] === '1' ? 'checked' : '' ?>> Ofrecer descuento por reseña</label>
+    <label class="tag">Porcentaje de descuento <input name="review_reward_percent" value="<?= h($s['review_reward_percent']) ?>" inputmode="numeric" style="<?= $in ?>width:80px;"> %</label>
+    <label class="tag" style="margin-left:14px;">Vigencia del código <input name="review_reward_days" value="<?= h($s['review_reward_days']) ?>" inputmode="numeric" style="<?= $in ?>width:80px;"> días</label>
+  </div>
+
   <div class="box">
     <strong>Pago con Binance Pay (manual, en USDT)</strong>
     <p class="tag" style="margin:6px 0 12px;">El cliente ve tu Binance Pay ID y el monto en USDT, paga desde su app y te envía el comprobante. El pedido queda <b>pago pendiente</b> hasta que lo marques como pagado en el panel.</p>

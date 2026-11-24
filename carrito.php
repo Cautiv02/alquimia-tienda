@@ -107,11 +107,11 @@ site_header('Carrito', 'Tu carrito de compra');
         <div class="field"><label for="email">Correo (aquí te enviamos tus claves)</label><input id="email" type="email" name="email" autocomplete="email" required></div>
         <div class="field"><label for="phone">WhatsApp (opcional)</label><input id="phone" type="tel" name="phone" autocomplete="tel" placeholder="+56 9 ..."></div>
         <div class="hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
-        <?php $cp = coupon_config(); if ($cp['enabled']): ?>
+        <?php $cp = coupon_config(); if (coupon_field_visible()): ?>
         <div class="field"><label for="coupon">¿Tienes un código de descuento? (opcional)</label>
           <input id="coupon" type="text" name="coupon" autocomplete="off" style="text-transform:uppercase;" maxlength="30">
           <p id="cdisc" style="display:none;margin:6px 0 0;font-size:.85rem;color:#1b5e33;"></p>
-          <p style="margin:4px 0 0;font-size:.76rem;color:var(--ash);">Válido solo en tu primer pedido; lo verificamos con tu correo.</p>
+          <p style="margin:4px 0 0;font-size:.76rem;color:var(--ash);">Lo verificamos con tu correo. El código de primer pedido vale solo en tu primera compra.</p>
         </div>
         <script>
         (function () {
@@ -119,7 +119,7 @@ site_header('Carrito', 'Tu carrito de compra');
           var i = document.getElementById('coupon'), d = document.getElementById('cdisc');
           function fmt(n) { return '$' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
           i.addEventListener('input', function () {
-            var ok = i.value.replace(/\s+/g, '').toUpperCase() === code;
+            var ok = code !== '' && i.value.replace(/\s+/g, '').toUpperCase() === code;
             d.style.display = ok ? 'block' : 'none';
             if (ok) d.textContent = '✓ ' + pct + '% de descuento: pagarías aprox. ' + fmt(total * (100 - pct) / 100);
           });
@@ -133,7 +133,7 @@ site_header('Carrito', 'Tu carrito de compra');
           <?php if (binance_enabled()): ?><label><input type="radio" name="payment_method" value="binance"> Binance Pay (USDT) <span class="tag">≈ <?= h(binance_usdt($total)) ?> USDT · sin cupones de descuento</span></label><?php endif; ?>
         </div>
         <?php endif; ?>
-        <?php if (binance_enabled() && $cp['enabled']): ?>
+        <?php if (binance_enabled() && coupon_field_visible()): ?>
         <script>
         (function () {
           var c = document.getElementById('coupon'), d = document.getElementById('cdisc'), f = c.closest('.field');
