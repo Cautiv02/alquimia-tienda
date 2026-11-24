@@ -61,8 +61,10 @@ function binance_enabled(): bool {
 /** Dirección completa de la imagen del QR de Binance Pay ('' si no hay). */
 function binance_qr_url(): string { $p = trim(setting('binance_qr')); return $p === '' ? '' : (defined('SITE_URL') ? rtrim(SITE_URL, '/') . '/' : '') . ltrim($p, '/'); }
 function binance_rate(): float { return (float) str_replace(',', '.', preg_replace('/[^0-9,.]/', '', setting('binance_rate'))); }
-/** Monto en USDT (2 decimales, redondeado hacia arriba) para un total en CLP. */
-function binance_usdt($clp): string { $r = binance_rate(); return $r > 0 ? number_format(ceil(((float) $clp / $r) * 100) / 100, 2, '.', '') : '0.00'; }
+/** Monto en USDT para un total en CLP, redondeado al entero más cercano (mínimo 1). */
+function binance_usdt($clp): string { $r = binance_rate(); return $r > 0 ? (string) max(1, (int) round((float) $clp / $r)) : '0'; }
+/** Referencia corta del pedido: solo el correlativo (AD-24/11-8066 → 8066). */
+function order_short_ref(string $orderNumber): string { return preg_match('/(\d+)$/', $orderNumber, $m) ? $m[1] : $orderNumber; }
 
 /** Si orders.payment_method es un ENUM antiguo, lo pasa a texto para admitir 'binance' (y futuros medios). */
 function orders_ensure_payment_method(PDO $pdo): void {

@@ -8,3 +8,4 @@ webhook.log
 *.json
 *.csv
 *.zip
+comprobantes/

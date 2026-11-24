@@ -14,15 +14,15 @@ function mail_template_defs(): array {
         ],
         'transferencia' => [
             'label' => 'Datos para transferir (pedido por transferencia bancaria)',
-            'vars'  => ['nombre', 'pedido', 'total', 'productos', 'datos_transferencia', 'nota_transferencia', 'enlace_pedido', 'correo_contacto', 'whatsapp', 'tienda'],
+            'vars'  => ['nombre', 'pedido', 'total', 'productos', 'datos_transferencia', 'nota_transferencia', 'boton_confirmar', 'enlace_pedido', 'correo_contacto', 'whatsapp', 'tienda'],
             'subject' => 'Datos para transferir - Pedido {pedido}',
-            'body' => "Hola {nombre},\n\nRecibimos tu pedido {pedido} por {total}. Para completarlo, realiza una transferencia con estos datos:\n\n{datos_transferencia}\n\n{productos}\n\n{nota_transferencia}\n\nEstado de tu pedido: {enlace_pedido}\nSi tienes dudas escríbenos a {correo_contacto}.\n\n— {tienda}",
+            'body' => "Hola {nombre},\n\nRecibimos tu pedido {pedido} por {total}. Para completarlo, realiza una transferencia con estos datos:\n\n{datos_transferencia}\n\n{productos}\n\n{nota_transferencia}\n\n{boton_confirmar}\n\nEstado de tu pedido: {enlace_pedido}\nSi tienes dudas escríbenos a {correo_contacto}.\n\n— {tienda}",
         ],
         'binance' => [
             'label' => 'Datos para pagar con Binance Pay',
-            'vars'  => ['nombre', 'pedido', 'total', 'monto_usdt', 'productos', 'datos_binance', 'nota_binance', 'enlace_pedido', 'correo_contacto', 'whatsapp', 'tienda'],
+            'vars'  => ['nombre', 'pedido', 'total', 'monto_usdt', 'productos', 'datos_binance', 'nota_binance', 'boton_confirmar', 'enlace_pedido', 'correo_contacto', 'whatsapp', 'tienda'],
             'subject' => 'Datos para pagar con Binance Pay - Pedido {pedido}',
-            'body' => "Hola {nombre},\n\nRecibimos tu pedido {pedido} por {total} ({monto_usdt} USDT). Para completarlo, envía el pago por Binance Pay con estos datos:\n\n{datos_binance}\n\n{productos}\n\n{nota_binance}\n\nEstado de tu pedido: {enlace_pedido}\nSi tienes dudas escríbenos a {correo_contacto}.\n\n— {tienda}",
+            'body' => "Hola {nombre},\n\nRecibimos tu pedido {pedido} por {total} ({monto_usdt} USDT). Para completarlo, envía el pago por Binance Pay con estos datos:\n\n{datos_binance}\n\n{productos}\n\n{nota_binance}\n\n{boton_confirmar}\n\nEstado de tu pedido: {enlace_pedido}\nSi tienes dudas escríbenos a {correo_contacto}.\n\n— {tienda}",
         ],
         'enviado' => [
             'label' => 'Pedido enviado (cuando marcas "entregado")',
@@ -59,7 +59,7 @@ function mail_template_setting_defaults(): array {
 }
 
 /** Variables que contienen HTML ya preparado (no se escapan). */
-function mail_raw_vars(): array { return ['productos', 'enlace_pedido', 'datos_transferencia', 'nota_transferencia', 'datos_binance', 'nota_binance', 'boton_resena']; }
+function mail_raw_vars(): array { return ['productos', 'enlace_pedido', 'datos_transferencia', 'nota_transferencia', 'datos_binance', 'nota_binance', 'boton_confirmar', 'boton_resena']; }
 
 /**
  * Genera [asunto, html] de un correo. $vars: valores en texto plano (se escapan) y, para las variables "raw", HTML.
@@ -90,7 +90,7 @@ function mail_render_text(string $subj, string $body, array $vars): array {
     foreach ($paras as $p) {
         $p = trim($p); if ($p === '') continue;
         // un párrafo que es solo una variable HTML (lista, botón) va sin <p>
-        if (preg_match('/^\{([a-z_]+)\}$/', $p, $mm) && in_array($mm[1], ['productos', 'datos_transferencia', 'datos_binance', 'boton_resena'], true)) { $out .= $sub($p, true); continue; }
+        if (preg_match('/^\{([a-z_]+)\}$/', $p, $mm) && in_array($mm[1], ['productos', 'datos_transferencia', 'datos_binance', 'boton_confirmar', 'boton_resena'], true)) { $out .= $sub($p, true); continue; }
         $out .= '<p>' . nl2br($sub(htmlspecialchars_decode_tokens($p), true)) . '</p>';
     }
     $html = '<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#222;line-height:1.5">' . $out . '</div>';
@@ -123,8 +123,9 @@ function mail_order_vars(PDO $pdo, int $orderId): array {
         'datos_transferencia' => '<div style="background:#f6f2e6;padding:12px 14px;border-radius:8px;">' . nl2br($e(setting('transfer_details'))) . '<br><br><b>Monto: ' . $e($total) . '</b><br><b>Referencia: ' . $e($o['order_number']) . '</b></div>',
         'nota_transferencia' => nl2br($e(setting('transfer_note'))),
         'monto_usdt' => binance_usdt($o['total_amount']),
-        'datos_binance' => '<div style="background:#f6f2e6;padding:12px 14px;border-radius:8px;">' . (binance_qr_url() !== '' ? '<img src="' . $e(binance_qr_url()) . '" alt="Código QR de Binance Pay" width="200" height="200" style="display:block;margin:0 0 10px;background:#fff;padding:6px;border-radius:6px;">' : '') . nl2br($e(setting('binance_details'))) . '<br><br><b>Monto: ' . $e(binance_usdt($o['total_amount'])) . ' USDT</b><br><b>Nota/Referencia: ' . $e($o['order_number']) . '</b></div>',
+        'datos_binance' => '<div style="background:#f6f2e6;padding:12px 14px;border-radius:8px;">' . (binance_qr_url() !== '' ? '<img src="' . $e(binance_qr_url()) . '" alt="Código QR de Binance Pay" width="200" height="200" style="display:block;margin:0 0 10px;background:#fff;padding:6px;border-radius:6px;">' : '') . nl2br($e(setting('binance_details'))) . '<br><br><b>Monto: ' . $e(binance_usdt($o['total_amount'])) . ' USDT</b><br><b>Nota/Referencia: ' . $e(order_short_ref((string) $o['order_number'])) . '</b></div>',
         'nota_binance' => nl2br($e(setting('binance_note'))),
+        'boton_confirmar' => '<p style="margin:16px 0;"><a href="' . $e(SITE_URL . '/confirmar-pago.php?codigo=' . urlencode((string) $o['unique_code'])) . '" style="background:#96691A;color:#fff;padding:11px 20px;border-radius:6px;text-decoration:none;font-weight:bold;">Confirmar mi pago</a></p>',
         'boton_resena' => '',
     ];
 }

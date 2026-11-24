@@ -12,7 +12,7 @@ $varHelp = [
     'nombre' => 'nombre del cliente', 'pedido' => 'número de pedido', 'total' => 'monto del pedido', 'productos' => 'lista de productos',
     'codigo' => 'código único del pedido', 'enlace_pedido' => 'enlace para ver el pedido', 'correo_contacto' => 'tu correo de contacto',
     'whatsapp' => 'tu WhatsApp', 'tienda' => 'nombre de la tienda', 'datos_transferencia' => 'datos bancarios + monto + referencia',
-    'nota_transferencia' => 'nota de la transferencia (Ajustes)', 'boton_resena' => 'botón para dejar una reseña', 'monto_usdt' => 'monto en USDT', 'datos_binance' => 'tu ID de Binance Pay + monto + referencia', 'nota_binance' => 'instrucciones de Binance (Ajustes)',
+    'nota_transferencia' => 'nota de la transferencia (Ajustes)', 'boton_resena' => 'botón para dejar una reseña', 'boton_confirmar' => 'botón «Confirmar mi pago» (subir comprobante)', 'monto_usdt' => 'monto en USDT', 'datos_binance' => 'tu ID de Binance Pay + monto + referencia', 'nota_binance' => 'instrucciones de Binance (Ajustes)',
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -34,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'productos' => '<ul><li>1 × Producto de ejemplo</li></ul>', 'enlace_pedido' => '<a href="' . h(SITE_URL) . '">Ver mi pedido</a>',
             'correo_contacto' => NOTIFY_EMAIL, 'whatsapp' => defined('SUPPORT_WHATSAPP') ? SUPPORT_WHATSAPP : '', 'tienda' => SITE_NAME,
             'datos_transferencia' => '<div style="background:#f6f2e6;padding:12px 14px;border-radius:8px;">Banco de ejemplo · Cuenta 000000<br><br><b>Monto: $14.990</b><br><b>Referencia: AD-20/11-0000</b></div>',
+            'boton_confirmar' => '<p><a href="' . h(SITE_URL) . '" style="background:#96691A;color:#fff;padding:11px 20px;border-radius:6px;text-decoration:none;">Confirmar mi pago</a></p>',
             'nota_transferencia' => 'Envíanos el comprobante por WhatsApp.', 'monto_usdt' => '15.60',
             'datos_binance' => '<div style="background:#f6f2e6;padding:12px 14px;border-radius:8px;">Binance Pay ID: 123456789<br><br><b>Monto: 15.60 USDT</b></div>', 'nota_binance' => 'Envíanos el comprobante por WhatsApp.',
             'boton_resena' => '<p><a href="' . h(SITE_URL) . '" style="background:#b8892e;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;">Dejar mi reseña</a></p>',

@@ -262,6 +262,26 @@ flash_show();
   </form>
 </div>
 
+<?php
+  try { $pf = $pdo->prepare("SELECT * FROM payment_proofs WHERE order_id = :id ORDER BY id DESC"); $pf->execute([':id' => $id]); $proofs = $pf->fetchAll(); } catch (Throwable $e) { $proofs = []; }
+?>
+<?php if ($proofs): ?>
+<div class="box">
+  <strong>Comprobantes enviados por el cliente (<?= count($proofs) ?>)</strong>
+  <?php foreach ($proofs as $pr): ?>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line);">
+      <p class="tag" style="margin:0 0 6px;"><?= h(date('d/m/Y H:i', strtotime($pr['created_at']))) ?>
+        · Pagó: <b><?= h($pr['sender'] ?: '-') ?></b> · Monto: <b><?= h($pr['amount'] ?: '-') ?></b> · ID/operación: <b><?= h($pr['reference'] ?: '-') ?></b></p>
+      <?php if ($pr['note']): ?><p class="tag" style="margin:0 0 6px;">Nota: <?= h($pr['note']) ?></p><?php endif; ?>
+      <?php if ($pr['file_name']): ?>
+        <?php if ($pr['file_mime'] === 'pdf'): ?><a href="comprobante.php?id=<?= (int) $pr['id'] ?>" target="_blank">Abrir comprobante (PDF)</a>
+        <?php else: ?><a href="comprobante.php?id=<?= (int) $pr['id'] ?>" target="_blank"><img src="comprobante.php?id=<?= (int) $pr['id'] ?>" alt="Comprobante" style="max-width:280px;max-height:360px;border:1px solid var(--line);border-radius:8px;"></a><?php endif; ?>
+      <?php endif; ?>
+    </div>
+  <?php endforeach; ?>
+</div>
+<?php endif; ?>
+
 <div class="box">
   <strong>Pagos registrados</strong>
   <?php foreach ($pays as $p): ?>
