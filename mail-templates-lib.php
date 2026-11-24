@@ -123,7 +123,7 @@ function mail_order_vars(PDO $pdo, int $orderId): array {
         'datos_transferencia' => '<div style="background:#f6f2e6;padding:12px 14px;border-radius:8px;">' . nl2br($e(setting('transfer_details'))) . '<br><br><b>Monto: ' . $e($total) . '</b><br><b>Referencia: ' . $e($o['order_number']) . '</b></div>',
         'nota_transferencia' => nl2br($e(setting('transfer_note'))),
         'monto_usdt' => binance_usdt($o['total_amount']),
-        'datos_binance' => '<div style="background:#f6f2e6;padding:12px 14px;border-radius:8px;">' . nl2br($e(setting('binance_details'))) . '<br><br><b>Monto: ' . $e(binance_usdt($o['total_amount'])) . ' USDT</b><br><b>Nota/Referencia: ' . $e($o['order_number']) . '</b></div>',
+        'datos_binance' => '<div style="background:#f6f2e6;padding:12px 14px;border-radius:8px;">' . (binance_qr_url() !== '' ? '<img src="' . $e(binance_qr_url()) . '" alt="Código QR de Binance Pay" width="200" height="200" style="display:block;margin:0 0 10px;background:#fff;padding:6px;border-radius:6px;">' : '') . nl2br($e(setting('binance_details'))) . '<br><br><b>Monto: ' . $e(binance_usdt($o['total_amount'])) . ' USDT</b><br><b>Nota/Referencia: ' . $e($o['order_number']) . '</b></div>',
         'nota_binance' => nl2br($e(setting('binance_note'))),
         'boton_resena' => '',
     ];

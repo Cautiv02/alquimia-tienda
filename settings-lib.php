@@ -25,6 +25,7 @@ function settings_defaults(): array {
         'binance_enabled'   => '0',
         'binance_details'   => '',
         'binance_rate'      => '',
+        'binance_qr'        => '',
         'binance_note'      => 'Paga desde la app de Binance (Pay → Enviar) usando el ID de arriba y escribe tu número de pedido en la nota. Luego envíanos el comprobante por WhatsApp o correo. Despachamos tu clave apenas confirmemos el pago.',
         'transfer_enabled'  => '0',
         'transfer_details'  => '',
@@ -57,6 +58,8 @@ function transfer_enabled(): bool {
 function binance_enabled(): bool {
     return setting('binance_enabled') === '1' && trim(setting('binance_details')) !== '' && binance_rate() > 0;
 }
+/** Dirección completa de la imagen del QR de Binance Pay ('' si no hay). */
+function binance_qr_url(): string { $p = trim(setting('binance_qr')); return $p === '' ? '' : (defined('SITE_URL') ? rtrim(SITE_URL, '/') . '/' : '') . ltrim($p, '/'); }
 function binance_rate(): float { return (float) str_replace(',', '.', preg_replace('/[^0-9,.]/', '', setting('binance_rate'))); }
 /** Monto en USDT (2 decimales, redondeado hacia arriba) para un total en CLP. */
 function binance_usdt($clp): string { $r = binance_rate(); return $r > 0 ? number_format(ceil(((float) $clp / $r) * 100) / 100, 2, '.', '') : '0.00'; }

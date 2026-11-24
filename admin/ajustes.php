@@ -11,7 +11,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $url = trim(mb_substr((string) ($_POST['banner_link_url'] ?? ''), 0, 255));
     if ($url !== '' && !preg_match('#^(https?://|[A-Za-z0-9_./?=&%-]+$)#', $url)) $url = ''; // solo http(s) o rutas del sitio
+    $qrErr = ''; $qr = (string) setting('binance_qr');
+    if (!empty($_POST['binance_qr_remove'])) $qr = '';
+    if (!empty($_FILES['binance_qr_file']['tmp_name']) && is_uploaded_file($_FILES['binance_qr_file']['tmp_name'])) {
+        $qf = $_FILES['binance_qr_file']; $qi = @getimagesize($qf['tmp_name']);
+        $qe = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'][$qi['mime'] ?? ''] ?? '';
+        if (!$qe || $qf['size'] > 3 * 1024 * 1024) { $qrErr = 'El QR debe ser una imagen JPG, PNG o WEBP de hasta 3 MB. El resto de ajustes sí se guardó.'; }
+        else {
+            $qn = 'images/binance-qr-' . time() . '.' . $qe;
+            if (move_uploaded_file($qf['tmp_name'], __DIR__ . '/../' . $qn)) $qr = $qn;
+            else $qrErr = 'No se pudo guardar el QR (revisa permisos de la carpeta images). El resto de ajustes sí se guardó.';
+        }
+    }
     settings_save($pdo, [
+        'binance_qr'        => $qr,
         'banner_enabled'    => !empty($_POST['banner_enabled']) ? '1' : '0',
         'banner_text'       => trim(mb_substr((string) ($_POST['banner_text'] ?? ''), 0, 300)),
         'banner_link_label' => trim(mb_substr((string) ($_POST['banner_link_label'] ?? ''), 0, 80)),
@@ -35,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'transfer_details'  => trim(mb_substr((string) ($_POST['transfer_details'] ?? ''), 0, 1500)),
         'transfer_note'     => trim(mb_substr((string) ($_POST['transfer_note'] ?? ''), 0, 800)),
     ]);
-    flash_set('Ajustes guardados.');
+    if ($qrErr !== '') flash_set($qrErr, true); else flash_set('Ajustes guardados.');
     header('Location: ajustes.php');
     exit;
 }
@@ -46,7 +59,7 @@ admin_header('Ajustes');
 flash_show();
 ?>
 <h2 style="font-family:var(--serif);margin:0 0 16px;">Ajustes de la tienda</h2>
-<form method="post"><?= csrf_field() ?>
+<form method="post" enctype="multipart/form-data"><?= csrf_field() ?>
   <div class="box">
     <strong>Aviso superior (franja arriba de todas las páginas)</strong>
     <p class="tag" style="margin:6px 0 12px;">Los clientes pueden cerrarlo; si cambias el texto, vuelve a aparecer para todos.</p>
@@ -109,6 +122,10 @@ flash_show();
     <label style="display:block;margin-bottom:12px;"><input type="checkbox" name="binance_enabled" value="1" <?= $s['binance_enabled'] === '1' ? 'checked' : '' ?>> Ofrecer pago con Binance Pay</label>
     <label class="tag">Tu Binance Pay ID / datos para recibir (se muestran al cliente y se envían por correo)<br>
       <textarea name="binance_details" rows="4" style="<?= $in ?>font-family:var(--mono);" placeholder="Binance Pay ID: 123456789&#10;Nombre: ...&#10;Red: Binance Pay (sin comisión)"><?= h($s['binance_details']) ?></textarea></label>
+    <div class="tag" style="margin-top:12px;">Código QR de tu Binance Pay (opcional; se muestra al cliente y en el correo)<br>
+      <?php if (trim($s['binance_qr']) !== ''): ?><img src="../<?= h($s['binance_qr']) ?>" alt="QR actual" style="width:140px;height:140px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff;margin:6px 0;display:block;">
+        <label><input type="checkbox" name="binance_qr_remove" value="1"> Quitar el QR actual</label><br><?php endif; ?>
+      <input type="file" name="binance_qr_file" accept="image/jpeg,image/png,image/webp"> <span>JPG, PNG o WEBP, máx. 3 MB. En la app de Binance: Pay → Recibir → guardar imagen del QR.</span></div>
     <label class="tag" style="display:block;margin-top:12px;">Tasa: cuántos pesos chilenos (CLP) vale 1 USDT<br>
       <input name="binance_rate" value="<?= h($s['binance_rate']) ?>" inputmode="decimal" placeholder="ej. 960" style="<?= $in ?>max-width:160px;"></label>
     <label class="tag" style="display:block;margin-top:12px;">Instrucciones para el cliente<br>

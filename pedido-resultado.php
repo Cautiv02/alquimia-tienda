@@ -56,7 +56,7 @@ site_header('Resultado de tu pedido');
     <h1>Pedido recibido: falta tu pago con Binance Pay</h1>
     <p class="lead">Pedido <b><?= h($order['order_number']) ?></b> por <b><?= h(binance_usdt($order['total_amount'])) ?> USDT</b> (<?= h(money($order['total_amount'])) ?>).</p>
     <p>Envía el pago por Binance Pay a:</p>
-    <div class="bank-box"><?= nl2br(h(setting('binance_details'))) ?><br><b>Monto: <?= h(binance_usdt($order['total_amount'])) ?> USDT</b><br><b>Nota/Referencia: <?= h($order['order_number']) ?></b></div>
+    <div class="bank-box"><?php if (binance_qr_url() !== ''): ?><img src="<?= h(binance_qr_url()) ?>" alt="Código QR de Binance Pay" width="220" height="220" style="display:block;max-width:100%;height:auto;margin:0 auto 12px;background:#fff;padding:8px;border-radius:8px;"><?php endif; ?><?= nl2br(h(setting('binance_details'))) ?><br><b>Monto: <?= h(binance_usdt($order['total_amount'])) ?> USDT</b><br><b>Nota/Referencia: <?= h($order['order_number']) ?></b></div>
     <div class="alert"><?= nl2br(h(setting('binance_note'))) ?></div>
     <p>También te enviamos estos datos a <b><?= h($order['email']) ?></b>. Tu código único: <code><?= h($order['unique_code']) ?></code></p>
     <p><a class="btn-gold" href="https://api.whatsapp.com/send?phone=<?= h(SUPPORT_WHATSAPP) ?>&text=<?= rawurlencode('Hola, hice el pago con Binance Pay del pedido ' . $order['order_number']) ?>">Enviar comprobante por WhatsApp</a>
