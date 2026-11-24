@@ -130,8 +130,23 @@ site_header('Carrito', 'Tu carrito de compra');
         <div class="pay-choice" role="radiogroup" aria-label="Medio de pago">
           <label><input type="radio" name="payment_method" value="mercadopago" checked> Mercado Pago (tarjeta, débito, saldo)</label>
           <?php if (transfer_enabled()): ?><label><input type="radio" name="payment_method" value="transferencia"> Transferencia bancaria</label><?php endif; ?>
-          <?php if (binance_enabled()): ?><label><input type="radio" name="payment_method" value="binance"> Binance Pay (USDT) <span class="tag">≈ <?= h(binance_usdt($total)) ?> USDT</span></label><?php endif; ?>
+          <?php if (binance_enabled()): ?><label><input type="radio" name="payment_method" value="binance"> Binance Pay (USDT) <span class="tag">≈ <?= h(binance_usdt($total)) ?> USDT · sin cupones de descuento</span></label><?php endif; ?>
         </div>
+        <?php endif; ?>
+        <?php if (binance_enabled() && $cp['enabled']): ?>
+        <script>
+        (function () {
+          var c = document.getElementById('coupon'), d = document.getElementById('cdisc'), f = c.closest('.field');
+          var note = document.createElement('p'); note.style.cssText = 'display:none;margin:6px 0 0;font-size:.82rem;color:#8a1f1f;';
+          note.textContent = 'Los códigos de descuento no aplican al pagar en USDT.'; f.appendChild(note);
+          function upd() {
+            var bn = document.querySelector('input[name=payment_method][value=binance]').checked;
+            c.disabled = bn; if (bn) { c.value = ''; d.style.display = 'none'; } note.style.display = bn ? 'block' : 'none'; f.style.opacity = bn ? .6 : 1;
+          }
+          document.querySelectorAll('input[name=payment_method]').forEach(function (r) { r.addEventListener('change', upd); });
+          upd();
+        })();
+        </script>
         <?php endif; ?>
         <?php if ($soldLines): ?><p class="added-note" style="background:#fdeaea;color:#8a1f1f;">Hay productos agotados en tu carrito (<?= h(implode(', ', $soldLines)) ?>). Quítalos para continuar.</p>
         <button class="btn-block" type="button" disabled style="opacity:.55;cursor:not-allowed;">No disponible</button>

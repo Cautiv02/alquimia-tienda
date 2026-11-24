@@ -118,6 +118,9 @@ foreach ($wanted as $vid => $qty) {
 // Código de descuento del primer pedido (se valida aquí con el correo; el precio nunca viene del navegador)
 $couponCode = null; $discount = 0;
 $couponIn = trim((string) ($_POST['coupon'] ?? ''));
+if ($couponIn !== '' && $payMethod === 'binance') {
+    checkout_error('Los códigos de descuento no se pueden usar al pagar en USDT. Quita el código o elige otro medio de pago.', 422);
+}
 if ($couponIn !== '') {
     $chk = coupon_check($pdo, $couponIn, $email);
     if (!$chk['ok']) checkout_error($chk['msg'], 422);
