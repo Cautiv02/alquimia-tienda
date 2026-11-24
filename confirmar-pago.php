@@ -79,7 +79,7 @@ site_header('Confirmar pago');
       <div class="hp"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
       <div class="field"><label for="proof">Captura o comprobante (imagen o PDF, máx. 6 MB)</label><input id="proof" type="file" name="proof" accept="image/jpeg,image/png,image/webp,application/pdf"></div>
       <p style="margin:6px 0 10px;color:var(--ash);font-size:.85rem;text-align:center;">— o completa los datos —</p>
-      <div class="field"><label for="sender"><?= $order['payment_method'] === 'binance' ? 'Tu usuario o ID de Binance' : 'Nombre de quien pagó' ?></label><input id="sender" name="sender" maxlength="150" value="<?= h($_POST['sender'] ?? '') ?>"></div>
+      <div class="field"><label for="sender"><?= $order['payment_method'] === 'binance' ? 'Tu correo electrónico o ID de Binance' : 'Nombre de quien pagó' ?></label><input id="sender" name="sender" maxlength="150" value="<?= h($_POST['sender'] ?? '') ?>"></div>
       <div class="field"><label for="amount">Monto enviado</label><input id="amount" name="amount" maxlength="40" placeholder="<?= $order['payment_method'] === 'binance' ? h(binance_usdt($order['total_amount']) . ' USDT') : h(money($order['total_amount'])) ?>" value="<?= h($_POST['amount'] ?? '') ?>"></div>
       <div class="field"><label for="reference"><?= $order['payment_method'] === 'binance' ? 'ID de la transacción (Order ID de Binance)' : 'N° de operación / comprobante' ?></label><input id="reference" name="reference" maxlength="150" value="<?= h($_POST['reference'] ?? '') ?>"></div>
       <div class="field"><label for="note">Comentario (opcional)</label><textarea id="note" name="note" rows="3" maxlength="1000"><?= h($_POST['note'] ?? '') ?></textarea></div>
