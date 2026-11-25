@@ -24,6 +24,12 @@ function mail_template_defs(): array {
             'subject' => 'Datos para pagar con Binance Pay - Pedido {pedido}',
             'body' => "Hola {nombre},\n\nRecibimos tu pedido {pedido} por {total} ({monto_usdt} USDT). Para completarlo, envía el pago por Binance Pay con estos datos:\n\n{datos_binance}\n\n{productos}\n\n{nota_binance}\n\n{boton_confirmar}\n\nEstado de tu pedido: {enlace_pedido}\nSi tienes dudas escríbenos a {correo_contacto}.\n\n— {tienda}",
         ],
+        'recordatorio_pago' => [
+            'label' => 'Recordatorio de pago pendiente (correo y WhatsApp; lo envías tú desde Pedidos → Pago pendiente)',
+            'vars'  => ['nombre', 'pedido', 'producto', 'total', 'enlace_pedido', 'correo_contacto', 'whatsapp', 'tienda'],
+            'subject' => 'Tu pedido {pedido} se cancelará pronto - falta el pago',
+            'body' => "Hola {nombre}\n\nTu pedido {pedido} ({producto}) se cancelará pronto ya que no recibimos el pago.\n\nSi necesitas ayuda para realizarlo puedes consultarnos por este medio.\n\nSi pagas desde Venezuela, puedes hacerlo por Binance (USDT) o PagoMóvil (Bs), confírmanos y te enviamos los datos.\n\nSaludos.\n\nAlquimiaDigital",
+        ],
         'resena_solicitud' => [
             'label' => 'Pedir una reseña al cliente (lo envías tú a mano)',
             'vars'  => ['nombre', 'pedido', 'productos', 'boton_resena', 'porcentaje', 'dias_vigencia', 'correo_contacto', 'whatsapp', 'tienda'],
@@ -84,6 +90,18 @@ function mail_render(string $key, array $vars): array {
     return mail_render_text($subj, $body, $vars);
 }
 
+/** Mensaje en texto plano (para WhatsApp) con las variables ya sustituidas. */
+function mail_plain(string $key, array $vars): string {
+    $d = mail_template_defs()[$key];
+    $body = trim(setting("mail_{$key}_body")) !== '' ? setting("mail_{$key}_body") : $d['body'];
+    $raw = mail_raw_vars();
+    return trim(preg_replace_callback('/\{([a-z_]+)\}/', function ($m) use ($vars, $raw) {
+        if (!array_key_exists($m[1], $vars)) return $m[0];
+        $v = (string) $vars[$m[1]];
+        return in_array($m[1], $raw, true) ? trim(html_entity_decode(strip_tags($v), ENT_QUOTES, 'UTF-8')) : $v;
+    }, str_replace("\r", '', $body)));
+}
+
 /** Convierte asunto y mensaje (con variables) en [asunto, html]. */
 function mail_render_text(string $subj, string $body, array $vars): array {
     $raw = mail_raw_vars();
@@ -123,11 +141,17 @@ function mail_order_vars(PDO $pdo, int $orderId): array {
     if (!$o) return [];
     $it = $pdo->prepare("SELECT title, quantity FROM order_items WHERE order_id = :id ORDER BY id"); $it->execute([':id' => $orderId]);
     $e = fn($x) => htmlspecialchars((string) $x, ENT_QUOTES, 'UTF-8');
-    $li = ''; foreach ($it->fetchAll() as $i) $li .= '<li>' . (int) $i['quantity'] . ' × ' . $e($i['title']) . '</li>';
+    $li = ''; $names = [];
+    foreach ($it->fetchAll() as $i) {
+        $li .= '<li>' . (int) $i['quantity'] . ' × ' . $e($i['title']) . '</li>';
+        $names[] = trim(preg_replace('/\s+/', ' ', preg_replace('/[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}\x{FEFF}]/u', '', (string) $i['title'])));
+    }
+    $prod = implode(' + ', $names);
     $portal = SITE_URL . '/portal.php?modo=codigo&codigo=' . urlencode((string) $o['unique_code']);
     $total = '$' . number_format((float) $o['total_amount'], 0, ',', '.');
     return [
         'nombre' => trim((string) $o['first_name']) !== '' ? trim((string) $o['first_name']) : 'cliente',
+        'producto' => $prod,
         'pedido' => $o['order_number'], 'total' => $total, 'codigo' => $o['unique_code'],
         'productos' => '<ul>' . $li . '</ul>',
         'enlace_pedido' => '<a href="' . $e($portal) . '">Ver mi pedido</a>',
