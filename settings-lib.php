@@ -29,6 +29,8 @@ function settings_defaults(): array {
         'binance_enabled'   => '0',
         'binance_details'   => '',
         'binance_rate'      => '',
+        'binance_hours'     => '4',
+        'expiry_last_run'   => '',
         'binance_qr'        => '',
         'binance_note'      => 'Paga desde la app de Binance (Pay → Enviar) usando el ID de arriba y escribe tu número de pedido en la nota. Luego envíanos el comprobante por WhatsApp o correo. Despachamos tu clave apenas confirmemos el pago.',
         'transfer_enabled'  => '0',

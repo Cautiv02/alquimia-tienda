@@ -141,7 +141,8 @@ function site_search_box(): void { ?>
 <?php }
 
 function site_header(string $title, string $description = ''): void {
-    track_event('view'); ?>
+    track_event('view');
+    try { require_once __DIR__ . '/order-expiry-lib.php'; expire_binance_orders_lazy(); } catch (Throwable $e) {} ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>

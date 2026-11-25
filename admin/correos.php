@@ -12,7 +12,7 @@ $varHelp = [
     'nombre' => 'nombre del cliente', 'pedido' => 'número de pedido', 'total' => 'monto del pedido', 'productos' => 'lista de productos',
     'codigo' => 'código único del pedido', 'enlace_pedido' => 'enlace para ver el pedido', 'correo_contacto' => 'tu correo de contacto',
     'whatsapp' => 'tu WhatsApp', 'tienda' => 'nombre de la tienda', 'datos_transferencia' => 'datos bancarios + monto + referencia',
-    'nota_transferencia' => 'nota de la transferencia (Ajustes)', 'boton_resena' => 'botón para dejar una reseña', 'producto' => 'nombre del producto (o productos) del pedido', 'porcentaje' => 'porcentaje de descuento', 'dias_vigencia' => 'días de vigencia del código', 'codigo_descuento' => 'código de descuento único', 'vence' => 'fecha de vencimiento del código', 'boton_confirmar' => 'botón «Confirmar mi pago» (subir comprobante)', 'monto_usdt' => 'monto en USDT', 'datos_binance' => 'tu ID de Binance Pay + monto + referencia', 'nota_binance' => 'instrucciones de Binance (Ajustes)',
+    'nota_transferencia' => 'nota de la transferencia (Ajustes)', 'boton_resena' => 'botón para dejar una reseña', 'horas' => 'horas de plazo para pagar con Binance', 'producto' => 'nombre del producto (o productos) del pedido', 'porcentaje' => 'porcentaje de descuento', 'dias_vigencia' => 'días de vigencia del código', 'codigo_descuento' => 'código de descuento único', 'vence' => 'fecha de vencimiento del código', 'boton_confirmar' => 'botón «Confirmar mi pago» (subir comprobante)', 'monto_usdt' => 'monto en USDT', 'datos_binance' => 'tu ID de Binance Pay + monto + referencia', 'nota_binance' => 'instrucciones de Binance (Ajustes)',
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -37,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'boton_confirmar' => '<p><a href="' . h(SITE_URL) . '" style="background:#96691A;color:#fff;padding:11px 20px;border-radius:6px;text-decoration:none;">Confirmar mi pago</a></p>',
             'porcentaje' => '10', 'dias_vigencia' => '60', 'codigo_descuento' => 'GRACIAS-AB12CD', 'vence' => date('d/m/Y', strtotime('+60 days')),
             'producto' => 'Office 2021 LTSC 1PC',
+            'horas' => '4',
             'nota_transferencia' => 'Envíanos el comprobante por WhatsApp.', 'monto_usdt' => '15.60',
             'datos_binance' => '<div style="background:#f6f2e6;padding:12px 14px;border-radius:8px;">Binance Pay ID: 123456789<br><br><b>Monto: 15.60 USDT</b></div>', 'nota_binance' => 'Envíanos el comprobante por WhatsApp.',
             'boton_resena' => '<p><a href="' . h(SITE_URL) . '" style="background:#b8892e;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;">Dejar mi reseña</a></p>',

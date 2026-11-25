@@ -29,7 +29,8 @@ if (empty($_SESSION['admin_ok'])) {
     exit;
 }
 
-function admin_header(string $title): void { ?>
+function admin_header(string $title): void {
+    try { require_once __DIR__ . '/../order-expiry-lib.php'; expire_binance_orders_lazy(); } catch (Throwable $e) {} ?>
 <!DOCTYPE html>
 <html lang="es"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">

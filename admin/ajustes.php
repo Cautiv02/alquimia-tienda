@@ -4,6 +4,7 @@
  */
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/../settings-lib.php';
+require_once __DIR__ . '/../order-expiry-lib.php';
 $pdo = get_pdo();
 settings_ensure_table($pdo);
 
@@ -46,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'binance_enabled'   => !empty($_POST['binance_enabled']) ? '1' : '0',
         'binance_details'   => trim(mb_substr((string) ($_POST['binance_details'] ?? ''), 0, 800)),
         'binance_rate'      => trim(mb_substr((string) ($_POST['binance_rate'] ?? ''), 0, 20)),
+        'binance_hours'     => (string) max(1, min(72, (int) ($_POST['binance_hours'] ?? 4))),
         'binance_note'      => trim(mb_substr((string) ($_POST['binance_note'] ?? ''), 0, 800)),
         'transfer_enabled'  => !empty($_POST['transfer_enabled']) ? '1' : '0',
         'transfer_details'  => trim(mb_substr((string) ($_POST['transfer_details'] ?? ''), 0, 1500)),
@@ -139,6 +141,9 @@ flash_show();
       <input type="file" name="binance_qr_file" accept="image/jpeg,image/png,image/webp"> <span>JPG, PNG o WEBP, máx. 3 MB. En la app de Binance: Pay → Recibir → guardar imagen del QR.</span></div>
     <label class="tag" style="display:block;margin-top:12px;">Tasa: cuántos pesos chilenos (CLP) vale 1 USDT<br>
       <input name="binance_rate" value="<?= h($s['binance_rate']) ?>" inputmode="decimal" placeholder="ej. 960" style="<?= $in ?>max-width:160px;"></label>
+    <label class="tag" style="display:block;margin-top:12px;">Horas para pagar antes de que el pedido se cancele solo <input name="binance_hours" value="<?= h($s['binance_hours']) ?>" inputmode="numeric" style="<?= $in ?>width:70px;"></label>
+    <p class="tag" style="margin:6px 0 0;">Se cancela solo cuando alguien abre la tienda o el panel (revisa cada 5 min). Para que sea exacto aunque nadie entre, crea en cPanel → Tareas Cron una tarea cada 10 minutos con este comando:<br>
+      <code style="word-break:break-all;">curl -s "<?= h(SITE_URL) ?>/cron-expirar.php?k=<?= h(expiry_cron_key()) ?>" &gt; /dev/null</code><br>Los pedidos cuyo cliente ya envió el comprobante no se cancelan solos.</p>
     <label class="tag" style="display:block;margin-top:12px;">Instrucciones para el cliente<br>
       <textarea name="binance_note" rows="3" style="<?= $in ?>"><?= h($s['binance_note']) ?></textarea></label>
     <?php if ($s['binance_enabled'] === '1' && (trim($s['binance_details']) === '' || binance_rate() <= 0)): ?>

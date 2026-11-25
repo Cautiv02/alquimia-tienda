@@ -20,9 +20,9 @@ function mail_template_defs(): array {
         ],
         'binance' => [
             'label' => 'Datos para pagar con Binance Pay',
-            'vars'  => ['nombre', 'pedido', 'total', 'monto_usdt', 'productos', 'datos_binance', 'nota_binance', 'boton_confirmar', 'enlace_pedido', 'correo_contacto', 'whatsapp', 'tienda'],
+            'vars'  => ['nombre', 'pedido', 'monto_usdt', 'horas', 'productos', 'datos_binance', 'nota_binance', 'boton_confirmar', 'enlace_pedido', 'correo_contacto', 'whatsapp', 'tienda'],
             'subject' => 'Datos para pagar con Binance Pay - Pedido {pedido}',
-            'body' => "Hola {nombre},\n\nRecibimos tu pedido {pedido} por {total} ({monto_usdt} USDT). Para completarlo, envía el pago por Binance Pay con estos datos:\n\n{datos_binance}\n\n{productos}\n\n{nota_binance}\n\n{boton_confirmar}\n\nEstado de tu pedido: {enlace_pedido}\nSi tienes dudas escríbenos a {correo_contacto}.\n\n— {tienda}",
+            'body' => "Hola {nombre},\n\nRecibimos tu pedido {pedido} por {monto_usdt} USDT. Para completarlo, envía el pago por Binance Pay con estos datos:\n\n{datos_binance}\n\n⏰ Debes realizar el pago dentro de las próximas {horas} horas. Si no recibimos el pago en ese plazo, tu pedido se cancelará automáticamente.\n\n{productos}\n\n{nota_binance}\n\n{boton_confirmar}\n\nEstado de tu pedido: {enlace_pedido}\nSi tienes dudas escríbenos a {correo_contacto}.\n\n— {tienda}",
         ],
         'recordatorio_pago' => [
             'label' => 'Recordatorio de pago pendiente (correo y WhatsApp; lo envías tú desde Pedidos → Pago pendiente)',
@@ -41,6 +41,12 @@ function mail_template_defs(): array {
             'vars'  => ['nombre', 'pedido', 'porcentaje', 'codigo_descuento', 'vence', 'dias_vigencia', 'correo_contacto', 'whatsapp', 'tienda'],
             'subject' => '¡Gracias por tu reseña! Aquí tienes tu {porcentaje}% de descuento',
             'body' => "Hola {nombre},\n\n¡Gracias por dejar tu opinión! Como agradecimiento, aquí tienes tu código de descuento:\n\nCódigo: {codigo_descuento}\n\nDa {porcentaje}% de descuento en tu próxima compra. Ingrésalo en el carrito antes de pagar. Es personal (solo funciona con este correo), de un solo uso y vence el {vence}. No aplica al pagar en USDT.\n\n{tienda}",
+        ],
+        'cancelado_vencido' => [
+            'label' => 'Pedido Binance cancelado automáticamente por falta de pago',
+            'vars'  => ['nombre', 'pedido', 'horas', 'correo_contacto', 'whatsapp', 'tienda'],
+            'subject' => 'Tu pedido {pedido} fue cancelado por falta de pago - {tienda}',
+            'body' => "Hola {nombre},\n\nTu pedido {pedido} fue cancelado porque no recibimos el pago por Binance Pay dentro de las {horas} horas indicadas.\n\nSi aún lo quieres, puedes volver a hacer tu pedido en la tienda. Y si ya pagaste, escríbenos al WhatsApp +{whatsapp} con tu comprobante y lo reactivamos de inmediato.\n\n{tienda}",
         ],
         'enviado' => [
             'label' => 'Pedido enviado (cuando marcas "entregado")',
@@ -159,6 +165,7 @@ function mail_order_vars(PDO $pdo, int $orderId): array {
         'datos_transferencia' => '<div style="background:#f6f2e6;padding:12px 14px;border-radius:8px;">' . nl2br($e(setting('transfer_details'))) . '<br><br><b>Monto: ' . $e($total) . '</b><br><b>Referencia: ' . $e($o['order_number']) . '</b></div>',
         'nota_transferencia' => nl2br($e(setting('transfer_note'))),
         'monto_usdt' => binance_usdt($o['total_amount']),
+        'horas' => (string) max(1, min(72, (int) setting('binance_hours') ?: 4)),
         'datos_binance' => '<div style="background:#f6f2e6;padding:12px 14px;border-radius:8px;">' . (binance_qr_url() !== '' ? '<img src="' . $e(binance_qr_url()) . '" alt="Código QR de Binance Pay" width="200" height="200" style="display:block;margin:0 0 10px;background:#fff;padding:6px;border-radius:6px;">' : '') . nl2br($e(setting('binance_details'))) . '<br><br><b>Monto: ' . $e(binance_usdt($o['total_amount'])) . ' USDT</b><br><b>Nota/Referencia: ' . $e(order_short_ref((string) $o['order_number'])) . '</b></div>',
         'nota_binance' => nl2br($e(setting('binance_note'))),
         'boton_confirmar' => '<p style="margin:16px 0;"><a href="' . $e(SITE_URL . '/confirmar-pago.php?codigo=' . urlencode((string) $o['unique_code'])) . '" style="background:#96691A;color:#fff;padding:11px 20px;border-radius:6px;text-decoration:none;font-weight:bold;">Confirmar mi pago</a></p>',

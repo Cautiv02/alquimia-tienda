@@ -54,7 +54,7 @@ site_header('Resultado de tu pedido');
     <p><a class="btn-gold" href="catalogo.php">Volver al catálogo</a></p>
   <?php elseif ($order['payment_method'] === 'binance' || $estado === 'binance'): ?>
     <h1>Pedido recibido: falta tu pago con Binance Pay</h1>
-    <p class="lead">Pedido <b><?= h($order['order_number']) ?></b> por <b><?= h(binance_usdt($order['total_amount'])) ?> USDT</b> (<?= h(money($order['total_amount'])) ?>).<br>Enviamos estas instrucciones de pago a tu email.</p>
+    <p class="lead">Pedido <b><?= h($order['order_number']) ?></b> por <b><?= h(binance_usdt($order['total_amount'])) ?> USDT</b>.<br>Enviamos estas instrucciones de pago a tu email.<br>⏰ Debes realizar el pago dentro de las próximas <b><?= (int) (max(1, min(72, (int) setting('binance_hours') ?: 4))) ?> horas</b>; si no lo recibimos en ese plazo, el pedido se cancelará automáticamente.</p>
     <p>Envía el pago por Binance Pay a:</p>
     <div class="bank-box"><?php if (binance_qr_url() !== ''): ?><img src="<?= h(binance_qr_url()) ?>" alt="Código QR de Binance Pay" width="220" height="220" style="display:block;max-width:100%;height:auto;margin:0 auto 12px;background:#fff;padding:8px;border-radius:8px;"><?php endif; ?><?= nl2br(h(setting('binance_details'))) ?><br><b>Monto: <?= h(binance_usdt($order['total_amount'])) ?> USDT</b><br><b>Nota/Referencia: <?= h(order_short_ref((string) $order['order_number'])) ?></b></div>
     <div class="alert"><?= nl2br(h(setting('binance_note'))) ?></div>
