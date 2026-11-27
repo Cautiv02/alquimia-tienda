@@ -40,7 +40,7 @@ $vstock = variant_stock_map();
 $firstOk = null; foreach ($variants as $i => $v) { if (!isset($vstock[(int) $v['id']]) || $vstock[(int) $v['id']] > 0) { $firstOk = $i; break; } }
 
 // Descripción de Shopify: dejamos solo etiquetas básicas
-$descHtml = strip_tags((string) $p['description_html'], '<p><br><ul><ol><li><strong><b><em><i><h2><h3><h4>');
+$descHtml = desc_clean(strip_tags((string) $p['description_html'], '<p><br><ul><ol><li><strong><b><em><i><h2><h3><h4>'));
 
 $img = $p['image_url'] ?: null;
 $revs = []; $rAvg = 0.0;
@@ -60,7 +60,7 @@ $cleanTitle = cat_clean((string) $p['title']);
 // SEO: canonical, imagen y datos estructurados de producto (precio y disponibilidad iguales a los de la ficha)
 $_okVars = array_values(array_filter($variants, function ($v) use ($vstock) { return !isset($vstock[(int) $v['id']]) || $vstock[(int) $v['id']] > 0; }));
 $_offerVar = $_okVars ? $_okVars[0] : ($variants[0] ?? null);
-$_plainDesc = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags((string) $p['description_html']), ENT_QUOTES, 'UTF-8')));
+$_plainDesc = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags(desc_clean((string) $p['description_html'])), ENT_QUOTES, 'UTF-8')));
 $_metaDesc = 'Licencia original ' . cat_clean((string) $p['title']) . ($_offerVar ? ' desde $' . number_format((float) $_offerVar['price'], 0, ',', '.') . ' CLP' : '') . '. Entrega digital por correo, pago con Mercado Pago, transferencia o Binance Pay.';
 $_canon = SITE_URL . '/producto.php?id=' . (int) $p['id'];
 seo_set(['canonical' => $_canon, 'type' => 'product', 'image' => $img ?: 'images/logo.jpg']);
@@ -148,7 +148,7 @@ site_header($p['title'], $_metaDesc);
       </script>
       <?php endif; ?>
     </div>
-      <?php if (trim($descHtml) !== ''): ?><div class="desc"><?= $descHtml ?></div><?php endif; ?>
+      <?php if (trim($descHtml) !== ''): ?><div class="desc"><?= $descHtml ?><p style="font-size:.85rem;">Condiciones de cambios, garantías y devoluciones: <a href="legal.php?p=reembolso">Política de reembolso</a>.</p></div><?php endif; ?>
     </div>
 
     <aside class="pg-side">

@@ -59,3 +59,17 @@ function product_facets(string $title): array {
 
     return ['brand' => $brand, 'category' => $cat, 'platforms' => $plat, 'duration' => $dur];
 }
+
+/**
+ * Quita de la descripción (heredada de Shopify) las frases de "originales/garantía/políticas" que podrían
+ * contradecir los Términos y la Política de reembolso. Solo afecta lo que se muestra; la base de datos no se toca.
+ */
+function desc_clean(string $html): string {
+    $h = $html;
+    $h = preg_replace('/Todos nuestros productos (son originales y )?(cuentan con|tienen) garant[ií]a[^.<]*\.?/iu', '', $h);
+    $h = preg_replace('/sin embargo tenemos una pol[ií]tica de devoluci[^.<]*\.?/iu', '', $h);
+    $h = preg_replace('/Ver Pol[ií]ticas/iu', '', $h);
+    $h = preg_replace('/\.(?=[A-ZÁÉÍÓÚÑ])/u', '. ', $h);
+    $h = preg_replace('/<p>\s*(<br\s*\/?>)?\s*<\/p>/i', '', $h);
+    return $h;
+}
