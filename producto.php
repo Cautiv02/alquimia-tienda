@@ -68,7 +68,7 @@ if ($_offerVar) {
     $_isSold = !$_okVars || !empty(soldout_ids()[(int) $p['id']]);
     $_ld = ['@context' => 'https://schema.org', '@type' => 'Product', 'name' => $p['title'], 'url' => $_canon,
         'description' => mb_substr($_plainDesc !== '' ? $_plainDesc : $_metaDesc, 0, 500),
-        'brand' => ['@type' => 'Brand', 'name' => (function ($p) { $b = trim((string) $p['vendor']); if ($b === '' || strcasecmp($b, 'Alquimia Digital') === 0) $b = product_facets((string) $p['title'])['brand']; return ($b === 'Otros' || $b === '') ? SITE_NAME : $b; })($p)],
+        'brand' => ['@type' => 'Brand', 'name' => (function ($p) { $b = product_facets((string) $p['title'])['brand']; if ($b === 'Otros' || $b === '') { $v = trim((string) $p['vendor']); $b = (strlen($v) > 2 && strcasecmp($v, 'Alquimia Digital') !== 0) ? $v : SITE_NAME; } return $b; })($p)],
         'sku' => 'P' . (int) $p['id'],
         'offers' => ['@type' => 'Offer', 'url' => $_canon, 'priceCurrency' => 'CLP', 'price' => (string) (int) round((float) $_offerVar['price']),
             'itemCondition' => 'https://schema.org/NewCondition',

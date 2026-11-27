@@ -12,6 +12,14 @@ header('Cache-Control: public, max-age=1800');
 $pdo = get_pdo();
 $base = rtrim(SITE_URL, '/');
 $x = function ($s) { return htmlspecialchars((string) $s, ENT_XML1 | ENT_QUOTES, 'UTF-8'); };
+// Google no admite texto promocional en los títulos (oferta, descuento, barato…): lo quitamos solo en el feed
+function feed_title(string $t): string {
+    $t = cat_clean($t);
+    $t = preg_replace('/\b(\d+\s*%\s*)?(descuento|oferta|ofertas|barato|barata|flash|cyber\s?days?|cyberdays|black\s?days?|blackfriday|navidad|exclusiva|promo(ci[oó]n)?|liquidaci[oó]n)\b/iu', '', $t);
+    $t = preg_replace('/(\s*[-–—|]\s*){2,}/u', ' - ', $t);
+    $t = preg_replace('/\s+/u', ' ', $t);
+    return trim($t, " \t-–—|");
+}
 $sold = soldout_ids();
 $vstock = variant_stock_map();
 $prods = $pdo->query("SELECT id, title, handle, description_html, vendor, product_type, image_url FROM products WHERE status = 'activo' ORDER BY id")->fetchAll();
@@ -35,14 +43,14 @@ foreach ($prods as $p) {
     if ($img !== '' && !preg_match('#^https?://#i', $img)) $img = $base . '/' . ltrim($img, '/');
     echo '<item>';
     echo '<g:id>' . (int) $p['id'] . '</g:id>';
-    echo '<g:title>' . $x(mb_substr($p['title'], 0, 150)) . '</g:title>';
+    echo '<g:title>' . $x(mb_substr(feed_title((string) $p['title']) ?: (string) $p['title'], 0, 150)) . '</g:title>';
     echo '<g:description>' . $x($desc) . '</g:description>';
     echo '<g:link>' . $x($base . '/producto.php?id=' . (int) $p['id']) . '</g:link>';
     if ($img !== '') echo '<g:image_link>' . $x($img) . '</g:image_link>';
     echo '<g:availability>' . $avail . '</g:availability>';
     echo '<g:price>' . $price . ' CLP</g:price>';
     echo '<g:condition>new</g:condition>';
-    echo '<g:brand>' . $x((function ($p) { $b = trim((string) $p['vendor']); if ($b === '' || strcasecmp($b, 'Alquimia Digital') === 0) { $b = product_facets((string) $p['title'])['brand']; } return ($b === 'Otros' || $b === '') ? SITE_NAME : $b; })($p)) . '</g:brand>';
+    echo '<g:brand>' . $x((function ($p) { $b = product_facets((string) $p['title'])['brand']; if ($b === 'Otros' || $b === '') { $v = trim((string) $p['vendor']); $b = (strlen($v) > 2 && strcasecmp($v, 'Alquimia Digital') !== 0) ? $v : SITE_NAME; } return $b; })($p)) . '</g:brand>';
     echo '<g:identifier_exists>no</g:identifier_exists>';
     echo '<g:product_type>' . $x($p['product_type'] ?: 'Software') . '</g:product_type>';
     echo '<g:google_product_category>313</g:google_product_category>';
