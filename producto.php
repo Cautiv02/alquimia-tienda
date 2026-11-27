@@ -93,7 +93,7 @@ site_header($p['title'], $_metaDesc);
   <div class="product-grid">
     <div class="pg-main">
     <div class="panel buybox">
-      <h1 style="font-size:1.5rem;"><?= h($p['title']) ?></h1>
+      <h1 class="pt-title"><?= h($p['title']) ?></h1>
       <?php if ($rCount): ?><p class="rating-line"><?= stars_html($rAvg) ?> <b><?= h(number_format($rAvg, 1, ',', '')) ?></b> · <a href="#opiniones"><?= (int) $rCount ?> opinión<?= $rCount === 1 ? '' : 'es' ?></a></p><?php endif; ?>
       <?php if (!empty($_GET['added'])): ?><p class="added-note">✓ Agregado al carrito. <a href="carrito.php">Ver carrito</a></p><?php endif; ?>
       <?php if (!$variants): ?>
@@ -102,7 +102,7 @@ site_header($p['title'], $_metaDesc);
       <form method="post" action="carrito.php"><input type="hidden" name="action" value="add"><input type="hidden" name="product_ref" value="<?= (int) $id ?>">
         <div class="field">
           <label>Elige tu opción</label>
-          <div class="opt-grid" role="radiogroup">
+          <div class="opt-grid<?= count($variants) > 8 ? ' many' : '' ?>" role="radiogroup">
             <?php foreach ($variants as $i => $v):
               $label = ($v['title'] === 'Default Title' || trim((string) $v['title']) === '') ? 'Licencia' : $v['title'];
               $off = ($v['compare_at_price'] && $v['compare_at_price'] > $v['price']) ? (int) round((1 - $v['price'] / $v['compare_at_price']) * 100) : 0; ?>
@@ -117,22 +117,20 @@ site_header($p['title'], $_metaDesc);
           </div>
         </div>
 
-        <p style="margin:0 0 18px;">
-          <span class="price-big" id="price"></span><span class="price-old" id="old"></span>
-        </p>
-
-        <div class="field">
-          <label for="qty">Cantidad</label>
-          <input id="qty" type="number" name="quantity" value="1" min="1" max="10">
+        <div class="buy-row">
+          <div class="buy-price"><span class="price-big" id="price"></span><span class="price-old" id="old"></span></div>
+          <label class="buy-qty" for="qty">Cantidad <input id="qty" type="number" name="quantity" value="1" min="1" max="10"></label>
         </div>
         <?php if (is_soldout((int) $id) || $firstOk === null): ?>
         <button class="btn-block" type="button" disabled style="opacity:.55;cursor:not-allowed;">Agotado por ahora</button>
-        <p style="font-size:.85rem;color:var(--ash);margin:10px 0 0;text-align:center;">Este producto está agotado temporalmente. <a href="https://wa.me/" onclick="this.href='catalogo.php';">Ver otros productos</a></p>
+        <p style="font-size:.85rem;color:var(--ash);margin:10px 0 0;text-align:center;">Este producto está agotado temporalmente. <a href="catalogo.php">Ver otros productos</a></p>
         <?php else: ?>
-        <button class="btn-block" type="submit">Comprar ahora · <span id="total"></span></button>
-        <button class="btn-block" type="submit" name="stay" value="1" style="background:transparent;color:var(--text);border:1px solid var(--line);margin-top:10px;">🛒 Agregar al carrito</button>
+        <div class="buy-btns">
+          <button class="btn-block" type="submit">Comprar ahora · <span id="total"></span></button>
+          <button class="btn-alt" type="submit" name="stay" value="1" title="Agregar al carrito">🛒 Al carrito</button>
+        </div>
         <?php endif; ?>
-        <p style="font-size:.78rem;color:var(--ash);margin:12px 0 0;text-align:center;">Tus datos y el medio de pago los eliges en el carrito. Recibirás tu clave por correo.</p>
+        <p class="buy-note">Tus datos y el medio de pago los eliges en el carrito. Recibirás tu clave por correo.</p>
       </form>
       <script>
         (function () {

@@ -193,13 +193,23 @@ function site_header(string $title, string $description = ''): void {
     .quick-facts { list-style: none; margin: 14px 0 0; padding: 0; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
   .quick-facts li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 14px; font-size: .85rem; border-bottom: 1px solid var(--line); }
   .quick-facts li:last-child { border-bottom: 0; } .quick-facts span { color: var(--ash); } .quick-facts b { text-align: right; font-weight: 600; }
-  .opt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-  .opt { display: flex; flex-direction: column; gap: 4px; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; background: #fff; position: relative; }
+  .pt-title { font-family: var(--sans); font-weight: 700; font-size: 1.4rem; line-height: 1.25; letter-spacing: -.01em; margin: 0 0 6px; }
+  .opt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+  .opt-grid.many { max-height: 236px; overflow-y: auto; padding: 2px 4px 2px 2px; }
+  .opt { display: flex; flex-direction: column; justify-content: center; gap: 1px; min-height: 52px; border: 1.5px solid var(--line); border-radius: 10px; padding: 7px 10px; cursor: pointer; background: #fff; position: relative; }
+  .field .opt { display: flex; margin: 0; font-size: inherit; font-weight: 400; } /* .field label lo hacía bloque: nombre y precio quedaban en una sola línea */
   .opt input { position: absolute; opacity: 0; pointer-events: none; }
-  .opt-name { font-size: .9rem; font-weight: 600; } .opt-name em { font-style: normal; font-size: .72rem; color: #1b7a3a; background: #e4f4ea; border-radius: 6px; padding: 1px 6px; margin-left: 4px; }
-  .opt-price { font-size: 1rem; color: var(--text-dim); }
-  .opt:has(input:checked) { border-color: var(--gold); background: var(--surface-tint); box-shadow: 0 0 0 3px rgba(184,137,46,.15); }
-  .opt:has(input:checked)::after { content: '✓'; position: absolute; top: 8px; right: 10px; color: var(--gold); font-weight: 700; }
+  .opt-name { font-size: .82rem; font-weight: 600; line-height: 1.2; padding-right: 14px; } .opt-name em { font-style: normal; font-size: .68rem; color: #1b7a3a; background: #e4f4ea; border-radius: 6px; padding: 1px 5px; margin-left: 4px; }
+  .opt-price { font-size: .9rem; font-weight: 600; color: var(--text); }
+  .opt:has(input:checked) { border-color: var(--gold); background: var(--surface-tint); box-shadow: 0 0 0 2px rgba(184,137,46,.18); }
+  .opt:has(input:checked)::after { content: '✓'; position: absolute; top: 5px; right: 8px; color: var(--gold); font-weight: 700; font-size: .8rem; }
+  .opt:has(input:disabled) { opacity: .5; cursor: not-allowed; }
+  .buy-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 12px; }
+  .buy-row .price-big { font-size: 1.55rem; font-weight: 700; }
+  .buy-qty { display: flex; align-items: center; gap: 8px; font-size: .8rem; font-weight: 600; color: var(--text-dim); } .buy-qty input { width: 64px; padding: 8px 8px; border: 1px solid var(--line); border-radius: 8px; font-size: .95rem; text-align: center; }
+  .buy-btns { display: grid; grid-template-columns: 1fr auto; gap: 8px; } .buy-btns .btn-block { padding: 12px 18px; font-size: .95rem; }
+  .btn-alt { background: transparent; color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; font-weight: 600; font-size: .9rem; cursor: pointer; font-family: var(--sans); white-space: nowrap; } .btn-alt:hover { border-color: var(--gold); color: var(--gold); }
+  .buy-note { font-size: .74rem; color: var(--ash); margin: 10px 0 0; text-align: center; }
   .trust-card { margin-top: 18px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
   .tc-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .tc-btns a { display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 600; font-size: .9rem; text-decoration: none; border-radius: 12px; padding: 12px; } .tc-b1 { background: #eaf3f1; color: #1f6b62; border: 1px solid #cfe3df; } .tc-b2 { background: #e4f4ea; color: #1b5e33; border: 1px solid #c7e6d1; }
   .tc-guide { display: flex; justify-content: space-between; gap: 10px; margin: 10px 0; background: var(--surface-tint); border-radius: 12px; padding: 12px 14px; font-size: .88rem; color: var(--text-dim); text-decoration: none; } .tc-guide b { color: var(--text); } .tc-guide:hover { color: var(--gold); }
