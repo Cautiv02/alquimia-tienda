@@ -633,3 +633,13 @@
 
 /* Tipografía: Inter en todo el sitio; los títulos algo más compactos y firmes */
 h1, h2, h3 { letter-spacing: -0.015em; }
+
+/* Móvil: sin carrusel. Cuadrícula de 2 columnas con los primeros 4 productos de cada bloque y enlace al catálogo */
+.more-mobile { display: none; }
+@media (max-width: 700px) {
+  .home-block .offer-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; overflow: visible; scroll-snap-type: none; padding: 4px 0 6px; justify-content: stretch; }
+  .home-block .offer-card { flex-basis: auto; }
+  .home-block .offer-grid .offer-card:nth-child(n+5) { display: none; }
+  .car-wrap .rv-arrow { display: none !important; }
+  .more-mobile { display: block; text-align: center; margin: 10px 0 0; font-weight: 600; font-size: .92rem; color: var(--gold); text-decoration: none; }
+}

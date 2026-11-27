@@ -123,6 +123,7 @@ track_event('view');
       <?php endforeach; ?>
     </div>
     </div>
+    <a class="more-mobile" href="catalogo.php">Ver todos los productos →</a>
   </div>
 </section>
 <?php endforeach; ?>
@@ -191,6 +192,15 @@ document.querySelectorAll('.car-wrap').forEach(function (w) {
   function upd() { var more = g.scrollWidth > g.clientWidth + 4; pv.style.display = nx.style.display = more ? '' : 'none'; pv.style.opacity = g.scrollLeft < 4 ? .35 : 1; nx.style.opacity = g.scrollLeft + g.clientWidth >= g.scrollWidth - 4 ? .35 : 1; }
   [pv, nx].forEach(function (b) { b.addEventListener('click', function () { g.scrollBy({ left: (b === nx ? 1 : -1) * g.clientWidth * 0.85, behavior: 'smooth' }); }); });
   g.addEventListener('scroll', upd, { passive: true }); window.addEventListener('resize', upd); upd();
+  // Escritorio: avanza solo cada pocos segundos; se detiene al pasar el mouse o con «reducir movimiento»
+  var desk = window.matchMedia('(min-width: 701px)'), calm = window.matchMedia('(prefers-reduced-motion: reduce)'), hover = false;
+  w.addEventListener('mouseenter', function () { hover = true; }); w.addEventListener('mouseleave', function () { hover = false; });
+  w.addEventListener('focusin', function () { hover = true; }); w.addEventListener('focusout', function () { hover = false; });
+  setInterval(function () {
+    if (!desk.matches || calm.matches || hover || document.hidden || g.scrollWidth <= g.clientWidth + 4) return;
+    if (g.scrollLeft + g.clientWidth >= g.scrollWidth - 4) g.scrollTo({ left: 0, behavior: 'smooth' });
+    else g.scrollBy({ left: g.clientWidth * 0.85, behavior: 'smooth' });
+  }, 5000);
 });
 </script>
 
