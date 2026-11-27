@@ -81,7 +81,10 @@ function facet_group(string $title, string $name, array $opts, array $sel, bool 
 
 require_once __DIR__ . '/seo-lib.php';
 $_hasFilter = ($selMarca || $selCat || $selPlat || $selDur || $soloOferta || $q !== '' || $sort !== 'nombre');
-seo_set($_hasFilter ? ['noindex' => true, 'canonical' => SITE_URL . '/catalogo.php'] : ['canonical' => SITE_URL . '/catalogo.php']);
+// Las categorías principales (?cat=windows…) son páginas propias e indexables; cualquier otra combinación de filtros no se indexa
+$_catOnly = isset($legacy[$legacyKey]) && !isset($_GET['marca'], $_GET['categoria'], $_GET['plataforma'], $_GET['duracion'], $_GET['oferta'], $_GET['q'], $_GET['orden']);
+if ($_catOnly) seo_set(['canonical' => SITE_URL . '/catalogo.php?cat=' . $legacyKey]);
+else seo_set($_hasFilter ? ['noindex' => true, 'canonical' => SITE_URL . '/catalogo.php'] : ['canonical' => SITE_URL . '/catalogo.php']);
 site_header($pageTitle, 'Catálogo de licencias originales de Windows, Office, antivirus, Adobe, Autodesk y más. Entrega digital por correo y soporte por WhatsApp.');
 ?>
 <style>
