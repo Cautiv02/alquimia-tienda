@@ -89,12 +89,18 @@ if ($_offerVar) {
 site_header($p['title'], $_metaDesc);
 ?>
 <div class="wrap page">
-  <p style="font-size:.85rem;color:var(--ash);margin:0 0 18px;"><a href="catalogo.php" style="text-decoration:none;">← Catálogo</a></p>
+  <nav class="crumbs" aria-label="Ruta"><a href="catalogo.php">Catálogo</a> <span>/</span> <a href="catalogo.php?categoria%5B%5D=<?= h(urlencode($fac['category'])) ?>"><?= h($fac['category']) ?></a> <span>/</span> <b><?= h($cleanTitle) ?></b></nav>
   <div class="product-grid">
     <div class="pg-main">
     <div class="panel buybox">
       <h1 style="font-size:1.5rem;"><?= h($p['title']) ?></h1>
       <?php if ($rCount): ?><p class="rating-line"><?= stars_html($rAvg) ?> <b><?= h(number_format($rAvg, 1, ',', '')) ?></b> · <a href="#opiniones"><?= (int) $rCount ?> opinión<?= $rCount === 1 ? '' : 'es' ?></a></p><?php endif; ?>
+      <div class="trust-badges">
+        <a href="legal.php?p=reembolso">🛡️ Garantía de funcionamiento</a>
+        <a href="legal.php?p=envios">✉️ Entrega digital por correo</a>
+        <a href="contacto.php">💬 Soporte por WhatsApp y correo</a>
+        <span>🔒 Pago seguro</span>
+      </div>
       <?php if (!empty($_GET['added'])): ?><p class="added-note">✓ Agregado al carrito. <a href="carrito.php">Ver carrito</a></p><?php endif; ?>
       <?php if (!$variants): ?>
         <p class="lead">Este producto no está disponible por ahora. Escríbenos por WhatsApp.</p>
@@ -151,7 +157,7 @@ site_header($p['title'], $_metaDesc);
       </script>
       <?php endif; ?>
     </div>
-      <?php if (trim($descHtml) !== ''): ?><div class="desc"><?= $descHtml ?><p style="font-size:.85rem;">Condiciones de cambios, garantías y devoluciones: <a href="legal.php?p=reembolso">Política de reembolso</a>.</p></div><?php endif; ?>
+      <?php if (trim($descHtml) !== ''): ?><div class="desc" id="descripcion"><?= $descHtml ?><p style="font-size:.85rem;">Condiciones de cambios, garantías y devoluciones: <a href="legal.php?p=reembolso">Política de reembolso</a>.</p></div><?php endif; ?>
     </div>
 
     <aside class="pg-side">
@@ -171,6 +177,57 @@ site_header($p['title'], $_metaDesc);
     </aside>
   </div>
 
+
+  <nav class="sec-nav" aria-label="Secciones"><a href="#descripcion">Descripción</a><a href="#proceso">Cómo funciona</a><a href="#preguntas">Preguntas frecuentes</a><?php if ($revs): ?><a href="#opiniones">Opiniones</a><?php endif; ?></nav>
+
+  <section id="proceso" class="pg-sec">
+    <h2>Cómo funciona</h2>
+    <div class="steps3">
+      <div><b>1</b><h3>Haz tu pedido</h3><p>Elige tu opción, completa tus datos y escoge el medio de pago: Mercado Pago, transferencia o Binance Pay.</p></div>
+      <div><b>2</b><h3>Paga y confirma</h3><p>Con Mercado Pago el pago se confirma solo. Si pagas por transferencia o Binance Pay, sube tu comprobante y lo verificamos.</p></div>
+      <div><b>3</b><h3>Recibe tu producto</h3><p>Te enviamos el acceso por correo. En «Consultar mi pedido» revelas tu clave y sigues la guía de instalación. Entrega máxima: 24 horas hábiles.</p></div>
+    </div>
+  </section>
+
+  <section id="preguntas" class="pg-sec">
+    <h2>Preguntas frecuentes</h2>
+    <div class="faq">
+      <details><summary>¿Cómo recibo mi licencia?</summary><p>Por correo electrónico, al correo que indiques en la compra. Además puedes verla en «Consultar mi pedido» con tu número de pedido y correo. La clave aparece oculta hasta que confirmas que verificaste la compatibilidad.</p></details>
+      <details><summary>¿Es una licencia original?</summary><p>Son licencias de software de terceros que se activan y validan en los servidores del fabricante. Alquimia Digital es un revendedor independiente: no somos el fabricante ni su distribuidor oficial. Más información en los <a href="legal.php?p=terminos">Términos del servicio</a>.</p></details>
+      <details><summary>¿Qué pasa si la licencia no funciona?</summary><p>Escríbenos con tu número de pedido y una captura del error. Según el caso, hacemos reposición o devolución, de acuerdo con nuestra <a href="legal.php?p=reembolso">Política de reembolso</a>.</p></details>
+      <details><summary>¿Puedo devolver mi compra?</summary><p>Antes de que se te entregue o revele la clave puedes desistirte dentro de 10 días corridos. Una vez revelada no procede el retracto, sin perjuicio de las garantías que se detallan en la <a href="legal.php?p=reembolso">Política de reembolso</a>.</p></details>
+      <details><summary>¿Qué medios de pago aceptan?</summary><p>Mercado Pago, transferencia bancaria y Binance Pay (USDT). Los cupones de descuento no se pueden usar con pagos en USDT.</p></details>
+      <details><summary>¿Emiten boleta o factura?</summary><p>Emitimos boleta electrónica a personas naturales. Para empresas emitimos factura; la cotización se solicita por correo a <a href="mailto:<?= h(NOTIFY_EMAIL) ?>"><?= h(NOTIFY_EMAIL) ?></a>.</p></details>
+    </div>
+  </section>
+
+  <?php
+    $rel = [];
+    try {
+        $rq = $pdo->prepare("SELECT p.id, p.title, p.image_url, MIN(pv.price) AS mp FROM products p JOIN product_variants pv ON pv.product_id = p.id WHERE p.status = 'activo' AND p.id <> :id GROUP BY p.id, p.title, p.image_url ORDER BY p.title ASC");
+        $rq->execute([':id' => $id]);
+        $sameBrand = []; $sameCat = [];
+        foreach ($rq->fetchAll() as $r) {
+            $f2 = product_facets((string) $r['title']);
+            if ($f2['brand'] === $fac['brand']) $sameBrand[] = $r; elseif ($f2['category'] === $fac['category']) $sameCat[] = $r;
+        }
+        $rel = array_slice(array_merge($sameBrand, $sameCat), 0, 4);
+    } catch (Throwable $e) { $rel = []; }
+  ?>
+  <?php if ($rel): ?>
+  <section class="pg-sec">
+    <h2>Productos relacionados</h2>
+    <div class="rel-grid">
+      <?php foreach ($rel as $r): ?>
+      <a class="rel-card" href="producto.php?id=<?= (int) $r['id'] ?>">
+        <?php if ($r['image_url']): ?><img src="<?= h($r['image_url']) ?>" alt="<?= h($r['title']) ?>" loading="lazy" width="200" height="200"><?php endif; ?>
+        <span><?= h($r['title']) ?></span><b>Desde <?= h(money($r['mp'])) ?></b>
+      </a>
+      <?php endforeach; ?>
+    </div>
+  </section>
+  <?php endif; ?>
+
   <?php if ($revs): ?>
   <section id="opiniones" class="reviews-block">
     <h2>Opiniones de clientes</h2>
@@ -187,8 +244,6 @@ site_header($p['title'], $_metaDesc);
     <p style="text-align:center;margin:6px 0 0;"><a href="resenas.php?p=<?= (int) $id ?>" style="color:var(--gold);font-weight:600;text-decoration:none;">Ver todas las opiniones de este producto →</a></p>
   </section>
   <?php reviews_scroll_js(); ?>
-  <script type="application/ld+json"><?= json_encode(['@context' => 'https://schema.org', '@type' => 'Product', 'name' => $p['title'],
-      'aggregateRating' => ['@type' => 'AggregateRating', 'ratingValue' => round($rAvg, 1), 'reviewCount' => (int) $rCount]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
   <?php endif; ?>
 </div>
 <?php site_footer();
