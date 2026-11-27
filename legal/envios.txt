@@ -1,14 +1,20 @@
 # Política de envío
-## Envío de los productos digitales
+## Entrega de los productos digitales
 
-Los productos digitales se envían automáticamente al correo que usted seleccionó durante el proceso de compra.
+Todos nuestros productos son digitales: no hay despacho físico. Se entregan al correo electrónico que usted indicó en la compra.
 
-Al comprar cualquier producto usted debe recibir dos correos: Un correo de confirmación y otro correo con el código en sí mismo.
+Con Mercado Pago, la entrega es automática en cuanto el pago se acredita, normalmente en minutos. Recibirá un correo de confirmación y otro con su producto.
 
-Si usted paga por transferencia o criptomonedas, el código de licencia será enviado en cuanto la transferencia haya sido recibida y corroborada. Recibimos múltiples transferencias al día, por lo tanto es de gran importancia que usted envíe el comprobante de esta para asegurar el envío en un plazo adecuado.
+Si paga por transferencia o Binance Pay, enviamos el producto apenas verificamos el pago. Para acelerar la entrega, suba o envíenos el comprobante indicando su número de pedido. Si el pago no se recibe dentro del plazo indicado en las instrucciones, el pedido puede cancelarse automáticamente.
 
-Si el email que especificó es erróneo, nos contactarnos por vía WhatsApp o telefónica para asegurar su entrega.
+## Plazos
 
-Algunos productos digitales, como el caso de ciertos antivirus, pueden tardar hasta 72 horas hábiles en ser entregados debido a que deben solicitarse especialmente a la empresa que los fabrica.
+-Productos de entrega automática: en minutos tras confirmarse el pago.
 
-Si transcurrido el tiempo de entrega no recibe nada en su correo, le recomendamos revisar su carpeta de SPAM, puesto que algunas entregas quedan ahí por error.
+-Productos que deben solicitarse al proveedor, como ciertos antivirus y suscripciones: hasta 72 horas hábiles.
+
+## Si no recibe su pedido
+
+Revise primero la carpeta de spam. Si el correo indicado es erróneo o pasó el plazo sin recibir nada, escríbanos por WhatsApp o correo con su número de pedido y se lo reenviamos.
+
+Puede consultar el estado de su pedido en "Consultar mi pedido".

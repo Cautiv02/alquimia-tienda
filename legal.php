@@ -21,6 +21,13 @@ $text = (string) @file_get_contents(__DIR__ . '/legal/' . $slug . '.txt');
 $text = str_replace(["\r\n", "\r"], "\n", $text);
 $text = preg_replace('/^(#{1,2} .*)\n(?!\n)/m', "$1\n\n", $text);
 
+// Datos de la empresa (Ajustes → Datos de la empresa) dentro de los textos legales: {identificacion}
+require_once __DIR__ . '/seo-lib.php';
+$_b = biz_info();
+$_ident = $_b['name'] . ($_b['rut'] !== '' ? ', RUT ' . $_b['rut'] : '') . ($_b['address'] !== '' ? ', con domicilio en ' . $_b['address'] : '')
+        . ', correo ' . $_b['email'] . ' y WhatsApp +' . $_b['wa'];
+$text = str_replace('{identificacion}', $_ident, $text);
+
 function legal_inline(string $s): string {
     $s = h($s);
     return preg_replace('~(https?://[^\s<]+)~', '<a href="$1" rel="noopener" target="_blank">$1</a>', $s);
