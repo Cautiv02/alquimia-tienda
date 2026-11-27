@@ -68,6 +68,8 @@ $where = []; $args = [];
 if ($f === 'porenviar')      $where[] = "o.financial_status = 'pagado' AND o.fulfillment_status <> 'entregado'";
 elseif ($f === 'entregados') $where[] = "o.fulfillment_status = 'entregado'";
 elseif ($f === 'pendientes') $where[] = "o.financial_status = 'pendiente'";
+elseif ($f === 'porverificar') $where[] = "o.financial_status = 'pendiente' AND EXISTS (SELECT 1 FROM payment_proofs pp WHERE pp.order_id = o.id)";
+elseif ($f === 'espera')     $where[] = "o.financial_status = 'pendiente' AND NOT EXISTS (SELECT 1 FROM payment_proofs pp WHERE pp.order_id = o.id) AND o.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
 elseif ($f === 'pagados')    $where[] = "o.financial_status = 'pagado'";
 elseif ($f === 'cancelados') $where[] = "o.financial_status IN ('anulado','reembolsado')";
 if ($q !== '') {
@@ -85,6 +87,14 @@ $st->execute($args);
 $rows = $st->fetchAll();
 
 $cnt = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE financial_status = 'pagado' AND fulfillment_status <> 'entregado'")->fetchColumn();
+// Pagos por verificar = pedidos pendientes cuyo cliente ya envió comprobante; en espera = pendientes sin comprobante de los últimos 7 días
+$cntVerify = 0; $cntWait = 0;
+try {
+    $cntVerify = (int) $pdo->query("SELECT COUNT(*) FROM orders o WHERE o.financial_status = 'pendiente' AND EXISTS (SELECT 1 FROM payment_proofs pp WHERE pp.order_id = o.id)")->fetchColumn();
+    $cntWait   = (int) $pdo->query("SELECT COUNT(*) FROM orders o WHERE o.financial_status = 'pendiente' AND NOT EXISTS (SELECT 1 FROM payment_proofs pp WHERE pp.order_id = o.id) AND o.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn();
+} catch (Throwable $e) {
+    try { $cntWait = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE financial_status = 'pendiente' AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn(); } catch (Throwable $e2) {}
+}
 
 $notes = [];
 try {
@@ -99,7 +109,11 @@ flash_show();
 ?>
 <?php if (($rpn = admin_review_pending()) > 0): ?><div class="box" style="border-color:#b8892e;">⭐ <b><?= $rpn ?></b> pedido(s) entregados hace más de 3 días esperan que decidas si les pides una reseña. <a href="pedir-resenas.php">Revisar ahora</a></div><?php endif; ?>
 <div class="box" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
-  <div><span style="font-size:1.8rem;font-weight:600;"><?= $cnt ?></span> <span class="tag">pedidos pagados por enviar</span></div>
+  <div style="display:flex;gap:26px;flex-wrap:wrap;">
+    <a href="?f=porenviar" style="text-decoration:none;color:inherit;"><span style="font-size:1.8rem;font-weight:600;"><?= $cnt ?></span> <span class="tag">pagados por enviar</span></a>
+    <a href="?f=porverificar" style="text-decoration:none;color:inherit;"><span style="font-size:1.8rem;font-weight:600;<?= $cntVerify > 0 ? 'color:#b8892e;' : '' ?>"><?= $cntVerify ?></span> <span class="tag">pagos por verificar (con comprobante)</span></a>
+    <a href="?f=espera" style="text-decoration:none;color:inherit;"><span style="font-size:1.8rem;font-weight:600;"><?= $cntWait ?></span> <span class="tag">esperando el pago del cliente</span></a>
+  </div>
   <form method="get" style="display:flex;gap:8px;flex-wrap:wrap;">
     <input type="hidden" name="f" value="<?= h($f) ?>">
     <input name="q" value="<?= h($q) ?>" placeholder="N° pedido, nombre, correo o código" style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;min-width:240px;">
@@ -108,7 +122,7 @@ flash_show();
 </div>
 
 <p>
-  <?php foreach (['porenviar' => 'Por enviar', 'pagados' => 'Pagados', 'entregados' => 'Enviados', 'pendientes' => 'Pago pendiente', 'cancelados' => 'Cancelados', 'todos' => 'Todos'] as $k => $l): ?>
+  <?php foreach (['porenviar' => 'Por enviar', 'pagados' => 'Pagados', 'entregados' => 'Enviados', 'porverificar' => 'Por verificar', 'espera' => 'Esperando pago', 'pendientes' => 'Todos los pendientes', 'cancelados' => 'Cancelados', 'todos' => 'Todos'] as $k => $l): ?>
     <a class="btn-a <?= $f === $k ? '' : 'ghost' ?>" style="margin:0 6px 6px 0;" href="?f=<?= h($k) ?>"><?= h($l) ?></a>
   <?php endforeach; ?>
 </p>
@@ -117,7 +131,7 @@ flash_show();
   <?= csrf_field() ?>
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px;align-items:center;">
     <span class="tag">Con los seleccionados:</span>
-    <?php if ($f === 'pendientes'): ?><button class="btn-a" type="submit" name="bulk" value="recordar" onclick="return alguno() && confirm('¿Enviar el recordatorio de pago por correo a los pedidos seleccionados?')">✉ Recordar pago (correo)</button><?php endif; ?>
+    <?php if (in_array($f, ['pendientes', 'espera'], true)): ?><button class="btn-a" type="submit" name="bulk" value="recordar" onclick="return alguno() && confirm('¿Enviar el recordatorio de pago por correo a los pedidos seleccionados?')">✉ Recordar pago (correo)</button><?php endif; ?>
     <button class="btn-a" type="submit" name="bulk" value="entregado" onclick="return alguno() && confirm('¿Marcar como ENVIADOS y avisar por email a cada cliente?')">✔ Enviados + avisar al cliente</button>
     <button class="btn-a ghost" type="submit" name="bulk" value="entregado_sin" onclick="return alguno() && confirm('¿Marcar como ENVIADOS SIN enviar email?')">✔ Enviados sin email</button>
     <button class="btn-a ghost" type="submit" name="bulk" value="cancelar" onclick="return alguno() && confirm('¿Cancelar los pedidos seleccionados? Si ya estaban cobrados, acuérdate de reembolsarlos en Mercado Pago.')">✕ Cancelar</button>
