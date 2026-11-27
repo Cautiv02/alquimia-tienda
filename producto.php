@@ -35,6 +35,7 @@ if (!$p) {
 $vs = $pdo->prepare("SELECT id, title, price, compare_at_price FROM product_variants WHERE product_id = :id ORDER BY price ASC, id ASC");
 $vs->execute([':id' => $id]);
 $variants = $vs->fetchAll();
+if (!old_prices_on()) { foreach ($variants as &$_v) { $_v['compare_at_price'] = null; } unset($_v); }
 $vstock = variant_stock_map();
 $firstOk = null; foreach ($variants as $i => $v) { if (!isset($vstock[(int) $v['id']]) || $vstock[(int) $v['id']] > 0) { $firstOk = $i; break; } }
 

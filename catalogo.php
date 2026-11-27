@@ -20,7 +20,7 @@ $all = $pdo->query("
     WHERE p.status = 'activo'
     GROUP BY p.id, p.title, p.image_url
     ORDER BY p.title ASC")->fetchAll();
-foreach ($all as &$r) { $r['clean'] = cat_clean($r['title']); $r['f'] = product_facets($r['title']); } unset($r);
+foreach ($all as &$r) { if (!old_prices_on()) $r['old_price'] = null; $r['clean'] = cat_clean($r['title']); $r['f'] = product_facets($r['title']); } unset($r);
 
 // Enlaces antiguos del menú → filtros nuevos
 $legacy = ['windows' => ['cat', 'Windows'], 'office' => ['cat', 'Office y productividad'], 'antivirus' => ['cat', 'Antivirus y seguridad'],

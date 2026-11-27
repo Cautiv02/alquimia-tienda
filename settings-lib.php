@@ -7,6 +7,7 @@ require_once __DIR__ . '/mail-templates-lib.php';
 function settings_defaults(): array {
     $wa = defined('SUPPORT_WHATSAPP') ? SUPPORT_WHATSAPP : '';
     return mail_template_setting_defaults() + [
+        'show_old_prices'   => '0',
         'biz_legal_name'    => 'Alquimia Digital Limitada',
         'biz_rut'           => '',
         'biz_address'       => 'Ahumada 254, Oficina 806, Santiago, Chile',
@@ -99,4 +100,11 @@ function settings_save(PDO $pdo, array $values): void {
     settings_ensure_table($pdo);
     $st = $pdo->prepare("INSERT INTO site_settings (k, v) VALUES (:k, :v) ON DUPLICATE KEY UPDATE v = VALUES(v)");
     foreach ($values as $k => $v) $st->execute([':k' => $k, ':v' => $v]);
+}
+
+/** ¿Mostrar precios tachados («antes $X») y porcentajes de descuento? Apagado por defecto: Google exige precios de referencia reales. */
+function old_prices_on(): bool {
+    static $v = null;
+    if ($v === null) $v = (setting('show_old_prices') === '1');
+    return $v;
 }

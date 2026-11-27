@@ -99,7 +99,7 @@ track_event('view');
     <div class="car-wrap"><button type="button" class="rv-arrow prev" aria-label="Anterior">‹</button><button type="button" class="rv-arrow next" aria-label="Siguiente">›</button>
     <div class="offer-grid">
       <?php foreach ($sec['items'] as $o):
-        $hasDiscount = $o['compare_at_price'] && $o['compare_at_price'] > $o['price'];
+        $hasDiscount = old_prices_on() && $o['compare_at_price'] && $o['compare_at_price'] > $o['price'];
         $imgSrc = $o['image_url'] ?: null;
       ?>
       <a class="offer-card" href="producto.php?id=<?= (int) $o['product_id'] ?>" style="text-decoration:none;">
@@ -140,7 +140,7 @@ if ($homeRevs): $rsum = reviews_store_summary(); ?>
 <section class="section home-block">
   <div class="wrap">
     <h2 style="text-align:center;">Opiniones de nuestros clientes</h2>
-    <p class="rating-line" style="justify-content:center;"><?= stars_html($rsum['avg']) ?> <b><?= h(number_format($rsum['avg'], 1, ',', '')) ?></b> de 5 · <?= (int) $rsum['n'] ?> reseñas verificadas</p>
+    <p class="rating-line" style="justify-content:center;"><?= stars_html($rsum['avg']) ?> <b><?= h(number_format($rsum['avg'], 1, ',', '')) ?></b> de 5 · <?= (int) $rsum['n'] ?> reseñas de clientes</p>
     <div class="reviews-wrap"><button type="button" class="rv-arrow prev" aria-label="Anterior">‹</button><button type="button" class="rv-arrow next" aria-label="Siguiente">›</button><div class="reviews-grid">
       <?php foreach ($homeRevs as $r): ?>
       <div class="review-card"><div class="rv-top"><?= stars_html((float) $r['rating']) ?><?= verified_badge() ?></div><p><?= h($r['content']) ?></p><span class="rv-by"><?= h($r['author']) ?> · <?= h(date('d/m/Y', strtotime($r['review_date']))) ?></span></div>
@@ -174,7 +174,7 @@ if ($homeRevs): $rsum = reviews_store_summary(); ?>
           <div class="step-ic"><?= icon3d('activa', 60) ?></div>
           <div class="step-mark">03 — activación</div>
           <h3 class="step-title">Instala y activa</h3>
-          <p class="step-body">Sigue el tutorial de tu producto y activa sin límites ni fallas. Soporte disponible si algo no calza.</p>
+          <p class="step-body">Sigue el tutorial de tu producto y actívalo. Si tienes algún problema, te ayudamos por WhatsApp o correo.</p>
         </div>
       </div>
     </div>

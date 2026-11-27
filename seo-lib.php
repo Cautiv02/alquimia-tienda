@@ -19,7 +19,7 @@ function seo_abs(string $u): string {
 function biz_info(): array {
     static $c = null;
     if ($c !== null) return $c;
-    try { require_once __DIR__ . '/settings-lib.php'; $s = settings_all(get_pdo()); } catch (Throwable $e) { $s = settings_defaults(); }
+    try { require_once __DIR__ . '/settings-lib.php'; $s = settings_all(); } catch (Throwable $e) { $s = settings_defaults(); }
     $c = [
         'name'    => trim((string) ($s['biz_legal_name'] ?? '')) ?: SITE_NAME,
         'rut'     => trim((string) ($s['biz_rut'] ?? '')),

@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     settings_save($pdo, [
         'binance_qr'        => $qr,
+        'show_old_prices'   => !empty($_POST['show_old_prices']) ? '1' : '0',
         'biz_legal_name'    => trim(mb_substr((string) ($_POST['biz_legal_name'] ?? ''), 0, 120)),
         'biz_rut'           => trim(mb_substr((string) ($_POST['biz_rut'] ?? ''), 0, 20)),
         'biz_address'       => trim(mb_substr((string) ($_POST['biz_address'] ?? ''), 0, 200)),
@@ -124,6 +125,11 @@ flash_show();
     <?php if ($s['transfer_enabled'] === '1' && trim($s['transfer_details']) === ''): ?>
       <p class="flash err" style="margin:12px 0 0;">La transferencia está activada pero faltan los datos bancarios: no se mostrará hasta que los completes.</p>
     <?php endif; ?>
+  </div>
+  <div class="box">
+    <strong>Precios tachados y porcentajes de descuento</strong>
+    <p class="tag" style="margin:6px 0 12px;">Google puede considerar engañoso un precio tachado que no sea un precio de referencia real y comprobable. Apagado, la tienda muestra solo el precio de venta.</p>
+    <label style="display:block;"><input type="checkbox" name="show_old_prices" value="1" <?= $s['show_old_prices'] === '1' ? 'checked' : '' ?>> Mostrar precios tachados y % de descuento</label>
   </div>
   <div class="box">
     <strong>Datos de la empresa (se muestran en «Quiénes somos y contacto» y se envían a Google)</strong>
