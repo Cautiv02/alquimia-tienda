@@ -16,6 +16,9 @@ if (!$id && !empty($_GET['handle'])) {
     $hs->execute([':h' => (string) $_GET['handle']]);
     $hid = (int) $hs->fetchColumn();
     if ($hid) { header('Location: ' . SITE_URL . '/producto.php?id=' . $hid, true, 301); exit; }
+    // Enlace antiguo con nombre algo distinto (ofertas, "copia"…): buscamos el producto más parecido
+    $hid = product_handle_guess($pdo, (string) $_GET['handle']);
+    if ($hid) { header('Location: ' . SITE_URL . '/producto.php?id=' . $hid, true, 301); exit; }
     $id = 0;
 }
 

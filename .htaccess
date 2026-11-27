@@ -26,6 +26,10 @@
   RewriteRule ^feed\.xml$ feed.php [L]
 
   # URLs antiguas de Shopify -> páginas equivalentes de esta tienda (redirección permanente)
+  # Prefijo de idioma/mercado de Shopify (/es-mx/products/...) -> misma ruta sin prefijo
+  RewriteRule ^(?:es-[a-z]{2}|en(?:-[a-z]{2})?)/(.*)$ /$1 [R=301,L]
+  # Inicio de sesión de Shop y otros servicios de Shopify: ya no existen (410 = eliminada para siempre)
+  RewriteRule ^(services|cdn/shop|apps|account|checkouts)(/|$) - [G,L]
   RewriteRule ^products/([^/]+)/?$ producto.php?handle=$1 [QSA,L]
   RewriteRule ^collections/(autodesk|adobe|windows|antivirus)/?$ catalogo.php?cat=$1 [R=301,L]
   RewriteRule ^collections/(office|office-365|office-365-1)/?$ catalogo.php?cat=office [R=301,L]

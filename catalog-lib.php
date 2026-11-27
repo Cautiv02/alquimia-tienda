@@ -73,3 +73,23 @@ function desc_clean(string $html): string {
     $h = preg_replace('/<p>\s*(<br\s*\/?>)?\s*<\/p>/i', '', $h);
     return $h;
 }
+
+/** Tokens significativos de un handle de Shopify (sin palabras de oferta ni números sueltos). */
+function handle_tokens(string $h): array {
+    $stop = ['oferta','ofertas','descuento','blackdays','blackday','flash','cyber','cyberdays','copia','original','barato','navidad','exclusivo','exclusiva','para','de','en','con','y','el','la'];
+    $h = preg_replace('/descuento[-_ ]?\d+/', '', strtolower($h)); // «descuento-60» no identifica al producto, pero «windows-11» sí
+    $t = array_filter(preg_split('/[^a-z0-9]+/', $h), function ($w) use ($stop) { return $w !== '' && !in_array($w, $stop, true); });
+    return array_values(array_unique($t));
+}
+/** Devuelve el id del producto activo cuyo handle se parece lo bastante al antiguo (>= 70 % de palabras en común), o 0. */
+function product_handle_guess(PDO $pdo, string $handle): int {
+    $a = handle_tokens($handle); if (count($a) < 2) return 0;
+    $best = 0; $bestScore = 0.0;
+    foreach ($pdo->query("SELECT id, handle FROM products WHERE status = 'activo' AND handle IS NOT NULL AND handle <> ''")->fetchAll() as $r) {
+        $b = handle_tokens((string) $r['handle']); if (!$b) continue;
+        $inter = count(array_intersect($a, $b)); $union = count(array_unique(array_merge($a, $b)));
+        $score = $union ? $inter / $union : 0;
+        if ($score > $bestScore) { $bestScore = $score; $best = (int) $r['id']; }
+    }
+    return $bestScore >= 0.7 ? $best : 0;
+}
