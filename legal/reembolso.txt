@@ -1,38 +1,62 @@
 # Política de reembolso
-## Cambios, reemplazos y devoluciones
+## Retracto, garantías, cambios y devoluciones
 
-Esta política se aplica junto con los Términos del servicio y no limita los derechos que la Ley 19.496 le reconoce como consumidor.
+Esta política se aplica junto con los Términos del servicio. No limita los derechos que la Ley 19.496 le reconoce como consumidor, que son irrenunciables.
 
-## 1: Devolución si la clave no ha sido revelada
+## 1: Retracto (antes de la entrega)
 
-Puede pedir la devolución de su dinero si la clave o el producto digital **aún no ha sido revelado, activado ni utilizado**. Debe solicitarla dentro de los 10 días siguientes a la compra.
+Puede desistirse de su compra sin dar motivo dentro de 10 días corridos desde que la realizó, siempre que el producto aún no se le haya entregado. En ese caso le devolvemos el 100 % de lo pagado.
 
-Sus productos se entregan en "Consultar mi pedido". Allí la clave aparece oculta hasta que usted pulsa "Confirmar y mostrar mi clave". Para revelarla, debe confirmar antes que verificó que el producto es el que compró y que es compatible con su equipo y su uso, que seguirá los tutoriales de instalación antes de reportar un problema, y que entiende que **una vez revelada la clave no procede la devolución por arrepentimiento o incompatibilidad**.
+La entrega ocurre cuando se le muestra o envía la clave, el código, la cuenta o la licencia. En "Consultar mi pedido" la clave aparece oculta hasta que usted pulsa "Confirmar y mostrar mi clave". Antes de revelarla debe confirmar que verificó que el producto es el que compró y que es compatible con su equipo, que seguirá los tutoriales de instalación antes de reportar un problema y que entiende que una vez revelada no procede el retracto.
 
-Por eso, antes de revelar su clave, revise la ficha del producto y los requisitos de su equipo. Si tiene dudas, escríbanos antes: lo ayudamos a verificarlo.
+Desde la entrega no procede el retracto, sin perjuicio de las garantías que se indican a continuación.
 
-## 2: Cambio por error de compra
+## 2: Garantía legal
 
-Si compró un producto por error o recibió uno distinto al que pidió (por ejemplo, Office 2019 en lugar de 365), puede pedir el cambio por otro producto de la tienda siempre que la clave no haya sido revelada ni usada y, si el producto es una cuenta de usuario, que conserve su contraseña original.
+Si el producto no funciona, no sirve para el uso para el que fue vendido o no corresponde a lo indicado en su ficha (por ejemplo, una clave inválida o una edición distinta), puede ejercer la garantía legal de la Ley 19.496 dentro de 6 meses desde la entrega, y elegir entre la reposición del producto o la devolución de lo pagado. Escribirnos primero nos permite resolverlo más rápido, pero no es un requisito para ejercer su derecho.
 
-## 3: Reemplazo por licencia que no funciona
+## 3: Garantía voluntaria
 
-Si la licencia no funciona como debe aun después de seguir las recomendaciones de nuestro equipo de soporte, puede pedir su reemplazo por una nueva. Esto aplica mientras la licencia esté dentro de su plazo de vigencia de activación y dentro de la garantía indicada en los Términos del servicio.
+Además de la garantía legal, ofrecemos estas garantías según el tipo de producto, salvo que la ficha indique otra cosa:
 
-## 4: Devolución por licencia defectuosa
+-Claves de Windows, Office, Project y Visio: reposición o devolución si no activan, siempre que se intenten activar dentro de 7 días desde la entrega.
 
-Si el soporte comprueba que la licencia es defectuosa y tampoco el reemplazo puede usarse, tiene derecho a la devolución de su dinero, aunque la clave ya haya sido revelada, dentro de los 10 días posteriores a la compra. No procede si el cliente se niega a recibir la asistencia de nuestro equipo para resolver el problema.
+-Otras claves permanentes: garantía de 1 año desde la compra.
 
-## 5: Casos en que no procede devolución
+-Licencias o suscripciones con plazo: la garantía cubre toda la vigencia contratada.
 
--Clave revelada y sin falla comprobada (arrepentimiento, incompatibilidad con el equipo o error al elegir la versión).
+-Códigos de canje y cuentas: solo se garantiza que el código pueda canjearse o que la cuenta permita el ingreso al momento de la entrega. Una vez canjeado el código o cambiados los datos de la cuenta, no hay garantía adicional.
 
--Licencias compradas para reventa cuando el reclamo se debe al servicio del revendedor.
+## 4: Cuándo no procede devolución ni reposición
 
--Productos que, por su naturaleza, indiquen en su ficha que no tienen devolución.
+-Arrepentimiento después de la entrega.
 
-## 6: Cómo solicitarlo y plazos
+-Compra equivocada o incompatibilidad con el equipo cuando la ficha del producto describía correctamente lo que se vendía.
 
-Escríbanos por WhatsApp o correo indicando su número de pedido y el motivo. Respondemos en un plazo máximo de 24 horas hábiles.
+-Códigos ya canjeados o claves ya activadas que funcionaron.
 
-Los reembolsos se hacen por el mismo medio de pago, en un plazo de 3 a 5 días hábiles desde su aprobación. Si pagó por transferencia o Binance Pay, le pediremos los datos de la cuenta donde devolver el dinero. Se reembolsa el monto efectivamente pagado, con el precio y el descuento con que se compró.
+-Cambios en cuentas entregadas que se comparten o que no deben modificarse (contraseña, verificación en dos pasos u otros datos).
+
+-Suspensión o sanción de la licencia o cuenta por uso indebido o por incumplir los términos del fabricante.
+
+-Solicitudes fuera del plazo de garantía que corresponda.
+
+-Reclamos por mal servicio de un revendedor cuando la licencia fue comprada para reventa.
+
+-Casos en que el cliente se niega a recibir la asistencia de nuestro equipo para resolver el problema.
+
+## 5: Cómo hacer una solicitud
+
+Escríbanos por WhatsApp o correo indicando su número de pedido, qué solicita (retracto, reposición o devolución) y una captura del error o del problema, con una breve descripción de lo que intentó.
+
+Respondemos en un plazo máximo de 5 días hábiles. Si la devolución es aprobada, la hacemos en un máximo de 10 días hábiles; en caso de retracto, el reembolso se realiza a la brevedad y a más tardar en 45 días corridos.
+
+## 6: Cómo se reembolsa
+
+El reembolso se hace por el mismo medio de pago con que se pagó, por el monto efectivamente pagado. Si eso no es posible (por ejemplo, un pago por transferencia o Binance Pay), le pediremos los datos de una cuenta a nombre del cliente.
+
+Cuando devolvemos el dinero de un producto ya entregado, la licencia, clave o cuenta queda sin efecto y el cliente debe dejar de usarla.
+
+## 7: Disputas con el banco
+
+Si tiene un problema con su compra, escríbanos antes de disputar el pago con su banco o emisor: lo resolvemos por los canales anteriores. Podemos entregar a su banco el detalle del pedido, del envío del producto y de la comunicación con el cliente como respaldo.
