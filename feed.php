@@ -20,6 +20,23 @@ function feed_title(string $t): string {
     $t = preg_replace('/\s+/u', ' ', $t);
     return trim($t, " \t-–—|");
 }
+// Descripción neutra: quita frases de garantía/originalidad/políticas y enlaces (deben coincidir con lo que dicen las políticas), y separa frases pegadas
+function feed_description(string $html, string $title): string {
+    $t = html_entity_decode(strip_tags(preg_replace('~<(br|/p|/li|/h[1-6])[^>]*>~i', ". ", $html)), ENT_QUOTES, 'UTF-8');
+    $t = preg_replace('/\.(?=[A-ZÁÉÍÓÚÑ])/u', '. ', $t);
+    $t = preg_replace('/\s+/u', ' ', $t);
+    $keep = [];
+    foreach (preg_split('/(?<=[.!?])\s+/u', $t) as $sn) {
+        $sn = trim($sn, " .");
+        if ($sn === '' || mb_strlen($sn) < 12) continue;
+        if (preg_match('/original|garant|pol[ií]tica|devoluci|reembols|reemplaz|https?:|www\.|ver pol|descuento|oferta|barato|lega(l|les)\b|100\s?%/iu', $sn)) continue;
+        $keep[] = $sn;
+        if (mb_strlen(implode('. ', $keep)) > 500) break;
+    }
+    $body = implode('. ', $keep);
+    $intro = $title . '. Producto digital: recibes la clave de activación por correo electrónico, sin envío físico. Revisa la compatibilidad en la ficha del producto antes de comprar.';
+    return mb_substr($intro . ($body !== '' ? ' ' . $body . '.' : ''), 0, 4900);
+}
 $sold = soldout_ids();
 $vstock = variant_stock_map();
 $prods = $pdo->query("SELECT id, title, handle, description_html, vendor, product_type, image_url FROM products WHERE status = 'activo' ORDER BY id")->fetchAll();
@@ -36,9 +53,7 @@ foreach ($prods as $p) {
     if (!$pick) $pick = $vars[0];
     $price = (int) round((float) $pick['price']);
     if ($price <= 0) continue;
-    $desc = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags((string) $p['description_html']), ENT_QUOTES, 'UTF-8')));
-    if ($desc === '') $desc = 'Licencia original ' . $p['title'] . '. Entrega digital por correo electrónico.';
-    $desc = mb_substr($desc, 0, 4900);
+    $desc = feed_description((string) $p['description_html'], feed_title((string) $p['title']) ?: (string) $p['title']);
     $img = (string) $p['image_url'];
     if ($img !== '' && !preg_match('#^https?://#i', $img)) $img = $base . '/' . ltrim($img, '/');
     echo '<item>';
