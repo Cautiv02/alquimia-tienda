@@ -10,6 +10,14 @@ require_once __DIR__ . '/soldout-lib.php';
 
 $pdo = get_pdo();
 $id = (int) ($_GET['id'] ?? 0);
+// Enlaces antiguos de Shopify (/products/<handle>) -> ficha actual con redirección permanente
+if (!$id && !empty($_GET['handle'])) {
+    $hs = $pdo->prepare("SELECT id FROM products WHERE handle = :h AND status = 'activo' LIMIT 1");
+    $hs->execute([':h' => (string) $_GET['handle']]);
+    $hid = (int) $hs->fetchColumn();
+    if ($hid) { header('Location: ' . SITE_URL . '/producto.php?id=' . $hid, true, 301); exit; }
+    $id = 0;
+}
 
 $st = $pdo->prepare("SELECT * FROM products WHERE id = :id AND status = 'activo'");
 $st->execute([':id' => $id]);
@@ -17,6 +25,7 @@ $p = $st->fetch();
 
 if (!$p) {
     http_response_code(404);
+    seo_set(['noindex' => true]);
     site_header('Producto no encontrado');
     echo '<div class="wrap page"><div class="panel"><h1>Producto no encontrado</h1><p class="lead">Es posible que ya no esté disponible.</p><p><a class="btn-gold" href="catalogo.php">Ver el catálogo</a></p></div></div>';
     site_footer();
@@ -47,7 +56,33 @@ $err = (string) ($_GET['error'] ?? '');
 $fac = product_facets((string) $p['title']);
 $cleanTitle = cat_clean((string) $p['title']);
 
-site_header($p['title'], 'Licencia original ' . $p['title'] . '. Pago con Mercado Pago, entrega por correo.');
+// SEO: canonical, imagen y datos estructurados de producto (precio y disponibilidad iguales a los de la ficha)
+$_okVars = array_values(array_filter($variants, function ($v) use ($vstock) { return !isset($vstock[(int) $v['id']]) || $vstock[(int) $v['id']] > 0; }));
+$_offerVar = $_okVars ? $_okVars[0] : ($variants[0] ?? null);
+$_plainDesc = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags((string) $p['description_html']), ENT_QUOTES, 'UTF-8')));
+$_metaDesc = 'Licencia original ' . cat_clean((string) $p['title']) . ($_offerVar ? ' desde $' . number_format((float) $_offerVar['price'], 0, ',', '.') . ' CLP' : '') . '. Entrega digital por correo, pago con Mercado Pago, transferencia o Binance Pay.';
+$_canon = SITE_URL . '/producto.php?id=' . (int) $p['id'];
+seo_set(['canonical' => $_canon, 'type' => 'product', 'image' => $img ?: 'images/logo.jpg']);
+if ($_offerVar) {
+    $_isSold = !$_okVars || !empty(soldout_ids()[(int) $p['id']]);
+    $_ld = ['@context' => 'https://schema.org', '@type' => 'Product', 'name' => $p['title'], 'url' => $_canon,
+        'description' => mb_substr($_plainDesc !== '' ? $_plainDesc : $_metaDesc, 0, 500),
+        'brand' => ['@type' => 'Brand', 'name' => (function ($p) { $b = trim((string) $p['vendor']); if ($b === '' || strcasecmp($b, 'Alquimia Digital') === 0) $b = product_facets((string) $p['title'])['brand']; return ($b === 'Otros' || $b === '') ? SITE_NAME : $b; })($p)],
+        'sku' => 'P' . (int) $p['id'],
+        'offers' => ['@type' => 'Offer', 'url' => $_canon, 'priceCurrency' => 'CLP', 'price' => (string) (int) round((float) $_offerVar['price']),
+            'itemCondition' => 'https://schema.org/NewCondition',
+            'availability' => $_isSold ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+            'seller' => ['@type' => 'Organization', 'name' => SITE_NAME],
+            'shippingDetails' => ['@type' => 'OfferShippingDetails', 'shippingRate' => ['@type' => 'MonetaryAmount', 'value' => '0', 'currency' => 'CLP'], 'shippingDestination' => ['@type' => 'DefinedRegion', 'addressCountry' => 'CL'], 'deliveryTime' => ['@type' => 'ShippingDeliveryTime', 'handlingTime' => ['@type' => 'QuantitativeValue', 'minValue' => 0, 'maxValue' => 1, 'unitCode' => 'DAY'], 'transitTime' => ['@type' => 'QuantitativeValue', 'minValue' => 0, 'maxValue' => 0, 'unitCode' => 'DAY']]]]];
+    if ($img) $_ld['image'] = [seo_abs((string) $img)];
+    if ($rCount > 0 && $rAvg > 0) $_ld['aggregateRating'] = ['@type' => 'AggregateRating', 'ratingValue' => number_format($rAvg, 1, '.', ''), 'reviewCount' => (int) $rCount];
+    seo_ld_add($_ld);
+    seo_ld_add(['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Inicio', 'item' => SITE_URL . '/'],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Catálogo', 'item' => SITE_URL . '/catalogo.php'],
+        ['@type' => 'ListItem', 'position' => 3, 'name' => $p['title'], 'item' => $_canon]]]);
+}
+site_header($p['title'], $_metaDesc);
 ?>
 <div class="wrap page">
   <p style="font-size:.85rem;color:var(--ash);margin:0 0 18px;"><a href="catalogo.php" style="text-decoration:none;">← Catálogo</a></p>

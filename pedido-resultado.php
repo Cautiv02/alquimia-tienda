@@ -29,6 +29,7 @@ if ($order && $order['financial_status'] === 'pendiente' && preg_match('/^\d{3,2
 $paid = $order && in_array($order['financial_status'], ['pagado'], true);
 $portal = $order ? 'portal.php?modo=codigo&codigo=' . urlencode($order['unique_code']) : 'portal.php';
 
+require_once __DIR__ . '/seo-lib.php'; seo_set(['noindex' => true]);
 site_header('Resultado de tu pedido');
 ?>
 <div class="wrap page" style="max-width: 760px;">

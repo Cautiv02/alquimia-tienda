@@ -26,6 +26,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     settings_save($pdo, [
         'binance_qr'        => $qr,
+        'biz_legal_name'    => trim(mb_substr((string) ($_POST['biz_legal_name'] ?? ''), 0, 120)),
+        'biz_rut'           => trim(mb_substr((string) ($_POST['biz_rut'] ?? ''), 0, 20)),
+        'biz_address'       => trim(mb_substr((string) ($_POST['biz_address'] ?? ''), 0, 200)),
+        'biz_hours'         => trim(mb_substr((string) ($_POST['biz_hours'] ?? ''), 0, 160)),
         'banner_enabled'    => !empty($_POST['banner_enabled']) ? '1' : '0',
         'banner_text'       => trim(mb_substr((string) ($_POST['banner_text'] ?? ''), 0, 300)),
         'banner_link_label' => trim(mb_substr((string) ($_POST['banner_link_label'] ?? ''), 0, 80)),
@@ -120,6 +124,14 @@ flash_show();
     <?php if ($s['transfer_enabled'] === '1' && trim($s['transfer_details']) === ''): ?>
       <p class="flash err" style="margin:12px 0 0;">La transferencia está activada pero faltan los datos bancarios: no se mostrará hasta que los completes.</p>
     <?php endif; ?>
+  </div>
+  <div class="box">
+    <strong>Datos de la empresa (se muestran en «Quiénes somos y contacto» y se envían a Google)</strong>
+    <p class="tag" style="margin:6px 0 12px;">Google exige identificar con claridad a quién le compra el cliente. Completa el RUT y la razón social tal como figuran en el SII; el RUT solo se publica si lo llenas.</p>
+    <label class="tag" style="display:block;margin-bottom:10px;">Razón social / nombre comercial <input name="biz_legal_name" value="<?= h($s['biz_legal_name']) ?>" style="<?= $in ?>width:100%;"></label>
+    <label class="tag" style="display:block;margin-bottom:10px;">RUT <input name="biz_rut" value="<?= h($s['biz_rut']) ?>" placeholder="12.345.678-9" style="<?= $in ?>width:200px;"></label>
+    <label class="tag" style="display:block;margin-bottom:10px;">Dirección <input name="biz_address" value="<?= h($s['biz_address']) ?>" style="<?= $in ?>width:100%;"></label>
+    <label class="tag" style="display:block;">Horario de atención <input name="biz_hours" value="<?= h($s['biz_hours']) ?>" style="<?= $in ?>width:100%;"></label>
   </div>
   <div class="box">
     <strong>Descuento por dejar una reseña</strong>

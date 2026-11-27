@@ -54,6 +54,7 @@ if ($order && $_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST['website']))
     }
 }
 
+require_once __DIR__ . '/seo-lib.php'; seo_set(['noindex' => true]);
 site_header('Confirmar pago');
 ?>
 <div class="wrap page" style="max-width: 640px;">

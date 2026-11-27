@@ -17,3 +17,29 @@
     Header set Cache-Control "public, max-age=31536000"
   </FilesMatch>
 </IfModule>
+
+# SEO: robots, sitemap y feed de Google Merchant Center
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^robots\.txt$ robots.php [L]
+  RewriteRule ^sitemap\.xml$ sitemap.php [L]
+  RewriteRule ^feed\.xml$ feed.php [L]
+
+  # URLs antiguas de Shopify -> páginas equivalentes de esta tienda (redirección permanente)
+  RewriteRule ^products/([^/]+)/?$ producto.php?handle=$1 [QSA,L]
+  RewriteRule ^collections(/.*)?$ catalogo.php? [R=301,L]
+  RewriteRule ^cart/?$ carrito.php? [R=301,L]
+  RewriteRule ^pages/(contact|contacto)[^/]*/?$ contacto.php? [R=301,L]
+  RewriteRule ^pages/.*$ contacto.php? [R=301,L]
+  RewriteRule ^policies/refund-policy/?$ legal.php?p=reembolso [R=301,L]
+  RewriteRule ^policies/privacy-policy/?$ legal.php?p=privacidad [R=301,L]
+  RewriteRule ^policies/terms-of-service/?$ legal.php?p=terminos [R=301,L]
+  RewriteRule ^policies/shipping-policy/?$ legal.php?p=envios [R=301,L]
+  RewriteRule ^blogs/.*$ index.php? [R=301,L]
+</IfModule>
+# Páginas internas que no deben indexarse
+<IfModule mod_headers.c>
+  <FilesMatch "^(carrito|portal|confirmar-pago|pedido-resultado|checkout-create-preference|cron-expirar|resena)\.php$">
+    Header set X-Robots-Tag "noindex, nofollow"
+  </FilesMatch>
+</IfModule>

@@ -34,6 +34,7 @@ if ($order && $items && $_SERVER['REQUEST_METHOD'] === 'POST') {
     } else $msg = 'Elige una calificación de 1 a 5 estrellas.';
 }
 
+require_once __DIR__ . '/seo-lib.php'; seo_set(['noindex' => true]);
 site_header('Deja tu opinión', 'Cuéntanos cómo te fue con tu compra.');
 ?>
 <div class="wrap page"><div class="panel" style="max-width:640px;margin:auto;">

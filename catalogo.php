@@ -79,7 +79,10 @@ function facet_group(string $title, string $name, array $opts, array $sel, bool 
     </details>
 <?php }
 
-site_header($pageTitle, 'Licencias originales de software para Chile.');
+require_once __DIR__ . '/seo-lib.php';
+$_hasFilter = ($selMarca || $selCat || $selPlat || $selDur || $soloOferta || $q !== '' || $sort !== 'nombre');
+seo_set($_hasFilter ? ['noindex' => true, 'canonical' => SITE_URL . '/catalogo.php'] : ['canonical' => SITE_URL . '/catalogo.php']);
+site_header($pageTitle, 'Catálogo de licencias originales de Windows, Office, antivirus, Adobe, Autodesk y más. Entrega digital por correo y soporte por WhatsApp.');
 ?>
 <style>
   .cat-layout { display: grid; grid-template-columns: 260px 1fr; gap: 28px; align-items: start; }

@@ -7,6 +7,10 @@ require_once __DIR__ . '/mail-templates-lib.php';
 function settings_defaults(): array {
     $wa = defined('SUPPORT_WHATSAPP') ? SUPPORT_WHATSAPP : '';
     return mail_template_setting_defaults() + [
+        'biz_legal_name'    => 'Alquimia Digital',
+        'biz_rut'           => '',
+        'biz_address'       => 'Ahumada 254, Oficina 806, Santiago, Chile',
+        'biz_hours'         => 'Atención por WhatsApp y correo, todos los días',
         'banner_enabled'    => '1',
         'banner_text'       => 'Renovamos nuestra tienda. Si ya eres cliente, tu pedido y tu soporte siguen igual.',
         'banner_link_label' => 'Escríbenos por WhatsApp',

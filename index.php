@@ -26,6 +26,8 @@ track_event('view');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Alquimia Digital — Licencias originales de software</title>
+<meta name="description" content="Licencias originales de Windows, Office, antivirus, Adobe y Autodesk para Chile. Entrega digital por correo, pago con Mercado Pago, transferencia o Binance Pay. Soporte por WhatsApp.">
+<?php require_once __DIR__ . '/seo-lib.php'; seo_set(['canonical' => SITE_URL . '/']); seo_head('Licencias originales de software', 'Licencias originales de Windows, Office, antivirus, Adobe y Autodesk para Chile. Entrega digital por correo.'); ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">

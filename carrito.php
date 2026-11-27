@@ -56,6 +56,7 @@ foreach ($cart as $vid => $qty) {
 $soldLines = []; foreach ($lines as $l) if (!empty($l['sold'])) $soldLines[] = $l['title'];
 if ($clean !== $cart) cart_save($clean); // quita productos que ya no existen
 
+require_once __DIR__ . '/seo-lib.php'; seo_set(['noindex' => true]);
 site_header('Carrito', 'Tu carrito de compra');
 ?>
 <style>

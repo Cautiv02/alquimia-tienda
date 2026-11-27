@@ -150,6 +150,7 @@ function site_header(string $title, string $description = ''): void {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= h($title) ?> | <?= h(SITE_NAME) ?></title>
 <?php if ($description): ?><meta name="description" content="<?= h($description) ?>"><?php endif; ?>
+<?php require_once __DIR__ . '/seo-lib.php'; seo_head($title, $description); ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
@@ -246,6 +247,7 @@ function site_footer(): void { ?>
         <a href="legal.php?p=reembolso">Política de reembolso</a>
         <a href="legal.php?p=envios">Política de envío</a>
         <a href="legal.php?p=privacidad">Política de privacidad</a>
+        <a href="contacto.php">Quiénes somos y contacto</a>
         <a href="portal.php">Consultar mi pedido</a>
       </div>
       <div class="footer-col2">

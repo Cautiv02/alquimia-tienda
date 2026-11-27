@@ -1,0 +1,51 @@
+<?php
+/**
+ * feed.php (también /feed.xml) — feed de productos para Google Merchant Center.
+ * Un artículo por producto, con el precio y la disponibilidad que ve el cliente en la ficha
+ * (precio más bajo entre las opciones con stock). Así el feed coincide con la tienda.
+ */
+require_once __DIR__ . '/delivery-engine.php';
+require_once __DIR__ . '/catalog-lib.php';
+require_once __DIR__ . '/soldout-lib.php';
+header('Content-Type: application/xml; charset=utf-8');
+header('Cache-Control: public, max-age=1800');
+$pdo = get_pdo();
+$base = rtrim(SITE_URL, '/');
+$x = function ($s) { return htmlspecialchars((string) $s, ENT_XML1 | ENT_QUOTES, 'UTF-8'); };
+$sold = soldout_ids();
+$vstock = variant_stock_map();
+$prods = $pdo->query("SELECT id, title, handle, description_html, vendor, product_type, image_url FROM products WHERE status = 'activo' ORDER BY id")->fetchAll();
+$vq = $pdo->prepare("SELECT id, title, sku, price, compare_at_price FROM product_variants WHERE product_id = :p ORDER BY price ASC, id ASC");
+echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+echo '<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0"><channel>' . "\n";
+echo '<title>' . $x(SITE_NAME) . '</title><link>' . $x($base . '/') . '</link><description>Licencias originales de software para Chile</description>' . "\n";
+foreach ($prods as $p) {
+    $vq->execute([':p' => $p['id']]); $vars = $vq->fetchAll();
+    if (!$vars) continue;
+    $pick = null;
+    foreach ($vars as $v) { if (!isset($vstock[(int) $v['id']]) || $vstock[(int) $v['id']] > 0) { $pick = $v; break; } }
+    $avail = ($pick && empty($sold[(int) $p['id']])) ? 'in_stock' : 'out_of_stock';
+    if (!$pick) $pick = $vars[0];
+    $price = (int) round((float) $pick['price']);
+    if ($price <= 0) continue;
+    $desc = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags((string) $p['description_html']), ENT_QUOTES, 'UTF-8')));
+    if ($desc === '') $desc = 'Licencia original ' . $p['title'] . '. Entrega digital por correo electrónico.';
+    $desc = mb_substr($desc, 0, 4900);
+    $img = (string) $p['image_url'];
+    if ($img !== '' && !preg_match('#^https?://#i', $img)) $img = $base . '/' . ltrim($img, '/');
+    echo '<item>';
+    echo '<g:id>' . (int) $p['id'] . '</g:id>';
+    echo '<g:title>' . $x(mb_substr($p['title'], 0, 150)) . '</g:title>';
+    echo '<g:description>' . $x($desc) . '</g:description>';
+    echo '<g:link>' . $x($base . '/producto.php?id=' . (int) $p['id']) . '</g:link>';
+    if ($img !== '') echo '<g:image_link>' . $x($img) . '</g:image_link>';
+    echo '<g:availability>' . $avail . '</g:availability>';
+    echo '<g:price>' . $price . ' CLP</g:price>';
+    echo '<g:condition>new</g:condition>';
+    echo '<g:brand>' . $x((function ($p) { $b = trim((string) $p['vendor']); if ($b === '' || strcasecmp($b, 'Alquimia Digital') === 0) { $b = product_facets((string) $p['title'])['brand']; } return ($b === 'Otros' || $b === '') ? SITE_NAME : $b; })($p)) . '</g:brand>';
+    echo '<g:identifier_exists>no</g:identifier_exists>';
+    echo '<g:product_type>' . $x($p['product_type'] ?: 'Software') . '</g:product_type>';
+    echo '<g:google_product_category>313</g:google_product_category>';
+    echo '</item>' . "\n";
+}
+echo '</channel></rss>';
