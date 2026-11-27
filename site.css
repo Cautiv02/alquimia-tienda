@@ -232,6 +232,7 @@
   .brands {
     width: min(1360px, calc(100% - 40px));
     margin: 14px auto 0;
+    background: #fff;
     border: 1px solid var(--line);
     border-radius: 14px;
     padding: 22px 0;

@@ -66,7 +66,6 @@ track_event('view');
 
 <div class="brands">
   <div class="brands-track">
-    <img src="images/marcas/microsoft.png" width="512" height="132" loading="lazy" alt="Microsoft">
     <img src="images/marcas/office.png" width="260" height="82" loading="lazy" alt="Office">
     <img src="images/marcas/adobe.png" width="440" height="114" loading="lazy" alt="Adobe">
     <img src="images/marcas/autodesk.png" width="512" height="85" loading="lazy" alt="Autodesk">
@@ -77,7 +76,6 @@ track_event('view');
     <img src="images/marcas/avg.png" width="200" height="82" loading="lazy" alt="AVG">
     <img src="images/marcas/panda.png" width="229" height="64" loading="lazy" alt="Panda Security">
     <!-- duplicado para el loop continuo -->
-    <img src="images/marcas/microsoft.png" width="512" height="132" loading="lazy" alt="" aria-hidden="true">
     <img src="images/marcas/office.png" width="260" height="82" loading="lazy" alt="" aria-hidden="true">
     <img src="images/marcas/adobe.png" width="440" height="114" loading="lazy" alt="" aria-hidden="true">
     <img src="images/marcas/autodesk.png" width="512" height="85" loading="lazy" alt="" aria-hidden="true">

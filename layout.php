@@ -261,6 +261,7 @@ function site_footer(): void { ?>
       </div>
     </div>
 
+    <p style="font-size:.78rem;color:var(--ash);margin:18px 0 0;line-height:1.5;">Las marcas y logotipos mencionados pertenecen a sus respectivos propietarios y se muestran solo para indicar la compatibilidad de los productos que vendemos. <?= h(SITE_NAME) ?> es un revendedor independiente y no está afiliado a los fabricantes, salvo que se indique lo contrario.</p>
     <div class="footer-bottom2">
       <span>© <?= date('Y') ?> <?= h(SITE_NAME) ?> CL</span>
       <span>Santiago, Chile</span>
