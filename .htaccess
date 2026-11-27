@@ -21,6 +21,9 @@
 # SEO: robots, sitemap y feed de Google Merchant Center
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  # La portada se muestra siempre en la raíz: /index.php -> / (solo si el visitante pidió index.php de forma explícita)
+  RewriteCond %{THE_REQUEST} \s/index\.php[\s?]
+  RewriteRule ^index\.php$ / [R=301,L]
   RewriteRule ^robots\.txt$ robots.php [L]
   RewriteRule ^sitemap\.xml$ sitemap.php [L]
   RewriteRule ^feed\.xml$ feed.php [L]

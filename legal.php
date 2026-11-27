@@ -12,7 +12,7 @@ $slug = (string) ($_GET['p'] ?? '');
 if (!isset($pages[$slug])) {
     http_response_code(404);
     site_header('Página no encontrada');
-    echo '<div class="wrap page"><div class="panel"><h1>Página no encontrada</h1><p><a class="btn-gold" href="index.php">Ir al inicio</a></p></div></div>';
+    echo '<div class="wrap page"><div class="panel"><h1>Página no encontrada</h1><p><a class="btn-gold" href="./">Ir al inicio</a></p></div></div>';
     site_footer();
     exit;
 }

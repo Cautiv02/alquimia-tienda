@@ -218,9 +218,9 @@ $fulfillLabels = [
 
 <header>
   <div class="nav-row">
-    <a class="logo" href="index.php">Alquimia Digital</a>
+    <a class="logo" href="./">Alquimia Digital</a>
     <nav class="links">
-      <a href="index.php">Inicio</a>
+      <a href="./">Inicio</a>
       <a href="catalogo.php">Catálogo</a>
       <a href="portal.php">Mi pedido</a>
     </nav>
@@ -347,7 +347,7 @@ $fulfillLabels = [
   <div class="wrap">
     <p>© 2026 Alquimia Digital CL</p>
     <div>
-      <a href="index.php">Inicio</a>
+      <a href="./">Inicio</a>
       <a href="catalogo.php">Catálogo</a>
       <a href="https://api.whatsapp.com/send?phone=56953993785">WhatsApp</a>
     </div>

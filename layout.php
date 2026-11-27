@@ -210,7 +210,7 @@ function site_header(string $title, string $description = ''): void {
 
 <header>
   <div class="wrap nav-row">
-    <div class="logo"><a href="index.php"><img src="images/logo.jpg" width="147" height="80" alt="<?= h(SITE_NAME) ?>"></a></div>
+    <div class="logo"><a href="./"><img src="images/logo.jpg" width="147" height="80" alt="<?= h(SITE_NAME) ?>"></a></div>
     <nav class="links">
       <a href="catalogo.php?cat=windows">Windows</a>
       <a href="catalogo.php?cat=office">Office</a>
