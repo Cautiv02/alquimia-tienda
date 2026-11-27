@@ -6,6 +6,7 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/cart-lib.php';
 require_once __DIR__ . '/settings-lib.php';
+require_once __DIR__ . '/seo-lib.php';
 require_once __DIR__ . '/stats-lib.php';
 
 if (!function_exists('h')) {
