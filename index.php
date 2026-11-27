@@ -123,7 +123,6 @@ track_event('view');
       <?php endforeach; ?>
     </div>
     </div>
-    <a class="more-mobile" href="catalogo.php">Ver todos los productos →</a>
   </div>
 </section>
 <?php endforeach; ?>
@@ -192,6 +191,16 @@ document.querySelectorAll('.car-wrap').forEach(function (w) {
   function upd() { var more = g.scrollWidth > g.clientWidth + 4; pv.style.display = nx.style.display = more ? '' : 'none'; pv.style.opacity = g.scrollLeft < 4 ? .35 : 1; nx.style.opacity = g.scrollLeft + g.clientWidth >= g.scrollWidth - 4 ? .35 : 1; }
   [pv, nx].forEach(function (b) { b.addEventListener('click', function () { g.scrollBy({ left: (b === nx ? 1 : -1) * g.clientWidth * 0.85, behavior: 'smooth' }); }); });
   g.addEventListener('scroll', upd, { passive: true }); window.addEventListener('resize', upd); upd();
+  // Escritorio: la imagen de cada tarjeta se desplaza un poco siguiendo el cursor
+  g.querySelectorAll('.offer-card').forEach(function (c) {
+    c.addEventListener('mousemove', function (e) {
+      if (!window.matchMedia('(hover: hover) and (min-width: 701px)').matches) return;
+      var r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (-(e.clientX - r.left - r.width / 2) / r.width * 14).toFixed(1) + 'px');
+      c.style.setProperty('--my', (-(e.clientY - r.top - r.height / 2) / r.height * 14).toFixed(1) + 'px');
+    });
+    c.addEventListener('mouseleave', function () { c.style.removeProperty('--mx'); c.style.removeProperty('--my'); });
+  });
   // Escritorio: avanza solo cada pocos segundos; se detiene al pasar el mouse o con «reducir movimiento»
   var desk = window.matchMedia('(min-width: 701px)'), calm = window.matchMedia('(prefers-reduced-motion: reduce)'), hover = false;
   w.addEventListener('mouseenter', function () { hover = true; }); w.addEventListener('mouseleave', function () { hover = false; });
