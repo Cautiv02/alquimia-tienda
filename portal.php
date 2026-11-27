@@ -320,7 +320,7 @@ $fulfillLabels = [
                     <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
                     <input type="hidden" name="pedido" value="<?= htmlspecialchars($orderNumber) ?>">
                     <input type="hidden" name="codigo" value="<?= htmlspecialchars($uniqueCode) ?>">
-                    <label class="confirm-row"><input type="checkbox" name="confirm_product" required> Confirmo que <strong><?= htmlspecialchars($item['title']) ?></strong> es el producto que compré</label>
+                    <label class="confirm-row"><input type="checkbox" name="confirm_product" required> Confirmo que <strong><?= htmlspecialchars($item['title']) ?></strong> es el producto que compré y que verifiqué que es compatible con mi equipo</label>
                     <label class="confirm-row"><input type="checkbox" name="confirm_install" required> Voy a realizar la instalación siguiendo los tutoriales antes de reportar cualquier problema</label>
                     <label class="confirm-row"><input type="checkbox" name="confirm_norefund" required> Entiendo que <strong>una vez revelada la clave, el pedido no tiene reembolso</strong></label>
                     <button type="submit" class="btn-primary reveal-btn">🔒 Confirmar y mostrar mi clave</button>

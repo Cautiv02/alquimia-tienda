@@ -1,26 +1,38 @@
 # Política de reembolso
-## Políticas de cambios, reemplazos y devoluciones.
+## Cambios, reemplazos y devoluciones
 
-En el caso de que un producto digital que se haya enviado se puede solicitar un cambio (Reemplazo del producto por cualquier otro de la tienda) por las siguientes razones:
+Esta política se aplica junto con los Términos del servicio y no limita los derechos que la Ley 19.496 le reconoce como consumidor.
 
-1: La licencia recibida no es del tipo que solicitó. (Ejemplo: Comprar una licencia de Office 2019 y recibir en lugar una de 365)
+## 1: Devolución si la clave no ha sido revelada
 
-2: Error en la compra, que haya comprado erróneamente un producto en lugar de otro. esto solo es posible si el tipo de licencia lo permite.
+Puede pedir la devolución de su dinero si la clave o el producto digital **aún no ha sido revelado, activado ni utilizado**. Debe solicitarla dentro de los 10 días siguientes a la compra.
 
-Para solicitar un cambio, la licencia debe estar sin ocupar, y si la licencia tiene formato de cuenta de usuario, esta cuenta debe tener su contraseña original intacta.
+Sus productos se entregan en "Consultar mi pedido". Allí la clave aparece oculta hasta que usted pulsa "Confirmar y mostrar mi clave". Para revelarla, debe confirmar antes que verificó que el producto es el que compró y que es compatible con su equipo y su uso, que seguirá los tutoriales de instalación antes de reportar un problema, y que entiende que **una vez revelada la clave no procede la devolución por arrepentimiento o incompatibilidad**.
 
-En el caso de que la licencia entregada no funcione como debe, aun siguiendo todas las recomendaciones de nuestro equipo de soporte, puede solicitar un reemplazo (Cambiar la licencia por una nueva), sin embargo, esto tiene las siguientes condiciones:
+Por eso, antes de revelar su clave, revise la ficha del producto y los requisitos de su equipo. Si tiene dudas, escríbanos antes: lo ayudamos a verificarlo.
 
-1: Se encuentre dentro del plazo de vigencia de activación de la licencia.
+## 2: Cambio por error de compra
 
-2: La licencia no haya funcionado tras seguir todos los consejos y recomendaciones de nuestro equipo de soporte.
+Si compró un producto por error o recibió uno distinto al que pidió (por ejemplo, Office 2019 en lugar de 365), puede pedir el cambio por otro producto de la tienda siempre que la clave no haya sido revelada ni usada y, si el producto es una cuenta de usuario, que conserve su contraseña original.
 
-Finalmente, se podrá solicitar una una devolución, (reembolso) si el equipo de soporte determina que efectivamente la licencia y el reemplazo no pueden ocuparse o es defectuosa, esto hasta 10 días después de la compra. Para solicitar una devolución, las licencias no pueden haber sido usadas, ya que, por lo general, estas no pueden “sacarse” de su producto para traspasarse a otro.
+## 3: Reemplazo por licencia que no funciona
 
-Nota: No se podrá hacer devolución en el caso de que el cliente, ante un fallo de alguno de nuestros productos, se niegue a recibir asistencia para solucionar el problema.
+Si la licencia no funciona como debe aun después de seguir las recomendaciones de nuestro equipo de soporte, puede pedir su reemplazo por una nueva. Esto aplica mientras la licencia esté dentro de su plazo de vigencia de activación y dentro de la garantía indicada en los Términos del servicio.
 
-La devolución no procede en el caso de que la licencia haya sido comprada para re-venta y el reclamo se deba a un mal servicio por parte del revendedor.
+## 4: Devolución por licencia defectuosa
 
-Algunos productos, dada la naturaleza del mismo no tienen devolución.
+Si el soporte comprueba que la licencia es defectuosa y tampoco el reemplazo puede usarse, tiene derecho a la devolución de su dinero, aunque la clave ya haya sido revelada, dentro de los 10 días posteriores a la compra. No procede si el cliente se niega a recibir la asistencia de nuestro equipo para resolver el problema.
 
-Todo reembolso se realizará un período de 3-5 días hábiles.
+## 5: Casos en que no procede devolución
+
+-Clave revelada y sin falla comprobada (arrepentimiento, incompatibilidad con el equipo o error al elegir la versión).
+
+-Licencias compradas para reventa cuando el reclamo se debe al servicio del revendedor.
+
+-Productos que, por su naturaleza, indiquen en su ficha que no tienen devolución.
+
+## 6: Cómo solicitarlo y plazos
+
+Escríbanos por WhatsApp o correo indicando su número de pedido y el motivo. Respondemos en un plazo máximo de 24 horas hábiles.
+
+Los reembolsos se hacen por el mismo medio de pago, en un plazo de 3 a 5 días hábiles desde su aprobación. Si pagó por transferencia o Binance Pay, le pediremos los datos de la cuenta donde devolver el dinero. Se reembolsa el monto efectivamente pagado, con el precio y el descuento con que se compró.
