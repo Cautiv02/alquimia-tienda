@@ -95,12 +95,6 @@ site_header($p['title'], $_metaDesc);
     <div class="panel buybox">
       <h1 style="font-size:1.5rem;"><?= h($p['title']) ?></h1>
       <?php if ($rCount): ?><p class="rating-line"><?= stars_html($rAvg) ?> <b><?= h(number_format($rAvg, 1, ',', '')) ?></b> · <a href="#opiniones"><?= (int) $rCount ?> opinión<?= $rCount === 1 ? '' : 'es' ?></a></p><?php endif; ?>
-      <div class="trust-badges">
-        <a href="legal.php?p=reembolso">🛡️ Garantía de funcionamiento</a>
-        <a href="legal.php?p=envios">✉️ Entrega digital por correo</a>
-        <a href="contacto.php">💬 Soporte por WhatsApp y correo</a>
-        <span>🔒 Pago seguro</span>
-      </div>
       <?php if (!empty($_GET['added'])): ?><p class="added-note">✓ Agregado al carrito. <a href="carrito.php">Ver carrito</a></p><?php endif; ?>
       <?php if (!$variants): ?>
         <p class="lead">Este producto no está disponible por ahora. Escríbenos por WhatsApp.</p>
@@ -157,6 +151,22 @@ site_header($p['title'], $_metaDesc);
       </script>
       <?php endif; ?>
     </div>
+      <?php
+        $ptW = trim((string) ($p['trust_warranty'] ?? '')) ?: setting('pt_warranty');
+        $ptD = trim((string) ($p['trust_delivery'] ?? '')) ?: setting('pt_delivery');
+        $ptP = trim((string) ($p['trust_payment'] ?? '')) ?: setting('pt_payment');
+        $waMsg = 'https://api.whatsapp.com/send?phone=' . urlencode((string) SUPPORT_WHATSAPP) . '&text=' . rawurlencode('Hola, tengo una consulta sobre: ' . $cleanTitle);
+      ?>
+      <div class="trust-card">
+        <div class="tc-btns"><a class="tc-b1" href="#proceso">✓ Cómo funciona</a><a class="tc-b2" href="<?= h($waMsg) ?>" target="_blank" rel="noopener">💬 Consultar por WhatsApp</a></div>
+        <a class="tc-guide" href="#proceso"><span><b>La compra paso a paso</b> · desde el pedido hasta tu clave</span><span>→</span></a>
+        <div class="tc-list">
+          <details><summary><span>🛡️ Garantía de funcionamiento</span><i></i></summary><p><?= h($ptW) ?> <a href="legal.php?p=reembolso">Ver Política de reembolso</a></p></details>
+          <details><summary><span>⚡ Cómo y cuándo se entrega</span><i></i></summary><p><?= h($ptD) ?> <a href="legal.php?p=envios">Ver Política de envío</a></p></details>
+          <details><summary><span>🧾 Pago y envío automatizado</span><i></i></summary><p><?= h($ptP) ?></p></details>
+        </div>
+        <div class="tc-icons"><span>🛡️<br>Garantía</span><span>✉️<br>Entrega digital vía correo electrónico</span><span>💬<br>Soporte por correo</span><span>🔒<br>Pago seguro</span></div>
+      </div>
       <?php if (trim($descHtml) !== ''): ?><div class="desc" id="descripcion"><?= $descHtml ?><p style="font-size:.85rem;">Condiciones de cambios, garantías y devoluciones: <a href="legal.php?p=reembolso">Política de reembolso</a>.</p></div><?php endif; ?>
     </div>
 

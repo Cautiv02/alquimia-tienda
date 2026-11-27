@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($a === 'datos') {
         try { $pdo->exec("ALTER TABLE products ADD COLUMN quick_facts TEXT NULL"); } catch (Throwable $e) {}
+        foreach (['trust_warranty', 'trust_delivery', 'trust_payment'] as $_c) { try { $pdo->exec("ALTER TABLE products ADD COLUMN $_c TEXT NULL"); } catch (Throwable $e) {} }
         $title = trim(mb_substr((string) ($_POST['title'] ?? ''), 0, 250));
         $status = in_array($_POST['status'] ?? '', ['activo', 'borrador', 'archivado', (string) $p['status']], true) ? $_POST['status'] : $p['status'];
         $imageUrl = $p['image_url'];
@@ -46,6 +47,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                ':d' => (string) ($_POST['description_html'] ?? ''), ':i' => $imageUrl, ':id' => $id]);
                 soldout_set($pdo, (int) $id, !empty($_POST['sold_out']));
                 $pdo->prepare("UPDATE products SET quick_facts = :q WHERE id = :id")->execute([':q' => mb_substr(trim((string) ($_POST['quick_facts'] ?? '')), 0, 1000), ':id' => $id]);
+                $pdo->prepare("UPDATE products SET trust_warranty = :a, trust_delivery = :b, trust_payment = :c WHERE id = :id")->execute([
+                    ':a' => mb_substr(trim((string) ($_POST['trust_warranty'] ?? '')), 0, 400), ':b' => mb_substr(trim((string) ($_POST['trust_delivery'] ?? '')), 0, 400),
+                    ':c' => mb_substr(trim((string) ($_POST['trust_payment'] ?? '')), 0, 400), ':id' => $id]);
             }
         }
     } elseif ($a === 'variantes' && !empty($_POST['del_variant'])) {
@@ -134,6 +138,10 @@ flash_show();
   </div>
   <label class="tag" style="display:block;margin-top:12px;">Datos rápidos (cuadro bajo la imagen) — una línea por dato, con formato <i>Etiqueta: valor</i>. Vacío = automático (Marca, Compatible, Entrega, Pago)<br>
     <textarea name="quick_facts" rows="5" placeholder="Marca: Microsoft&#10;Compatible: Windows&#10;Entrega: Por correo&#10;Pago: Mercado Pago" style="<?= $in ?>"><?= h((string) ($p['quick_facts'] ?? '')) ?></textarea></label>
+  <div class="tag" style="margin-top:12px;">Textos de confianza de esta ficha — déjalos vacíos para usar el texto por defecto (Ajustes)</div>
+  <label class="tag" style="display:block;margin-top:6px;">Garantía de funcionamiento <textarea name="trust_warranty" rows="2" placeholder="<?= h(setting('pt_warranty')) ?>" style="<?= $in ?>"><?= h((string) ($p['trust_warranty'] ?? '')) ?></textarea></label>
+  <label class="tag" style="display:block;margin-top:6px;">Cómo y cuándo se entrega <textarea name="trust_delivery" rows="2" placeholder="<?= h(setting('pt_delivery')) ?>" style="<?= $in ?>"><?= h((string) ($p['trust_delivery'] ?? '')) ?></textarea></label>
+  <label class="tag" style="display:block;margin-top:6px;">Pago y envío automatizado <textarea name="trust_payment" rows="2" placeholder="<?= h(setting('pt_payment')) ?>" style="<?= $in ?>"><?= h((string) ($p['trust_payment'] ?? '')) ?></textarea></label>
   <div class="tag" style="margin-top:12px;">Descripción</div>
   <div id="rt-bar" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;">
     <button type="button" class="btn-a" data-c="bold" style="padding:5px 10px;"><b>N</b></button>

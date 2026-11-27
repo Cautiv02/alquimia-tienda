@@ -7,6 +7,9 @@ require_once __DIR__ . '/mail-templates-lib.php';
 function settings_defaults(): array {
     $wa = defined('SUPPORT_WHATSAPP') ? SUPPORT_WHATSAPP : '';
     return mail_template_setting_defaults() + [
+        'pt_warranty'       => 'Si tu licencia no funciona, la reponemos o devolvemos según la garantía de cada producto.',
+        'pt_delivery'       => 'Entrega por correo electrónico, máximo 24 horas hábiles. Tu clave se revela en «Consultar mi pedido».',
+        'pt_payment'        => 'Mercado Pago, transferencia o Binance Pay.',
         'show_old_prices'   => '0',
         'biz_legal_name'    => 'Alquimia Digital Limitada',
         'biz_rut'           => '',

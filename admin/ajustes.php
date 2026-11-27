@@ -26,6 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     settings_save($pdo, [
         'binance_qr'        => $qr,
+        'pt_warranty'       => trim(mb_substr((string) ($_POST['pt_warranty'] ?? ''), 0, 400)),
+        'pt_delivery'       => trim(mb_substr((string) ($_POST['pt_delivery'] ?? ''), 0, 400)),
+        'pt_payment'        => trim(mb_substr((string) ($_POST['pt_payment'] ?? ''), 0, 400)),
         'show_old_prices'   => !empty($_POST['show_old_prices']) ? '1' : '0',
         'biz_legal_name'    => trim(mb_substr((string) ($_POST['biz_legal_name'] ?? ''), 0, 120)),
         'biz_rut'           => trim(mb_substr((string) ($_POST['biz_rut'] ?? ''), 0, 20)),
@@ -125,6 +128,13 @@ flash_show();
     <?php if ($s['transfer_enabled'] === '1' && trim($s['transfer_details']) === ''): ?>
       <p class="flash err" style="margin:12px 0 0;">La transferencia está activada pero faltan los datos bancarios: no se mostrará hasta que los completes.</p>
     <?php endif; ?>
+  </div>
+  <div class="box">
+    <strong>Textos de confianza en las fichas de producto (por defecto, para todos)</strong>
+    <p class="tag" style="margin:6px 0 12px;">Se muestran en el cuadro «Garantía de funcionamiento / Cómo y cuándo se entrega / Pago y envío» de todas las fichas. Cada producto puede tener su propio texto en su página de edición; si lo dejas vacío usa estos.</p>
+    <label class="tag" style="display:block;margin-bottom:10px;">Garantía de funcionamiento <textarea name="pt_warranty" rows="2" style="<?= $in ?>width:100%;"><?= h($s['pt_warranty']) ?></textarea></label>
+    <label class="tag" style="display:block;margin-bottom:10px;">Cómo y cuándo se entrega <textarea name="pt_delivery" rows="2" style="<?= $in ?>width:100%;"><?= h($s['pt_delivery']) ?></textarea></label>
+    <label class="tag" style="display:block;">Pago y envío automatizado <textarea name="pt_payment" rows="2" style="<?= $in ?>width:100%;"><?= h($s['pt_payment']) ?></textarea></label>
   </div>
   <div class="box">
     <strong>Precios tachados y porcentajes de descuento</strong>
