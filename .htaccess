@@ -27,6 +27,8 @@
 
   # URLs antiguas de Shopify -> páginas equivalentes de esta tienda (redirección permanente)
   RewriteRule ^products/([^/]+)/?$ producto.php?handle=$1 [QSA,L]
+  RewriteRule ^collections/(autodesk|adobe|windows|antivirus)/?$ catalogo.php?cat=$1 [R=301,L]
+  RewriteRule ^collections/(office|office-365|office-365-1)/?$ catalogo.php?cat=office [R=301,L]
   RewriteRule ^collections(/.*)?$ catalogo.php? [R=301,L]
   RewriteRule ^cart/?$ carrito.php? [R=301,L]
   RewriteRule ^pages/(contact|contacto)[^/]*/?$ contacto.php? [R=301,L]
