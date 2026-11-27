@@ -101,15 +101,15 @@ $fulfillLabels = [
 <title>Consultar mi pedido | Alquimia Digital</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #FAF7F0; --surface: #FFFFFF; --surface-tint: #F1ECDD;
     --gold: #B9862A; --gold-bright: #D4A03E; --teal: #2A7D74;
     --ash: #7A7566; --line: rgba(28,26,20,0.10);
     --text: #211E17; --text-dim: #5C5749; --radius-card: 14px;
-    --serif: 'Fraunces', Georgia, serif;
-    --sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    --serif: 'Inter', -apple-system, sans-serif;
+    --sans: 'Inter', -apple-system, sans-serif;
     --mono: 'IBM Plex Mono', Consolas, monospace;
     --dark: #3E5C76; --dark-2: #4C7093;
     --text-on-dark: #F2EFE6; --text-on-dark-dim: #C9D6E0;
