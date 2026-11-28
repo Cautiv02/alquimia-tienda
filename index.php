@@ -26,7 +26,7 @@ track_event('view');
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Licencias de Windows, Office y antivirus en Chile | Alquimia Digital</title>
+<title>Licencias Windows y Office en Chile | Alquimia Digital</title>
 <meta name="description" content="Licencias de Windows, Office, antivirus, Adobe y Autodesk para Chile. Entrega digital por correo, pago con Mercado Pago o transferencia. Soporte por WhatsApp.">
 <?php require_once __DIR__ . '/seo-lib.php'; seo_set(['canonical' => SITE_URL . '/']); seo_head('Licencias de software', 'Licencias de Windows, Office, antivirus, Adobe y Autodesk para Chile. Entrega digital por correo.'); ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
