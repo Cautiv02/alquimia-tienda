@@ -69,6 +69,9 @@ function desc_clean(string $html): string {
     $h = preg_replace('/Todos nuestros productos (son originales y )?(cuentan con|tienen) garant[ií]a[^.<]*\.?/iu', '', $h);
     $h = preg_replace('/sin embargo tenemos una pol[ií]tica de devoluci[^.<]*\.?/iu', '', $h);
     $h = preg_replace('/Ver Pol[ií]ticas/iu', '', $h);
+    // Correos heredados de Shopify (p. ej. ventas@digital-alquimia.com): se sustituyen por el de contacto actual del sitio
+    $mail = function_exists('biz_info') ? (string) (biz_info()['email'] ?? '') : '';
+    if ($mail !== '') $h = preg_replace('/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/iu', $mail, $h);
     $h = preg_replace('/\.(?=[A-ZÁÉÍÓÚÑ])/u', '. ', $h);
     $h = preg_replace('/<p>\s*(<br\s*\/?>)?\s*<\/p>/i', '', $h);
     return $h;

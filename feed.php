@@ -29,7 +29,7 @@ function feed_description(string $html, string $title): string {
     foreach (preg_split('/(?<=[.!?])\s+/u', $t) as $sn) {
         $sn = trim($sn, " .");
         if ($sn === '' || mb_strlen($sn) < 12) continue;
-        if (preg_match('/original|garant|pol[ií]tica|devoluci|reembols|reemplaz|https?:|www\.|ver pol|descuento|oferta|barato|lega(l|les)\b|100\s?%/iu', $sn)) continue;
+        if (preg_match('/original|garant|pol[ií]tica|devoluci|reembols|reemplaz|https?:|www\.|@|ver pol|descuento|oferta|barato|lega(l|les)\b|100\s?%/iu', $sn)) continue;
         $keep[] = $sn;
         if (mb_strlen(implode('. ', $keep)) > 500) break;
     }
