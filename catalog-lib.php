@@ -93,3 +93,17 @@ function product_handle_guess(PDO $pdo, string $handle): int {
     }
     return $bestScore >= 0.7 ? $best : 0;
 }
+
+/**
+ * Título para mostrar al público: sin la palabra «Original» (autenticidad que no podemos demostrar como revendedor independiente).
+ * Solo cambia lo que se muestra; la base de datos y las búsquedas internas no se tocan.
+ */
+function display_title($t): string {
+    $t = cat_clean($t);
+    $t = preg_replace('/\b(cuenta|suscripci[oó]n|licencia|licencias)\s+original(es)?\b/iu', '$1', $t);
+    $t = preg_replace('/\boriginal(es)?\b/iu', '', $t);
+    $t = preg_replace('/(\s*[-–—|]\s*){2,}/u', ' - ', $t);
+    $t = preg_replace('/\s*\/\s*(?=[-–—|]|$)/u', '', $t);
+    $t = preg_replace('/\s+/u', ' ', $t);
+    return trim($t, " \t-–—|");
+}

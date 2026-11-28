@@ -58,18 +58,19 @@ try {
 $rCount = (reviews_stats()[$id]['n'] ?? count($revs));
 $err = (string) ($_GET['error'] ?? '');
 $fac = product_facets((string) $p['title']);
-$cleanTitle = cat_clean((string) $p['title']);
+$cleanTitle = display_title((string) $p['title']);
+$shownTitle = $cleanTitle !== '' ? $cleanTitle : (string) $p['title'];
 
 // SEO: canonical, imagen y datos estructurados de producto (precio y disponibilidad iguales a los de la ficha)
 $_okVars = array_values(array_filter($variants, function ($v) use ($vstock) { return !isset($vstock[(int) $v['id']]) || $vstock[(int) $v['id']] > 0; }));
 $_offerVar = $_okVars ? $_okVars[0] : ($variants[0] ?? null);
 $_plainDesc = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags(desc_clean((string) $p['description_html'])), ENT_QUOTES, 'UTF-8')));
-$_metaDesc = 'Licencia original ' . cat_clean((string) $p['title']) . ($_offerVar ? ' desde $' . number_format((float) $_offerVar['price'], 0, ',', '.') . ' CLP' : '') . '. Entrega digital por correo, pago con Mercado Pago, transferencia o Binance Pay.';
+$_metaDesc = 'Licencia ' . $shownTitle . ($_offerVar ? ' desde $' . number_format((float) $_offerVar['price'], 0, ',', '.') . ' CLP' : '') . '. Entrega digital por correo, pago con Mercado Pago, transferencia o Binance Pay.';
 $_canon = SITE_URL . '/producto.php?id=' . (int) $p['id'];
 seo_set(['canonical' => $_canon, 'type' => 'product', 'image' => $img ?: 'images/logo.jpg']);
 if ($_offerVar) {
     $_isSold = !$_okVars || !empty(soldout_ids()[(int) $p['id']]);
-    $_ld = ['@context' => 'https://schema.org', '@type' => 'Product', 'name' => $p['title'], 'url' => $_canon,
+    $_ld = ['@context' => 'https://schema.org', '@type' => 'Product', 'name' => $shownTitle, 'url' => $_canon,
         'description' => mb_substr($_plainDesc !== '' ? $_plainDesc : $_metaDesc, 0, 500),
         'brand' => ['@type' => 'Brand', 'name' => (function ($p) { $b = product_facets((string) $p['title'])['brand']; if ($b === 'Otros' || $b === '') { $v = trim((string) $p['vendor']); $b = (strlen($v) > 2 && strcasecmp($v, 'Alquimia Digital') !== 0) ? $v : SITE_NAME; } return $b; })($p)],
         'sku' => 'P' . (int) $p['id'],
@@ -84,16 +85,16 @@ if ($_offerVar) {
     seo_ld_add(['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [
         ['@type' => 'ListItem', 'position' => 1, 'name' => 'Inicio', 'item' => SITE_URL . '/'],
         ['@type' => 'ListItem', 'position' => 2, 'name' => 'Catálogo', 'item' => SITE_URL . '/catalogo.php'],
-        ['@type' => 'ListItem', 'position' => 3, 'name' => $p['title'], 'item' => $_canon]]]);
+        ['@type' => 'ListItem', 'position' => 3, 'name' => $shownTitle, 'item' => $_canon]]]);
 }
-site_header($p['title'], $_metaDesc);
+site_header($shownTitle, $_metaDesc);
 ?>
 <div class="wrap page">
   <nav class="crumbs" aria-label="Ruta"><a href="catalogo.php">Catálogo</a> <span>/</span> <a href="catalogo.php?categoria%5B%5D=<?= h(urlencode($fac['category'])) ?>"><?= h($fac['category']) ?></a> <span>/</span> <b><?= h($cleanTitle) ?></b></nav>
   <div class="product-grid">
     <div class="pg-main">
     <div class="panel buybox">
-      <h1 class="pt-title"><?= h($p['title']) ?></h1>
+      <h1 class="pt-title"><?= h($shownTitle) ?></h1>
       <?php if ($rCount): ?><p class="rating-line"><?= stars_html($rAvg) ?> <b><?= h(number_format($rAvg, 1, ',', '')) ?></b> · <a href="#opiniones"><?= (int) $rCount ?> opinión<?= $rCount === 1 ? '' : 'es' ?></a></p><?php endif; ?>
       <?php if (!empty($_GET['added'])): ?><p class="added-note">✓ Agregado al carrito. <a href="carrito.php">Ver carrito</a></p><?php endif; ?>
       <?php if (!$variants): ?>
@@ -170,7 +171,7 @@ site_header($p['title'], $_metaDesc);
 
     <aside class="pg-side">
       <div class="product-img">
-        <?php if ($img): ?><img src="<?= h($img) ?>" width="840" height="840" fetchpriority="high" alt="<?= h($p['title']) ?>"><?php else: ?><span style="color:var(--ash)">Sin imagen</span><?php endif; ?>
+        <?php if ($img): ?><img src="<?= h($img) ?>" width="840" height="840" fetchpriority="high" alt="<?= h($shownTitle) ?>"><?php else: ?><span style="color:var(--ash)">Sin imagen</span><?php endif; ?>
       </div>
       <?php $qf = []; foreach (preg_split('/\R/', (string) ($p['quick_facts'] ?? '')) as $ln) { if (strpos($ln, ':') !== false) { [$a1, $b1] = array_map('trim', explode(':', $ln, 2)); if ($a1 !== '' && $b1 !== '') $qf[] = [$a1, $b1]; } } ?>
       <ul class="quick-facts">
@@ -201,7 +202,7 @@ site_header($p['title'], $_metaDesc);
     <h2>Preguntas frecuentes</h2>
     <div class="faq">
       <details><summary>¿Cómo recibo mi licencia?</summary><p>Por correo electrónico, al correo que indiques en la compra. Además puedes verla en «Consultar mi pedido» con tu número de pedido y correo. La clave aparece oculta hasta que confirmas que verificaste la compatibilidad.</p></details>
-      <details><summary>¿Es una licencia original?</summary><p>Son licencias de software de terceros que se activan y validan en los servidores del fabricante. Alquimia Digital es un revendedor independiente: no somos el fabricante ni su distribuidor oficial. Más información en los <a href="legal.php?p=terminos">Términos del servicio</a>.</p></details>
+      <details><summary>¿De dónde provienen las licencias?</summary><p>Son licencias de software de terceros que se activan y validan en los servidores del fabricante. Alquimia Digital es un revendedor independiente: no somos el fabricante ni su distribuidor oficial. Más información en los <a href="legal.php?p=terminos">Términos del servicio</a>.</p></details>
       <details><summary>¿Qué pasa si la licencia no funciona?</summary><p>Escríbenos con tu número de pedido y una captura del error. Según el caso, hacemos reposición o devolución, de acuerdo con nuestra <a href="legal.php?p=reembolso">Política de reembolso</a>.</p></details>
       <details><summary>¿Puedo devolver mi compra?</summary><p>Antes de que se te entregue o revele la clave puedes desistirte dentro de 10 días corridos. Una vez revelada no procede el retracto, sin perjuicio de las garantías que se detallan en la <a href="legal.php?p=reembolso">Política de reembolso</a>.</p></details>
       <details><summary>¿Qué medios de pago aceptan?</summary><p>Mercado Pago, transferencia bancaria y Binance Pay (USDT). Los cupones de descuento no se pueden usar con pagos en USDT.</p></details>
@@ -228,8 +229,8 @@ site_header($p['title'], $_metaDesc);
     <div class="rel-grid">
       <?php foreach ($rel as $r): ?>
       <a class="rel-card" href="producto.php?id=<?= (int) $r['id'] ?>">
-        <?php if ($r['image_url']): ?><img src="<?= h($r['image_url']) ?>" alt="<?= h($r['title']) ?>" loading="lazy" width="200" height="200"><?php endif; ?>
-        <span><?= h($r['title']) ?></span><b>Desde <?= h(money($r['mp'])) ?></b>
+        <?php if ($r['image_url']): ?><img src="<?= h($r['image_url']) ?>" alt="<?= h(display_title((string) $r['title'])) ?>" loading="lazy" width="200" height="200"><?php endif; ?>
+        <span><?= h(display_title((string) $r['title'])) ?></span><b>Desde <?= h(money($r['mp'])) ?></b>
       </a>
       <?php endforeach; ?>
     </div>

@@ -14,7 +14,7 @@ $base = rtrim(SITE_URL, '/');
 $x = function ($s) { return htmlspecialchars((string) $s, ENT_XML1 | ENT_QUOTES, 'UTF-8'); };
 // Google no admite texto promocional en los títulos (oferta, descuento, barato…): lo quitamos solo en el feed
 function feed_title(string $t): string {
-    $t = cat_clean($t);
+    $t = display_title($t);
     $t = preg_replace('/\b(\d+\s*%\s*)?(descuento|oferta|ofertas|barato|barata|flash|cyber\s?days?|cyberdays|black\s?days?|blackfriday|navidad|exclusiva|promo(ci[oó]n)?|liquidaci[oó]n)\b/iu', '', $t);
     $t = preg_replace('/(\s*[-–—|]\s*){2,}/u', ' - ', $t);
     $t = preg_replace('/\s+/u', ' ', $t);
@@ -43,7 +43,7 @@ $prods = $pdo->query("SELECT id, title, handle, description_html, vendor, produc
 $vq = $pdo->prepare("SELECT id, title, sku, price, compare_at_price FROM product_variants WHERE product_id = :p ORDER BY price ASC, id ASC");
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 echo '<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0"><channel>' . "\n";
-echo '<title>' . $x(SITE_NAME) . '</title><link>' . $x($base . '/') . '</link><description>Licencias originales de software para Chile</description>' . "\n";
+echo '<title>' . $x(SITE_NAME) . '</title><link>' . $x($base . '/') . '</link><description>Licencias de software para Chile</description>' . "\n";
 foreach ($prods as $p) {
     $vq->execute([':p' => $p['id']]); $vars = $vq->fetchAll();
     if (!$vars) continue;

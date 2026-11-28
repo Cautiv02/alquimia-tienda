@@ -4,6 +4,7 @@
  */
 require_once __DIR__ . '/delivery-engine.php';
 require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/catalog-lib.php';
 require_once __DIR__ . '/cart-lib.php';
 require_once __DIR__ . '/coupon-lib.php';
 require_once __DIR__ . '/soldout-lib.php';
@@ -83,7 +84,7 @@ site_header('Carrito', 'Tu carrito de compra');
         <div class="cart-line">
           <div class="cart-thumb"><?php if ($l['img']): ?><img src="<?= h($l['img']) ?>" alt=""><?php endif; ?></div>
           <div class="cart-info">
-            <a href="producto.php?id=<?= (int) $l['pid'] ?>"><?= h($l['title']) ?></a>
+            <a href="producto.php?id=<?= (int) $l['pid'] ?>"><?= h(display_title((string) $l['title'])) ?></a>
             <div style="color:var(--ash);font-size:.88rem;margin-top:4px;"><?= money($l['unit']) ?> c/u</div>
             <button class="link-btn" type="submit" form="rm<?= (int) $l['vid'] ?>">Quitar</button>
           </div>

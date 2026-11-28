@@ -10,6 +10,7 @@ require_once __DIR__ . '/config.php';
 $pdo = get_pdo();
 
 require_once __DIR__ . '/home-lib.php';
+require_once __DIR__ . '/catalog-lib.php';
 $allActive = home_products($pdo);
 $homeSections = home_load($pdo);
 if ($homeSections === null) $homeSections = home_resolve_defaults($allActive);
@@ -25,9 +26,9 @@ track_event('view');
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alquimia Digital — Licencias originales de software</title>
-<meta name="description" content="Licencias originales de Windows, Office, antivirus, Adobe y Autodesk para Chile. Entrega digital por correo, pago con Mercado Pago, transferencia o Binance Pay. Soporte por WhatsApp.">
-<?php require_once __DIR__ . '/seo-lib.php'; seo_set(['canonical' => SITE_URL . '/']); seo_head('Licencias originales de software', 'Licencias originales de Windows, Office, antivirus, Adobe y Autodesk para Chile. Entrega digital por correo.'); ?>
+<title>Alquimia Digital — Licencias de software</title>
+<meta name="description" content="Licencias de Windows, Office, antivirus, Adobe y Autodesk para Chile. Entrega digital por correo, pago con Mercado Pago, transferencia o Binance Pay. Soporte por WhatsApp.">
+<?php require_once __DIR__ . '/seo-lib.php'; seo_set(['canonical' => SITE_URL . '/']); seo_head('Licencias de software', 'Licencias de Windows, Office, antivirus, Adobe y Autodesk para Chile. Entrega digital por correo.'); ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
@@ -107,13 +108,13 @@ track_event('view');
           <?php elseif ($bd !== '' && isset($bdl[$bd])): ?><span class="offer-badge b-<?= htmlspecialchars($bd) ?>"><?= htmlspecialchars($bdl[$bd]) ?></span>
           <?php elseif ($hasDiscount): ?><span class="offer-badge disponible">Oferta</span><?php endif; ?>
           <?php if ($imgSrc): ?>
-            <img src="<?= htmlspecialchars($imgSrc) ?>" width="600" height="600" loading="lazy" alt="<?= htmlspecialchars($o['clean_title']) ?>">
+            <img src="<?= htmlspecialchars($imgSrc) ?>" width="600" height="600" loading="lazy" alt="<?= htmlspecialchars(display_title((string) $o['clean_title'])) ?>">
           <?php else: ?>
             <span class="placeholder-mark">foto del producto</span>
           <?php endif; ?>
         </div>
         <div class="offer-body">
-          <p class="offer-title"><?= htmlspecialchars($o['clean_title']) ?></p>
+          <p class="offer-title"><?= htmlspecialchars(display_title((string) $o['clean_title'])) ?></p>
           <div class="offer-price-row">
             <?php if ($hasDiscount): ?><span class="offer-price-old"><?= money($o['compare_at_price']) ?></span><?php endif; ?>
             <span class="offer-price"><?= ((int) $o['nvar'] > 1 ? 'Desde ' : '') . money($o['price']) ?> CLP</span>

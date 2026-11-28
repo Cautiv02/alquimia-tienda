@@ -264,7 +264,7 @@ function site_footer(): void { ?>
     <div class="footer-grid2">
       <div class="footer-pay">
         <a href="https://www.mercadopago.cl" rel="noopener" target="_blank" aria-label="Mercado Pago"><img class="mp-logo" src="images/mercadopago.png" alt="Mercado Pago" width="210" loading="lazy"></a>
-        <p class="footer-desc2">Licencias originales de software para Chile, desde 2018.</p>
+        <p class="footer-desc2">Licencias de software para Chile, desde 2018.</p>
       </div>
       <div class="footer-col2">
         <h4>Info</h4>
