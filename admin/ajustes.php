@@ -33,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'biz_legal_name'    => trim(mb_substr((string) ($_POST['biz_legal_name'] ?? ''), 0, 120)),
         'biz_rut'           => trim(mb_substr((string) ($_POST['biz_rut'] ?? ''), 0, 20)),
         'biz_address'       => trim(mb_substr((string) ($_POST['biz_address'] ?? ''), 0, 200)),
+        'biz_email'         => (filter_var(trim((string) ($_POST['biz_email'] ?? '')), FILTER_VALIDATE_EMAIL) ?: 'contacto@alquimia-digital.cl'),
         'biz_hours'         => trim(mb_substr((string) ($_POST['biz_hours'] ?? ''), 0, 160)),
         'banner_enabled'    => !empty($_POST['banner_enabled']) ? '1' : '0',
         'banner_text'       => trim(mb_substr((string) ($_POST['banner_text'] ?? ''), 0, 300)),
@@ -147,6 +148,7 @@ flash_show();
     <label class="tag" style="display:block;margin-bottom:10px;">Razón social / nombre comercial <input name="biz_legal_name" value="<?= h($s['biz_legal_name']) ?>" style="<?= $in ?>width:100%;"></label>
     <label class="tag" style="display:block;margin-bottom:10px;">RUT <input name="biz_rut" value="<?= h($s['biz_rut']) ?>" placeholder="12.345.678-9" style="<?= $in ?>width:200px;"></label>
     <label class="tag" style="display:block;margin-bottom:10px;">Dirección <input name="biz_address" value="<?= h($s['biz_address']) ?>" style="<?= $in ?>width:100%;"></label>
+    <label class="tag" style="display:block;margin-bottom:10px;">Correo de contacto público (fichas, pie de página, Quiénes somos) <input type="email" name="biz_email" value="<?= h($s['biz_email']) ?>" style="<?= $in ?>width:100%;"></label>
     <label class="tag" style="display:block;">Horario de atención <input name="biz_hours" value="<?= h($s['biz_hours']) ?>" style="<?= $in ?>width:100%;"></label>
   </div>
   <div class="box">

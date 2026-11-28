@@ -25,7 +25,7 @@ function biz_info(): array {
         'rut'     => trim((string) ($s['biz_rut'] ?? '')),
         'address' => trim((string) ($s['biz_address'] ?? '')),
         'hours'   => trim((string) ($s['biz_hours'] ?? '')),
-        'email'   => NOTIFY_EMAIL,
+        'email'   => (filter_var(trim((string) ($s['biz_email'] ?? '')), FILTER_VALIDATE_EMAIL) ?: NOTIFY_EMAIL),
         'wa'      => SUPPORT_WHATSAPP,
     ];
     return $c;

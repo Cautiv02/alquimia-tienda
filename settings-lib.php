@@ -14,6 +14,7 @@ function settings_defaults(): array {
         'biz_legal_name'    => 'Alquimia Digital Limitada',
         'biz_rut'           => '',
         'biz_address'       => 'Ahumada 254, Oficina 806, Santiago, Chile',
+        'biz_email'         => 'contacto@alquimia-digital.cl',
         'biz_hours'         => 'Atención por WhatsApp y correo, todos los días',
         'banner_enabled'    => '1',
         'banner_text'       => 'Renovamos nuestra tienda. Si ya eres cliente, tu pedido y tu soporte siguen igual.',
