@@ -3,8 +3,16 @@
  * catalog-lib.php — deduce marca, categoría, compatibilidad y duración de cada producto a partir de su nombre,
  * para los filtros del catálogo. No requiere cambiar la base de datos.
  */
+/** preg_replace que nunca devuelve null (UTF-8 inválido o límite de backtracking): en ese caso deja el texto como estaba. */
+function rx_safe(string $pattern, string $repl, string $subject): string {
+    $r = @preg_replace($pattern, $repl, $subject);
+    return $r === null ? $subject : $r;
+}
+
 function cat_clean($t): string {
-    return trim(preg_replace('/[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}\x{FEFF}]/u', '', (string) $t));
+    $t = (string) $t;
+    if (!mb_check_encoding($t, 'UTF-8')) $t = mb_convert_encoding($t, 'UTF-8', 'UTF-8');
+    return trim(rx_safe('/[\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}\x{FEFF}]/u', '', $t));
 }
 
 function product_facets(string $title): array {
@@ -66,14 +74,15 @@ function product_facets(string $title): array {
  */
 function desc_clean(string $html): string {
     $h = $html;
-    $h = preg_replace('/Todos nuestros productos (son originales y )?(cuentan con|tienen) garant[ií]a[^.<]*\.?/iu', '', $h);
-    $h = preg_replace('/sin embargo tenemos una pol[ií]tica de devoluci[^.<]*\.?/iu', '', $h);
-    $h = preg_replace('/Ver Pol[ií]ticas/iu', '', $h);
+    if (!mb_check_encoding($h, 'UTF-8')) $h = mb_convert_encoding($h, 'UTF-8', 'UTF-8');
+    $h = rx_safe('/Todos nuestros productos (son originales y )?(cuentan con|tienen) garant[ií]a[^.<]*\.?/iu', '', $h);
+    $h = rx_safe('/sin embargo tenemos una pol[ií]tica de devoluci[^.<]*\.?/iu', '', $h);
+    $h = rx_safe('/Ver Pol[ií]ticas/iu', '', $h);
     // Correos heredados de Shopify (p. ej. ventas@digital-alquimia.com): se sustituyen por el de contacto actual del sitio
     $mail = function_exists('biz_info') ? (string) (biz_info()['email'] ?? '') : '';
-    if ($mail !== '') $h = preg_replace('/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/iu', $mail, $h);
-    $h = preg_replace('/\.(?=[A-ZÁÉÍÓÚÑ])/u', '. ', $h);
-    $h = preg_replace('/<p>\s*(<br\s*\/?>)?\s*<\/p>/i', '', $h);
+    if ($mail !== '') $h = rx_safe('/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/iu', $mail, $h);
+    $h = rx_safe('/\.(?=[A-ZÁÉÍÓÚÑ])/u', '. ', $h);
+    $h = rx_safe('/<p>\s*(<br\s*\/?>)?\s*<\/p>/i', '', $h);
     return $h;
 }
 
@@ -103,10 +112,10 @@ function product_handle_guess(PDO $pdo, string $handle): int {
  */
 function display_title($t): string {
     $t = cat_clean($t);
-    $t = preg_replace('/\b(cuenta|suscripci[oó]n|licencia|licencias)\s+original(es)?\b/iu', '$1', $t);
-    $t = preg_replace('/\boriginal(es)?\b/iu', '', $t);
-    $t = preg_replace('/(\s*[-–—|]\s*){2,}/u', ' - ', $t);
-    $t = preg_replace('/\s*\/\s*(?=[-–—|]|$)/u', '', $t);
-    $t = preg_replace('/\s+/u', ' ', $t);
+    $t = rx_safe('/\b(cuenta|suscripci[oó]n|licencia|licencias)\s+original(es)?\b/iu', '$1', $t);
+    $t = rx_safe('/\boriginal(es)?\b/iu', '', $t);
+    $t = rx_safe('/(\s*[-–—|]\s*){2,}/u', ' - ', $t);
+    $t = rx_safe('/\s*\/\s*(?=[-–—|]|$)/u', '', $t);
+    $t = rx_safe('/\s+/u', ' ', $t);
     return trim($t, " \t-–—|");
 }
