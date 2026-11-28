@@ -26,13 +26,16 @@ track_event('view');
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alquimia Digital — Licencias de software</title>
-<meta name="description" content="Licencias de Windows, Office, antivirus, Adobe y Autodesk para Chile. Entrega digital por correo, pago con Mercado Pago, transferencia o Binance Pay. Soporte por WhatsApp.">
+<title>Licencias de Windows, Office y antivirus en Chile | Alquimia Digital</title>
+<meta name="description" content="Licencias de Windows, Office, antivirus, Adobe y Autodesk para Chile. Entrega digital por correo, pago con Mercado Pago o transferencia. Soporte por WhatsApp.">
 <?php require_once __DIR__ . '/seo-lib.php'; seo_set(['canonical' => SITE_URL . '/']); seo_head('Licencias de software', 'Licencias de Windows, Office, antivirus, Adobe y Autodesk para Chile. Entrega digital por correo.'); ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet"></noscript>
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="site.css?v=<?= (int) @filemtime(__DIR__ . '/site.css') ?>">
 </head>
 <body>
@@ -62,7 +65,8 @@ track_event('view');
 <main id="contenido">
 
 <section class="hero-banner">
-  <img src="images/banner.jpg" srcset="images/banner-m.jpg 896w, images/banner.jpg 1792w" sizes="(max-width: 900px) 100vw, 1400px" width="1792" height="576" fetchpriority="high" alt="Alquimia Digital — Seguro, rápido y garantizado. Soporte técnico especializado, 8 años y más de 12.000 clientes, envíos digitales rápidos, de Chile para el mundo.">
+  <h1 class="sr-only">Licencias de Windows, Office, antivirus, Adobe y Autodesk en Chile</h1>
+  <img src="images/banner.jpg" srcset="images/banner-m.jpg 896w, images/banner.jpg 1792w" sizes="(max-width: 900px) 100vw, 1400px" width="1792" height="576" fetchpriority="high" alt="Alquimia Digital: licencias de software con soporte técnico y entrega digital">
 </section>
 
 <div class="brands">
@@ -77,15 +81,15 @@ track_event('view');
     <img src="images/marcas/avg.png" width="200" height="82" loading="lazy" alt="AVG">
     <img src="images/marcas/panda.png" width="229" height="64" loading="lazy" alt="Panda Security">
     <!-- duplicado para el loop continuo -->
-    <img src="images/marcas/office.png" width="260" height="82" loading="lazy" alt="" aria-hidden="true">
-    <img src="images/marcas/adobe.png" width="440" height="114" loading="lazy" alt="" aria-hidden="true">
-    <img src="images/marcas/autodesk.png" width="512" height="85" loading="lazy" alt="" aria-hidden="true">
-    <img src="images/marcas/mcafee.png" width="260" height="66" loading="lazy" alt="" aria-hidden="true">
-    <img src="images/marcas/eset.png" width="200" height="79" loading="lazy" alt="" aria-hidden="true">
-    <img src="images/marcas/kaspersky.png" width="200" height="39" loading="lazy" alt="" aria-hidden="true">
-    <img src="images/marcas/norton.png" width="460" height="104" loading="lazy" alt="" aria-hidden="true">
-    <img src="images/marcas/avg.png" width="200" height="82" loading="lazy" alt="" aria-hidden="true">
-    <img src="images/marcas/panda.png" width="229" height="64" loading="lazy" alt="" aria-hidden="true">
+    <img src="images/marcas/office.png" width="260" height="82" loading="lazy" alt="Office" aria-hidden="true">
+    <img src="images/marcas/adobe.png" width="440" height="114" loading="lazy" alt="Adobe" aria-hidden="true">
+    <img src="images/marcas/autodesk.png" width="512" height="85" loading="lazy" alt="Autodesk" aria-hidden="true">
+    <img src="images/marcas/mcafee.png" width="260" height="66" loading="lazy" alt="McAfee" aria-hidden="true">
+    <img src="images/marcas/eset.png" width="200" height="79" loading="lazy" alt="ESET" aria-hidden="true">
+    <img src="images/marcas/kaspersky.png" width="200" height="39" loading="lazy" alt="Kaspersky" aria-hidden="true">
+    <img src="images/marcas/norton.png" width="460" height="104" loading="lazy" alt="Norton" aria-hidden="true">
+    <img src="images/marcas/avg.png" width="200" height="82" loading="lazy" alt="AVG" aria-hidden="true">
+    <img src="images/marcas/panda.png" width="229" height="64" loading="lazy" alt="Panda Security" aria-hidden="true">
   </div>
 </div>
 

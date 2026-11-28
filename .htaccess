@@ -21,6 +21,13 @@
 # SEO: robots, sitemap y feed de Google Merchant Center
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  # Una sola versión del sitio: sin www y con https (301)
+  RewriteCond %{HTTP_HOST} ^www\.alquimia-digital\.cl$ [NC]
+  RewriteRule ^ https://alquimia-digital.cl%{REQUEST_URI} [R=301,L]
+  RewriteCond %{HTTP_HOST} ^alquimia-digital\.cl$ [NC]
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+  RewriteRule ^ https://alquimia-digital.cl%{REQUEST_URI} [R=301,L]
   # La portada se muestra siempre en la raíz: /index.php -> / (solo si el visitante pidió index.php de forma explícita)
   RewriteCond %{THE_REQUEST} \s/index\.php[\s?]
   RewriteRule ^index\.php$ / [R=301,L]

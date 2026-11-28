@@ -652,3 +652,5 @@ h1, h2, h3 { letter-spacing: -0.015em; }
   .home-block .offer-price { font-size: .74rem; }
   .home-block .offer-price-old { font-size: .66rem; }
 }
+
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
